@@ -5,7 +5,7 @@ import { isValidObjectId } from 'mongoose';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -29,10 +29,10 @@ export async function GET(
     }
 
     return NextResponse.json(vacancy);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching vacancy:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch vacancy', details: error.message },
+      { error: 'Failed to fetch vacancy', details: (error as Error).message },
       { status: 500 }
     );
   }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import HomeTuition from '@/model/HomeTuition';
-import { getServerSession } from "next-auth";
+import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -11,22 +11,22 @@ export async function GET(req: Request) {
     const email = searchParams.get('email');
     const role = searchParams.get('role');
 
-    const query: any = {};
+    const query: Record<string, string> = {};
     if (email) query.userEmail = email;
     if (role) query.role = role;
 
     const posts = await HomeTuition.find(query).sort({ createdAt: -1 });
 
     return NextResponse.json(posts);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session || !session.user || !session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newPost, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

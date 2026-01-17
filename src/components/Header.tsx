@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import Nav from "./Nav";
 import MobileNav from "./MobileNav";
-import { GraduationCap, User, LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
+import { GraduationCap, LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -71,7 +71,7 @@ const Header = () => {
                   </div>
 
                   <div className="py-1">
-                    {session.user?.role === 'admin' && (
+                    {(session.user as { role?: string })?.role === 'admin' && (
                       <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
                         <Shield className="w-4 h-4" /> Admin Panel
                       </Link>

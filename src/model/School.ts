@@ -162,7 +162,7 @@ SchoolSchema.pre('save', async function (next) {
       );
       this.unique_id = `S${counter.seq}`; // S for School
     } catch (error) {
-      return next(error as any);
+      return next(error as Error);
     }
   }
   next();

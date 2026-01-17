@@ -125,7 +125,7 @@ TeacherSchema.pre('save', async function (next) {
       );
       this.unique_id = `T${counter.seq}`;
     } catch (error) {
-      return next(error as any);
+      return next(error as Error);
     }
   }
   next();

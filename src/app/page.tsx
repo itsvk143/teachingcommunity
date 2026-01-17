@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Search, Briefcase, GraduationCap, Users, TrendingUp, ArrowRight, CheckCircle2, Star, Quote, UserCog, Home as HomeIcon } from "lucide-react";
+import { Briefcase, GraduationCap, Users, CheckCircle2, Quote, UserCog, Home as HomeIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -240,7 +240,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
           <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Transform Your Future?</h2>
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">Join the fastest-growing community of educators and institutes in India. It's free to get started.</p>
+            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">Join the fastest-growing community of educators and institutes in India. It&apos;s free to get started.</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link href={session ? "/dashboard" : "/login"}>
                 <Button className="h-14 px-10 bg-white text-gray-900 hover:bg-gray-100 font-bold text-lg rounded-full">
@@ -304,7 +304,7 @@ export default function Home() {
 
 // --- SUBCOMPONENTS ---
 
-function StatItem({ label, value }) {
+function StatItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-center">
       <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-1">{value}</div>
@@ -313,7 +313,7 @@ function StatItem({ label, value }) {
   );
 }
 
-function FeatureItem({ text }) {
+function FeatureItem({ text }: { text: string }) {
   return (
     <li className="flex items-start gap-3">
       <div className="mt-1 bg-green-100 p-0.5 rounded-full">
@@ -324,11 +324,11 @@ function FeatureItem({ text }) {
   );
 }
 
-function TestimonialCard({ quote, author, role }) {
+function TestimonialCard({ quote, author, role }: { quote: string; author: string; role: string }) {
   return (
     <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow relative">
       <Quote className="w-8 h-8 text-blue-200 mb-4" />
-      <p className="text-gray-700 mb-6 italic leading-relaxed">"{quote}"</p>
+      <p className="text-gray-700 mb-6 italic leading-relaxed">&quot;{quote}&quot;</p>
       <div>
         <p className="font-bold text-gray-900">{author}</p>
         <p className="text-sm text-blue-600">{role}</p>
@@ -337,7 +337,7 @@ function TestimonialCard({ quote, author, role }) {
   )
 }
 
-function SocialIcon({ children }) {
+function SocialIcon({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer font-bold text-sm">
       {children}

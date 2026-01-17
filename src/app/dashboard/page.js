@@ -3,7 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { User, Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, Search, BookOpen } from "lucide-react";
+import { Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, BookOpen } from "lucide-react";
 import TeacherProfileView from "@/components/TeacherProfileView";
 import NonTeacherProfileView from "@/components/NonTeacherProfileView";
 import CoachingProfileView from "@/components/CoachingProfileView";
@@ -279,7 +279,7 @@ export default function Dashboard() {
               <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
                 {homeTuitions.length === 0 ? (
                   <div className="text-center py-12 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
-                    <p className="text-gray-500 text-sm">You haven't posted any requirements yet.</p>
+                    <p className="text-gray-500 text-sm">You haven&apos;t posted any requirements yet.</p>
                     <button onClick={() => router.push('/hometuition/new')} className="text-indigo-600 font-semibold text-sm mt-2">Post now</button>
                   </div>
                 ) : (

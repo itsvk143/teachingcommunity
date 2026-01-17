@@ -1,5 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import PaginationControls from '@/components/PaginationControls';
 
 export default function TeachersList() {

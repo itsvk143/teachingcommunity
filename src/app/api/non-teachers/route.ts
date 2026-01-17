@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
     const body = await req.json();
     await dbConnect();
@@ -58,6 +58,6 @@ export async function POST(req) {
     return NextResponse.json(newStaff, { status: 201 });
   } catch (error) {
     console.error('Error creating non-teacher:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to create' }, { status: 500 });
   }
 }

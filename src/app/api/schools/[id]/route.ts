@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import School from '@/model/School';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import slugify from 'slugify';
 
-export async function GET(req, { params }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     await dbConnect();
@@ -17,14 +17,14 @@ export async function GET(req, { params }) {
 
     return NextResponse.json(school);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -38,8 +38,8 @@ export async function PUT(req, { params }) {
     }
 
     // Authorization
-    const isOwner = school.owner_user_id === session.user.id || school.email === session.user.email;
-    const isAdmin = session.user.role === 'admin';
+    const isOwner = school.owner_user_id === (session.user as { id: string }).id || school.email === session.user?.email;
+    const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -60,14 +60,14 @@ export async function PUT(req, { params }) {
 
     return NextResponse.json(updatedSchool);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -81,8 +81,8 @@ export async function DELETE(req, { params }) {
     }
 
     // Authorization
-    const isOwner = school.owner_user_id === session.user.id || school.email === session.user.email;
-    const isAdmin = session.user.role === 'admin';
+    const isOwner = school.owner_user_id === (session.user as { id: string }).id || school.email === session.user?.email;
+    const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -92,6 +92,6 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ message: 'School deleted successfully' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

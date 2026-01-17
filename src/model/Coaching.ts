@@ -283,7 +283,7 @@ CoachingSchema.pre('save', async function (next) {
       );
       this.unique_id = `C${counter.seq}`;
     } catch (error) {
-      return next(error as any);
+      return next(error as Error);
     }
   }
   next();

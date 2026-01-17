@@ -12,8 +12,8 @@ export async function GET(req: Request) {
     const query = email ? { email: { $regex: new RegExp(`^${email}$`, 'i') } } : {};
     const coachings = await Coaching.find(query).sort({ createdAt: -1 });
     return NextResponse.json(coachings);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -36,13 +36,14 @@ export async function POST(req: Request) {
 
     const newCoaching = await Coaching.create(body);
     return NextResponse.json(newCoaching, { status: 201 });
-  } catch (error: any) {
-    if (error.code === 11000) {
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).code === 11000) {
       return NextResponse.json(
         { error: 'Email already registered' },
         { status: 400 }
       );
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Vacancy from '@/model/Vacancy';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 /* =====================
@@ -16,7 +16,7 @@ export async function GET() {
       .lean();
 
     return NextResponse.json(vacancies);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch vacancies' },
       { status: 500 }
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
     const body = await req.json();
-    const session = await getServerSession(authOptions as any) as any;
+    const session = await getServerSession(authOptions as AuthOptions);
 
     let isApproved = false;
     let postedBy = null;
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (session?.user) {
       // Auto-approve for registered users
       const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher'];
-      const user = session.user as any;
+      const user = session.user as { role: string; id: string };
       if (allowedRoles.includes(user.role)) {
         isApproved = true;
         postedBy = user.id;
@@ -48,7 +48,8 @@ export async function POST(req: Request) {
       }
     }
 
-    const vacancy = await Vacancy.create({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _vacancy = await Vacancy.create({
       ...body,
       isApproved,
       postedBy,
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
       { message: isApproved ? 'Vacancy posted successfully!' : 'Vacancy submitted for approval' },
       { status: 201 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to post vacancy' },
       { status: 500 }

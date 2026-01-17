@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import StudentProfile from '@/model/StudentProfile';
-import { getServerSession } from "next-auth";
+import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -16,8 +16,8 @@ export async function GET(req: Request) {
     }
 
     // If no email, check for Admin session
-    const session = await getServerSession(authOptions);
-    if (session?.user?.role === 'admin') {
+    const session = await getServerSession(authOptions as AuthOptions);
+    if ((session?.user as { role?: string })?.role === 'admin') {
       const page = parseInt(searchParams.get('page') || '1');
       const limit = parseInt(searchParams.get('limit') || '25');
       const skip = (page - 1) * limit;
@@ -38,15 +38,15 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ error: 'Email is required or unauthorized access' }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session || !session.user || !session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newProfile, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

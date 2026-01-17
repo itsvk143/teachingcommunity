@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/model/Teacher';
@@ -8,7 +8,7 @@ import { isValidObjectId, Types } from 'mongoose';
 // GET handler for a specific teacher by ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -42,10 +42,10 @@ export async function GET(
     }
 
     return NextResponse.json(teacher);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching teacher:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch teacher', details: error.message },
+      { error: 'Failed to fetch teacher', details: (error as Error).message },
       { status: 500 }
     );
   }
@@ -54,10 +54,10 @@ export async function GET(
 // PUT handler to update teacher
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions as any);
+    const session = await getServerSession(authOptions as AuthOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -78,8 +78,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
     }
 
-    const isOwner = (session as any).user?.email?.toLowerCase() === existingTeacher.email?.toLowerCase();
-    const isAdmin = (session as any).user?.role === 'admin';
+    const isOwner = (session.user as { email?: string })?.email?.toLowerCase() === existingTeacher.email?.toLowerCase();
+    const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -88,32 +88,39 @@ export async function PUT(
     const data = await req.json();
 
     // Sanitize input data to prevent security issues
-    const { _id, createdAt, updatedAt, __v, sequence, ...rest } = data;
+    // Manually delete forbidden fields to avoid unused variable lint errors
+    const safeUpdateData = { ...data };
+    delete safeUpdateData._id;
+    delete safeUpdateData.createdAt;
+    delete safeUpdateData.updatedAt;
+    delete safeUpdateData.__v;
+    delete safeUpdateData.sequence;
 
     // Prevent non-admins from verifying themselves
-    let updateData = rest;
     if (!isAdmin) {
-      const { isVerified, ...safeData } = rest;
-      updateData = safeData;
+      delete safeUpdateData.isVerified;
     }
 
     const updatedTeacher = await Teacher.findByIdAndUpdate(
       id,
-      updateData,
+      safeUpdateData,
       { new: true, runValidators: true }
     );
 
     return NextResponse.json(updatedTeacher);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating teacher:", error);
 
-    if (error.name === 'ValidationError') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).name === 'ValidationError') {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: Object.keys(error.errors).map(field => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          details: Object.keys((error as any).errors).map(field => ({
             field,
-            message: error.errors[field].message
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            message: (error as any).errors[field].message
           }))
         },
         { status: 400 }
@@ -121,7 +128,7 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { error: `Failed to update teacher: ${error.message}` },
+      { error: `Failed to update teacher: ${(error as Error).message}` },
       { status: 500 }
     );
   }
@@ -130,7 +137,7 @@ export async function PUT(
 // DELETE handler to remove a teacher
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -154,10 +161,10 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: 'Teacher deleted successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting teacher:", error);
     return NextResponse.json(
-      { error: `Failed to delete teacher: ${error.message}` },
+      { error: `Failed to delete teacher: ${(error as Error).message}` },
       { status: 500 }
     );
   }

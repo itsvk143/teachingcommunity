@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { indianCities } from '@/lib/indianCities';
 import { MapPin, BookOpen, User, Phone, Save, X } from 'lucide-react';
 
-export default function PostTuitionNeed() {
+const PostTuitionContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -330,5 +330,17 @@ export default function PostTuitionNeed() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function PostTuitionNeed() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    }>
+      <PostTuitionContent />
+    </Suspense>
   );
 }

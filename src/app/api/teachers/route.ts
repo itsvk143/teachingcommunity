@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     const lastTeacher = await Teacher.findOne()
       .sort({ sequence: -1 })
       .select('sequence')
-      .lean() as any;
+      .lean() as { sequence?: number } | null;
 
     const nextSequence =
       lastTeacher && typeof lastTeacher.sequence === 'number'

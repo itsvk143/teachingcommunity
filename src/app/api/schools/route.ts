@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import School from '@/model/School';
 import slugify from 'slugify';
-import { getServerSession } from "next-auth";
+import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -12,7 +12,8 @@ export async function GET(req: Request) {
     const email = searchParams.get('email');
     const city = searchParams.get('city');
 
-    let query = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: Record<string, any> = {};
 
     if (email) {
       query.email = { $regex: new RegExp(`^${email}$`, 'i') };
@@ -41,15 +42,15 @@ export async function GET(req: Request) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -70,20 +71,21 @@ export async function POST(req: Request) {
     }
 
     // Link to user
-    body.owner_user_id = session.user.id;
+    body.owner_user_id = (session.user as { id: string }).id;
     // Ensure email matches session if strictly enforcing, or allow admin to set it? 
     // For now, let's allow the form to send email, but maybe enforce owner_user_id.
 
     const newSchool = await School.create(body);
     return NextResponse.json(newSchool, { status: 201 });
-  } catch (error: any) {
-    if (error.code === 11000) {
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).code === 11000) {
       // Duplicate key error
       return NextResponse.json(
         { error: 'Duplicate entry (Email or Slug already exists)' },
         { status: 400 }
       );
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

@@ -165,7 +165,7 @@ NonTeacherSchema.pre('save', async function (next) {
       );
       this.unique_id = `A${counter.seq}`;
     } catch (error) {
-      return next(error as any);
+      return next(error as Error);
     }
   }
   next();

@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 
 // POST: Add a new review
-export async function POST(req, { params }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +25,7 @@ export async function POST(req, { params }) {
     // Check if user already reviewed
     const existingReview = await Coaching.findOne({
       _id: id,
-      'platform_reviews.userId': new mongoose.Types.ObjectId(session.user.id)
+      'platform_reviews.userId': new mongoose.Types.ObjectId((session.user as { id: string }).id)
     });
 
     if (existingReview) {
@@ -33,8 +33,8 @@ export async function POST(req, { params }) {
     }
 
     const review = {
-      userId: new mongoose.Types.ObjectId(session.user.id),
-      userName: session.user.name,
+      userId: new mongoose.Types.ObjectId((session.user as { id: string }).id),
+      userName: session.user?.name,
       rating,
       comment,
       createdAt: new Date(),
@@ -54,22 +54,23 @@ export async function POST(req, { params }) {
     }
 
     // Recalculate average rating
-    const totalRating = coaching.platform_reviews.reduce((acc, r) => acc + r.rating, 0);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totalRating = coaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
     const avgRating = totalRating / coaching.platform_reviews.length;
 
     await Coaching.findByIdAndUpdate(id, { platform_reviews_rating: avgRating });
 
     return NextResponse.json({ message: 'Review added', review });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
 // PATCH: Reply to a review (Owner Only) OR Edit a review (Author Only)
-export async function PATCH(req, { params }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -88,14 +89,15 @@ export async function PATCH(req, { params }) {
     // SCENARIO 1: Owner Replying
     if (replyText !== undefined) {
       // Authorization: Owner or Admin
-      const isOwner = coaching.email === session.user.email || coaching.owner_user_id === session.user.id;
-      const isAdmin = session.user.role === 'admin';
+      const isOwner = coaching.email === session.user?.email || coaching.owner_user_id === (session.user as { id: string }).id;
+      const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
       if (!isOwner && !isAdmin) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
-      const reviewIndex = coaching.platform_reviews.findIndex(r => r._id.toString() === reviewId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reviewIndex = coaching.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
       if (reviewIndex === -1) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
       coaching.platform_reviews[reviewIndex].reply = {
@@ -110,13 +112,14 @@ export async function PATCH(req, { params }) {
     // SCENARIO 2: User Editing Review
     if (rating !== undefined && comment !== undefined) {
       // Find the review
-      const reviewIndex = coaching.platform_reviews.findIndex(r => r._id.toString() === reviewId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reviewIndex = coaching.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
       if (reviewIndex === -1) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
       const review = coaching.platform_reviews[reviewIndex];
 
       // Authorization: Must be the author
-      if (review.userId.toString() !== session.user.id) {
+      if (review.userId.toString() !== (session.user as { id: string }).id) {
         return NextResponse.json({ error: 'You can only edit your own review' }, { status: 403 });
       }
 
@@ -126,7 +129,8 @@ export async function PATCH(req, { params }) {
       // Optional: Update timestamp or add editedAt field if schema allowed (skipping for now to stick to schema)
 
       // Recalculate Average Rating
-      const totalRating = coaching.platform_reviews.reduce((acc, r) => acc + r.rating, 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const totalRating = coaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
       const avgRating = totalRating / coaching.platform_reviews.length;
       coaching.platform_reviews_rating = avgRating;
 
@@ -137,15 +141,15 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
 // DELETE: Remove a review (Owner/Admin Only)
-export async function DELETE(req, { params }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -159,8 +163,8 @@ export async function DELETE(req, { params }) {
     }
 
     // Authorize: Owner or Admin
-    const isOwner = coaching.email === session.user.email || coaching.owner_user_id === session.user.id;
-    const isAdmin = session.user.role === 'admin';
+    const isOwner = coaching.email === session.user?.email || coaching.owner_user_id === (session.user as { id: string }).id;
+    const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -182,7 +186,8 @@ export async function DELETE(req, { params }) {
     // Ideally we should recalculate the average.
     const updatedCoaching = await Coaching.findById(id);
     if (updatedCoaching.platform_reviews.length > 0) {
-      const totalRating = updatedCoaching.platform_reviews.reduce((acc, r) => acc + r.rating, 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const totalRating = updatedCoaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
       const avgRating = totalRating / updatedCoaching.platform_reviews.length;
       updatedCoaching.platform_rating = avgRating;
     } else {
@@ -193,6 +198,6 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ message: 'Review deleted' });
 
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
