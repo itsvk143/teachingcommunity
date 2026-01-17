@@ -32,10 +32,10 @@ export const navLinks = [
     name: "NON TEACHER",
     path: "/nonteacherspublic",
   },
-  {
-    name: "ABOUT",
-    path: "/contact",
-  },
+  // {
+  //   name: "ABOUT",
+  //   path: "/contact",
+  // },
 ];
 
 const Nav = () => {

@@ -35,7 +35,10 @@ export default function TeachersList() {
       setIsLoading(true);
       // Fetch with high limit to support client-side filtering for now
       const res = await fetch('/api/teachers?limit=1000', { cache: 'no-store' });
-      if (!res.ok) throw new Error(`Failed to fetch teachers: ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch teachers: ${res.status}`);
+      }
       const data = await res.json();
 
       const list = data.teachers || (Array.isArray(data) ? data : []);
@@ -43,6 +46,7 @@ export default function TeachersList() {
       setFilteredTeachers(list);
       setError(null);
     } catch (err) {
+      console.error(err);
       setError(err.message || 'Failed to fetch teachers');
     } finally {
       setIsLoading(false);
