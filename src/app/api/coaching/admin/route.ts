@@ -2,13 +2,13 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions as any);
-    if (!session || (session as any).user.role !== 'admin') {
+    const session = await getServerSession(authOptions as AuthOptions);
+    if (!session || (session.user as { role?: string }).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -31,15 +31,15 @@ export async function GET(req: Request) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch coachings' }, { status: 500 });
   }
 } // GET
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions as any);
-    if (!session || (session as any).user.role !== 'admin') {
+    const session = await getServerSession(authOptions as AuthOptions);
+    if (!session || (session.user as { role?: string }).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -53,15 +53,15 @@ export async function PATCH(req: Request) {
     );
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const session = await getServerSession(authOptions as any);
-    if (!session || (session as any).user.role !== 'admin') {
+    const session = await getServerSession(authOptions as AuthOptions);
+    if (!session || (session.user as { role?: string }).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -71,7 +71,7 @@ export async function DELETE(req: Request) {
     await Coaching.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Deleted' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
   }
 }
