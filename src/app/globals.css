@@ -20,7 +20,7 @@ body {
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
+    --accent: 136 100% 51%; /* hsl(136, 100%, 50%)*/ 
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -69,4 +69,17 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes blinkBackground {
+  0%, 100% {
+    background-color: transparent;
+  }
+  10% {
+    background-color: rgb(51, 255, 0); /* or any blinking color */
+  }
+}
+
+.blink-bg {
+  animation: blinkBackground 1s infinite;
 }

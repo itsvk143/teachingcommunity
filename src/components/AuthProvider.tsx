@@ -1,7 +1,11 @@
-"use client"; // Required for Next.js 13+ with App Router
+"use client";
 
 import { SessionProvider } from "next-auth/react";
 
-export default function RootLayout({ children }) {
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <SessionProvider>{children}</SessionProvider>;
 }
