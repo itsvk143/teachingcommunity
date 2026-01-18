@@ -46,6 +46,12 @@ const TeacherSchema = new mongoose.Schema(
     },
 
     currentlyWorkingIn: { type: String, trim: true },
+    city: { type: String, trim: true, index: true },
+    exams: {
+      type: [String],
+      trim: true,
+      index: true,
+    },
     age: { type: String, trim: true },
     dob: { type: Date },
     photoUrl: { type: String, trim: true },
@@ -67,7 +73,9 @@ const TeacherSchema = new mongoose.Schema(
     ],
 
     currentInstitute: { type: String, trim: true },
+    currentEmployeeCode: { type: String, trim: true }, // Optional
     previousInstitutes: { type: String, trim: true },
+    previousEmployeeCodes: { type: String, trim: true }, // Optional
     ctc: { type: String, trim: true },
 
     resumeLink: { type: String, trim: true },

@@ -56,7 +56,9 @@ const NonTeacherSchema = new mongoose.Schema(
     graduationCollege: { type: String, trim: true },
 
     currentInstitute: { type: String, trim: true },
+    currentEmployeeCode: { type: String, trim: true },
     previousInstitutes: { type: String, trim: true },
+    previousEmployeeCodes: { type: String, trim: true },
     ctc: { type: String, trim: true },
 
     resumeLink: { type: String, trim: true },
@@ -121,6 +123,7 @@ const NonTeacherSchema = new mongoose.Schema(
         designation: { type: String, trim: true },
         duration: { type: String, trim: true }, // From-To
         responsibilities: { type: String, trim: true },
+        employeeCode: { type: String, trim: true }, // Optional
       },
     ],
 

@@ -101,7 +101,8 @@ export default function EditTeacher() {
     class10: { boardUniv: '', year: '', percentage: '', medium: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '' },
     subject: '', experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
-    ctc: '', preferedState: '', state: '', nativeState: '',
+    currentEmployeeCode: '', previousEmployeeCodes: '',
+    ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: '',
     resumeLink: '', teachingVideoLink: '', about: '',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
@@ -142,8 +143,12 @@ export default function EditTeacher() {
           maxQualificationCollege: data.maxQualificationCollege || '',
           graduationCollege: data.graduationCollege || '',
           currentInstitute: data.currentInstitute || '',
+          currentEmployeeCode: data.currentEmployeeCode || '',
           previousInstitutes: data.previousInstitutes || '',
+          previousEmployeeCodes: data.previousEmployeeCodes || '',
           currentlyWorkingIn: workingIn,
+          city: data.city || '',
+          exams: Array.isArray(data.exams) ? data.exams.join(', ') : (data.exams || ''),
           otherWorkPlace: otherPlace,
           ctc: data.ctc || '',
           resumeLink: data.resumeLink || '',
@@ -207,6 +212,7 @@ export default function EditTeacher() {
 
     const payload = {
       ...formData,
+      exams: formData.exams ? formData.exams.split(',').map(e => e.trim()) : [],
       currentlyWorkingIn: formData.currentlyWorkingIn === 'Other' ? formData.otherWorkPlace : formData.currentlyWorkingIn,
       educationalQualification: [
         ...(formData.class10.year ? [{ ...formData.class10, qualification: 'Class 10' }] : []),
@@ -267,8 +273,8 @@ export default function EditTeacher() {
             {steps.map((s, i) => (
               <div key={i} className={`flex flex-col items-center ${step > i ? 'text-blue-600' : step === i + 1 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step > i + 1 ? 'bg-blue-600 border-blue-600 text-white' :
-                    step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
-                      'bg-white border-gray-300 text-gray-400'
+                  step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
+                    'bg-white border-gray-300 text-gray-400'
                   }`}>
                   <s.icon className="w-5 h-5" />
                 </div>
@@ -365,12 +371,22 @@ export default function EditTeacher() {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  <FormField label="Current Institute Name" name="currentInstitute" value={formData.currentInstitute} onChange={handleChange} required icon={Briefcase} />
-                  <FormField label="Previous Institutes" name="previousInstitutes" value={formData.previousInstitutes} onChange={handleChange} required icon={Briefcase} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField label="Current Institute Name" name="currentInstitute" value={formData.currentInstitute} onChange={handleChange} required icon={Briefcase} />
+                    <FormField label="Employee Code (Optional)" name="currentEmployeeCode" value={formData.currentEmployeeCode} onChange={handleChange} placeholder="e.g. EMP123" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField label="Previous Institutes" name="previousInstitutes" value={formData.previousInstitutes} onChange={handleChange} required icon={Briefcase} />
+                    <FormField label="Prev. Employee Codes (Optional)" name="previousEmployeeCodes" value={formData.previousEmployeeCodes} onChange={handleChange} placeholder="e.g. EMP456, EMP789" />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                   <FormField label="Current State" name="state" value={formData.state} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
+                  <FormField label="Current City" name="city" value={formData.city} onChange={handleChange} required placeholder="e.g. Jaipur" icon={MapPin} />
+                  <div className="md:col-span-2">
+                    <FormField label="Exams Taught (Comma separated)" name="exams" value={formData.exams} onChange={handleChange} placeholder="e.g. JEE Mains, NEET, Boards" icon={BookOpen} />
+                  </div>
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                 </div>
               </div>

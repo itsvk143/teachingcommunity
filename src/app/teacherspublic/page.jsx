@@ -27,6 +27,8 @@ export default function TeachersList() {
     subject: '',
     experience: '',
     state: '',
+    city: '',
+    exam: '',
   });
 
   /* ================= FETCH TEACHERS ================= */
@@ -75,8 +77,21 @@ export default function TeachersList() {
         : true;
 
       const stateMatch = teacher.state?.toLowerCase().includes(filters.state.toLowerCase());
+      const cityMatch = teacher.city?.toLowerCase().includes(filters.city.toLowerCase());
 
-      return isSearchMatch && subjectMatch && experienceMatch && stateMatch;
+      const examMatch = filters.exam
+        ? (teacher.exams && Array.isArray(teacher.exams)
+          ? teacher.exams.some(e => e.toLowerCase().includes(filters.exam.toLowerCase()))
+          : teacher.exams?.toLowerCase().includes(filters.exam.toLowerCase())
+        )
+        : true;
+
+      const legacyExamMatch = filters.exam
+        ? teacher.subject?.toLowerCase().includes(filters.exam.toLowerCase()) // Fallback to subject if exams missing
+        : true;
+
+
+      return isSearchMatch && subjectMatch && experienceMatch && stateMatch && (cityMatch || !filters.city) && (examMatch || !filters.exam);
     });
 
     setFilteredTeachers(filtered);
@@ -119,14 +134,14 @@ export default function TeachersList() {
         {/* SEARCH & FILTER BAR */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-12 gap-4">
 
-          {/* Main Search (Name/Email) - Spans 4 columns */}
-          <div className="md:col-span-4 relative">
+          {/* Search Bar - Full Width on Mobile, 4 cols on Desktop */}
+          <div className="md:col-span-3 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
             <input
               name="search"
-              placeholder="Search by name or email..."
+              placeholder="Search Name/Email"
               value={filters.search}
               onChange={handleChange}
               className="pl-10 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
@@ -134,24 +149,32 @@ export default function TeachersList() {
           </div>
 
           {/* Subject Filter */}
-          <div className="md:col-span-3 relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Briefcase className="h-4 w-4 text-gray-400" />
-            </div>
+          <div className="md:col-span-2 relative">
             <input
               name="subject"
-              placeholder="Filter by Subject"
+              placeholder="Subject"
               value={filters.subject}
               onChange={handleChange}
-              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+            />
+          </div>
+
+          {/* Exam Filter */}
+          <div className="md:col-span-2 relative">
+            <input
+              name="exam"
+              placeholder="Exam (JEE/NEET)"
+              value={filters.exam}
+              onChange={handleChange}
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
             />
           </div>
 
           {/* Experience Filter */}
-          <div className="md:col-span-2 relative">
+          <div className="md:col-span-1 relative">
             <input
               name="experience"
-              placeholder="Exp (Years)"
+              placeholder="Exp"
               type="number"
               value={filters.experience}
               onChange={handleChange}
@@ -160,14 +183,25 @@ export default function TeachersList() {
           </div>
 
           {/* State Filter */}
-          <div className="md:col-span-3 relative">
+          <div className="md:col-span-2 relative">
+            <input
+              name="state"
+              placeholder="State"
+              value={filters.state}
+              onChange={handleChange}
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+            />
+          </div>
+
+          {/* City Filter */}
+          <div className="md:col-span-2 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MapPin className="h-4 w-4 text-gray-400" />
             </div>
             <input
-              name="state"
-              placeholder="Location / State"
-              value={filters.state}
+              name="city"
+              placeholder="City"
+              value={filters.city}
               onChange={handleChange}
               className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
             />
@@ -274,7 +308,7 @@ export default function TeachersList() {
                   We couldn't find any teachers matching your current filters. Try adjusting your search criteria.
                 </p>
                 <button
-                  onClick={() => setFilters({ search: '', subject: '', experience: '', state: '' })}
+                  onClick={() => setFilters({ search: '', subject: '', experience: '', state: '', city: '', exam: '' })}
                   className="mt-4 text-blue-600 font-medium hover:underline"
                 >
                   Clear all filters

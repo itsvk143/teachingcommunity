@@ -99,6 +99,7 @@ export default function EditNonTeacher() {
     // Arrays & CSVs
     jobRole: '', languages: '',
     experience: '', ctc: '', careerObjective: '', currentlyWorkingIn: '',
+    currentInstitute: '', currentEmployeeCode: '', // New
 
     educationalQualification: [],
     workExperience: [],
@@ -140,6 +141,8 @@ export default function EditNonTeacher() {
           ctc: data.ctc || '',
           careerObjective: data.careerObjective || '',
           currentlyWorkingIn: data.currentlyWorkingIn || '',
+          currentInstitute: data.currentInstitute || '',
+          currentEmployeeCode: data.currentEmployeeCode || '',
 
           educationalQualification: data.educationalQualification || [],
           workExperience: data.workExperience || [],
@@ -198,7 +201,7 @@ export default function EditNonTeacher() {
   const addExperience = () => {
     setForm(prev => ({
       ...prev,
-      workExperience: [...prev.workExperience, { organization: '', designation: '', duration: '', responsibilities: '' }]
+      workExperience: [...prev.workExperience, { organization: '', designation: '', duration: '', responsibilities: '', employeeCode: '' }]
     }));
   };
 
@@ -285,8 +288,8 @@ export default function EditNonTeacher() {
             {steps.map((s, i) => (
               <div key={i} className={`flex flex-col items-center ${step > i ? 'text-blue-600' : step === i + 1 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step > i + 1 ? 'bg-blue-600 border-blue-600 text-white' :
-                    step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
-                      'bg-white border-gray-300 text-gray-400'
+                  step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
+                    'bg-white border-gray-300 text-gray-400'
                   }`}>
                   <s.icon className="w-5 h-5" />
                 </div>
@@ -343,6 +346,10 @@ export default function EditNonTeacher() {
                     <FormField label="Total Experience (Years)" name="experience" value={form.experience} onChange={handleChange} icon={Briefcase} />
                     <FormField label="Current CTC" name="ctc" value={form.ctc} onChange={handleChange} />
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="Current Institute" name="currentInstitute" value={form.currentInstitute} onChange={handleChange} icon={Briefcase} />
+                    <FormField label="Employee Code (Current)" name="currentEmployeeCode" value={form.currentEmployeeCode} onChange={handleChange} />
+                  </div>
                 </div>
               </div>
             )}
@@ -365,6 +372,7 @@ export default function EditNonTeacher() {
                         <FormField label="Designation" value={exp.designation} onChange={(e) => updateExperience(idx, 'designation', e.target.value)} placeholder="Title" className="bg-white" />
                         <FormField label="Duration" value={exp.duration} onChange={(e) => updateExperience(idx, 'duration', e.target.value)} placeholder="e.g. 2020-2022" className="bg-white" />
                         <FormField label="Responsibilities" value={exp.responsibilities} onChange={(e) => updateExperience(idx, 'responsibilities', e.target.value)} placeholder="Key roles" className="bg-white" />
+                        <FormField label="Employee Code (Optional)" value={exp.employeeCode} onChange={(e) => updateExperience(idx, 'employeeCode', e.target.value)} placeholder="EMP..." className="bg-white" />
                       </div>
                       <button type="button" onClick={() => removeExperience(idx)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition">
                         Remove
