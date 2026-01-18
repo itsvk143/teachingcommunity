@@ -234,13 +234,17 @@ const CoachingSchema = new mongoose.Schema(
     ],
     // Platform own reviews
     platform_rating: { type: Number, default: 0 },
-    platform_reviews_count: { type: Number, default: 0 },
     platform_reviews: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         userName: String,
         rating: { type: Number, required: true, min: 1, max: 5 },
         comment: { type: String, required: true },
+        review_category: {
+          type: String,
+          enum: ['general', 'staff'],
+          default: 'general'
+        },
         createdAt: { type: Date, default: Date.now },
         reply: {
           text: String,

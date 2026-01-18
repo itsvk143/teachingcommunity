@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Coaching from '@/model/Coaching';
+import School from '@/model/School';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
@@ -23,13 +23,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Check if user already reviewed
-    const existingReview = await Coaching.findOne({
+    const existingReview = await School.findOne({
       _id: id,
       'platform_reviews.userId': new mongoose.Types.ObjectId((session.user as { id: string }).id)
     });
 
     if (existingReview) {
-      return NextResponse.json({ error: 'You have already reviewed this institute' }, { status: 400 });
+      return NextResponse.json({ error: 'You have already reviewed this school' }, { status: 400 });
     }
 
     // Determine Review Category based on User Role
@@ -48,7 +48,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       createdAt: new Date(),
     };
 
-    const coaching = await Coaching.findByIdAndUpdate(
+    const school = await School.findByIdAndUpdate(
       id,
       {
         $push: { platform_reviews: review },
@@ -57,16 +57,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       { new: true }
     );
 
-    if (!coaching) {
-      return NextResponse.json({ error: 'Coaching not found' }, { status: 404 });
+    if (!school) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
     // Recalculate average rating
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const totalRating = coaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
-    const avgRating = totalRating / coaching.platform_reviews.length;
+    const totalRating = school.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+    const avgRating = totalRating / school.platform_reviews.length;
 
-    await Coaching.findByIdAndUpdate(id, { platform_reviews_rating: avgRating });
+    await School.findByIdAndUpdate(id, { platform_rating: avgRating });
 
     return NextResponse.json({ message: 'Review added', review });
   } catch (error) {
@@ -74,7 +74,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-// PATCH: Reply to a review (Owner Only) OR Edit a review (Author Only)
+// PATCH: Reply (Owner) or Edit (Author)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -85,10 +85,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     await dbConnect();
-    const coaching = await Coaching.findById(id);
+    const school = await School.findById(id);
 
-    if (!coaching) {
-      return NextResponse.json({ error: 'Coaching not found' }, { status: 404 });
+    if (!school) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
     const body = await req.json();
@@ -96,8 +96,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // SCENARIO 1: Owner Replying
     if (replyText !== undefined) {
-      // Authorization: Owner or Admin
-      const isOwner = coaching.email === session.user?.email || coaching.owner_user_id === (session.user as { id: string }).id;
+      const isOwner = school.email === session.user?.email || school.owner_user_id === (session.user as { id: string }).id;
       const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
       if (!isOwner && !isAdmin) {
@@ -105,45 +104,40 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const reviewIndex = coaching.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
+      const reviewIndex = school.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
       if (reviewIndex === -1) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
-      coaching.platform_reviews[reviewIndex].reply = {
+      school.platform_reviews[reviewIndex].reply = {
         text: replyText,
         createdAt: new Date()
       };
 
-      await coaching.save();
-      return NextResponse.json({ message: 'Reply added', review: coaching.platform_reviews[reviewIndex] });
+      await school.save();
+      return NextResponse.json({ message: 'Reply added', review: school.platform_reviews[reviewIndex] });
     }
 
     // SCENARIO 2: User Editing Review
     if (rating !== undefined && comment !== undefined) {
-      // Find the review
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const reviewIndex = coaching.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
+      const reviewIndex = school.platform_reviews.findIndex((r: any) => r._id.toString() === reviewId);
       if (reviewIndex === -1) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
-      const review = coaching.platform_reviews[reviewIndex];
+      const review = school.platform_reviews[reviewIndex];
 
-      // Authorization: Must be the author
       if (review.userId.toString() !== (session.user as { id: string }).id) {
         return NextResponse.json({ error: 'You can only edit your own review' }, { status: 403 });
       }
 
-      // Update fields
-      coaching.platform_reviews[reviewIndex].rating = rating;
-      coaching.platform_reviews[reviewIndex].comment = comment;
-      // Optional: Update timestamp or add editedAt field if schema allowed (skipping for now to stick to schema)
+      school.platform_reviews[reviewIndex].rating = rating;
+      school.platform_reviews[reviewIndex].comment = comment;
 
-      // Recalculate Average Rating
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const totalRating = coaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
-      const avgRating = totalRating / coaching.platform_reviews.length;
-      coaching.platform_reviews_rating = avgRating;
+      const totalRating = school.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+      const avgRating = totalRating / school.platform_reviews.length;
+      school.platform_rating = avgRating;
 
-      await coaching.save();
-      return NextResponse.json({ message: 'Review updated', review: coaching.platform_reviews[reviewIndex] });
+      await school.save();
+      return NextResponse.json({ message: 'Review updated', review: school.platform_reviews[reviewIndex] });
     }
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -153,7 +147,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
-// DELETE: Remove a review (Owner/Admin Only)
+// DELETE: Remove Review
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -164,14 +158,13 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     await dbConnect();
-    const coaching = await Coaching.findById(id);
+    const school = await School.findById(id);
 
-    if (!coaching) {
-      return NextResponse.json({ error: 'Coaching not found' }, { status: 404 });
+    if (!school) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Authorize: Owner or Admin
-    const isOwner = coaching.email === session.user?.email || coaching.owner_user_id === (session.user as { id: string }).id;
+    const isOwner = school.email === session.user?.email || school.owner_user_id === (session.user as { id: string }).id;
     const isAdmin = (session.user as { role?: string })?.role === 'admin';
 
     if (!isOwner && !isAdmin) {
@@ -184,24 +177,22 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
     }
 
-    // Remove review
-    await Coaching.findByIdAndUpdate(id, {
+    await School.findByIdAndUpdate(id, {
       $pull: { platform_reviews: { _id: reviewId } },
       $inc: { platform_reviews_count: -1 }
     });
 
-    // Fetch fresh data to recalculate specific rating if needed, but simple removal is often enough. 
-    // Ideally we should recalculate the average.
-    const updatedCoaching = await Coaching.findById(id);
-    if (updatedCoaching.platform_reviews.length > 0) {
+    // Recalc Average
+    const updatedSchool = await School.findById(id);
+    if (updatedSchool.platform_reviews.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const totalRating = updatedCoaching.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
-      const avgRating = totalRating / updatedCoaching.platform_reviews.length;
-      updatedCoaching.platform_rating = avgRating;
+      const totalRating = updatedSchool.platform_reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+      const avgRating = totalRating / updatedSchool.platform_reviews.length;
+      updatedSchool.platform_rating = avgRating;
     } else {
-      updatedCoaching.platform_rating = 0;
+      updatedSchool.platform_rating = 0;
     }
-    await updatedCoaching.save();
+    await updatedSchool.save();
 
     return NextResponse.json({ message: 'Review deleted' });
 

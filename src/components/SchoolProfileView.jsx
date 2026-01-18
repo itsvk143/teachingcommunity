@@ -6,8 +6,10 @@ import {
   MapPin, Phone, Mail, Globe, Calendar, Users,
   Home, BookOpen, CheckCircle, Edit, Flag, Award,
   School, Trophy, LayoutGrid, DollarSign, Video, Image as ImageIcon,
-  Shield, AlertTriangle, Bus, Clock, UserCheck, Linkedin, Facebook, Instagram, Twitter, Youtube
+  Shield, AlertTriangle, Bus, Clock, UserCheck, Linkedin, Facebook, Instagram, Twitter, Youtube,
+  MessageSquare
 } from 'lucide-react';
+import ReviewSection from '@/components/ReviewSection';
 
 export default function SchoolProfileView({ school }) {
   const [activeTab, setActiveTab] = useState('overview');
@@ -54,6 +56,7 @@ export default function SchoolProfileView({ school }) {
     { id: 'facilities', label: 'Facilities', icon: Trophy },
     { id: 'admissions', label: 'Admissions', icon: CheckCircle },
     { id: 'gallery', label: 'Gallery', icon: ImageIcon },
+    { id: 'reviews', label: 'Reviews', icon: MessageSquare },
     { id: 'contact', label: 'Contact', icon: Phone },
   ];
 
@@ -113,8 +116,8 @@ export default function SchoolProfileView({ school }) {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-all border-b-2 ${activeTab === tab.id
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-800'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-800'
                 }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -406,6 +409,18 @@ export default function SchoolProfileView({ school }) {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* === REVIEWS TAB === */}
+        {activeTab === 'reviews' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <ReviewSection
+              entityId={school._id}
+              entityType="school"
+              initialReviews={school.platform_reviews || []}
+              canReply={true} // School admin/owner can reply logic handled in component via session
+            />
           </div>
         )}
 

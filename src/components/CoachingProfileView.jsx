@@ -226,7 +226,7 @@ export default function CoachingProfileView({ coaching, canEdit }) {
               </div>
             )}
 
-            <ReviewSection coachingId={coaching._id} initialReviews={coaching.reviews || []} canReply={canEdit} />
+            <ReviewSection entityId={coaching._id} entityType="coaching" initialReviews={coaching.reviews || []} canReply={canEdit} />
           </div>
 
           {/* RIGHT COLUMN (Sidebar) */}

@@ -489,7 +489,7 @@ export default async function CoachingDetailPage(props) {
             )}
 
             {/* Reviews */}
-            <ReviewSection coachingId={coaching._id} initialReviews={coaching.reviews || coaching.platform_reviews || []} canReply={canEdit} />
+            <ReviewSection entityId={coaching._id} entityType="coaching" initialReviews={coaching.reviews || coaching.platform_reviews || []} canReply={canEdit} />
           </div>
 
           {/* RIGHT COLUMN (Sticky Sidebar) */}

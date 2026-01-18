@@ -222,6 +222,28 @@ const SchoolSchema = new mongoose.Schema(
     }],
     media_mentions: { type: [String], default: [] },
 
+    // Platform own reviews (New Dual System)
+    platform_rating: { type: Number, default: 0 },
+    platform_reviews_count: { type: Number, default: 0 },
+    platform_reviews: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        userName: String,
+        rating: { type: Number, required: true, min: 1, max: 5 },
+        comment: { type: String, required: true },
+        review_category: {
+          type: String,
+          enum: ['general', 'staff'],
+          default: 'general'
+        },
+        createdAt: { type: Date, default: Date.now },
+        reply: {
+          text: String,
+          createdAt: { type: Date, default: Date.now },
+        },
+      },
+    ],
+
     /* -------------------------------------------------------------------------- */
     /*                         14) FAQ                                            */
     /* -------------------------------------------------------------------------- */
