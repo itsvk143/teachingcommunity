@@ -91,11 +91,16 @@ export const authOptions = {
 
       // Fix for OAuth: Fetch role from DB if missing
       if (!token.role && token.email) {
-        await dbConnect();
-        const dbUser = await User.findOne({ email: token.email });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.id = dbUser._id.toString();
+        try {
+          await dbConnect();
+          const dbUser = await User.findOne({ email: token.email });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser._id.toString();
+          }
+        } catch (error) {
+          console.error("Error in JWT callback (DB fetch):", error);
+          // Fallback: do not fail the entire session, just proceed with basic token
         }
       }
 
