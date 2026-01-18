@@ -56,6 +56,32 @@ export const authOptions = {
   },
 
   callbacks: {
+    /* ================= SIGN IN (Auto-Register) ================= */
+    async signIn({ user, account, profile }) {
+      if (account.provider === 'google' || account.provider === 'github') {
+        try {
+          await dbConnect();
+          const existingUser = await User.findOne({ email: user.email });
+
+          if (!existingUser) {
+            await User.create({
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: 'user', // Default role
+              provider: account.provider,
+            });
+            console.log(`New user created: ${user.email}`);
+          }
+          return true;
+        } catch (error) {
+          console.error("Error creating user during OAuth sign-in:", error);
+          return false; // specific error handling could go here
+        }
+      }
+      return true;
+    },
+
     /* ================= JWT ================= */
     async jwt({ token, user }) {
       if (user) {
