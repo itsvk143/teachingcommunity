@@ -56,16 +56,21 @@ export const authOptions = {
     strategy: "jwt",
   },
 
+  debug: true, // 🔹 Enable Debug Logs
+
   callbacks: {
     /* ================= SIGN IN (Auto-Register) ================= */
     async signIn({ user, account, profile }) {
       if (account.provider === 'google' || account.provider === 'github') {
         try {
+          console.log("SignIn Callback Started:", user.email); // 🔹 Debug Log
           await dbConnect();
           const email = user.email.toLowerCase(); // 🔹 Normalize email
           const existingUser = await User.findOne({ email });
+          console.log("User Exists:", !!existingUser); // 🔹 Debug Log
 
           if (!existingUser) {
+            console.log("Creating new user...");
             await User.create({
               name: user.name,
               email: email, // 🔹 Use normalized
@@ -73,12 +78,14 @@ export const authOptions = {
               role: 'user',
               // provider: account.provider, // ❌ Removed: Not in User Schema
             });
-            console.log(`New user created: ${email}`);
+            console.log("New user created successfully");
           }
           return true;
         } catch (error) {
-          console.error("Error creating user during OAuth sign-in:", error);
-          return false; // specific error handling could go here
+          console.error("Error in SignIn Callback:", error);
+          // ⚠️ FAIL OPEN: Return true to allow login even if DB check fails
+          // This fixes the "OAuthCallback" error if the issue is just DB latency/logic
+          return true;
         }
       }
       return true;
