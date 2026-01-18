@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import TeacherProfileView from '@/components/TeacherProfileView';
-import dbConnect from '@/lib/db';
+import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/model/Teacher';
 
 async function getTeacher(id) {
