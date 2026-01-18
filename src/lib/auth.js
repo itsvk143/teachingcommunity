@@ -58,33 +58,58 @@ export const authOptions = {
 
   debug: true, // 🔹 Enable Debug Logs
 
-  /* ================= DEBUG MODE: DB DISABLED ================= */
   callbacks: {
+    /* ================= SIGN IN (Auto-Register) ================= */
     async signIn({ user, account, profile }) {
-      console.log("SignIn (DB DISABLED):", user.email);
-      return true; // Always allow
+      if (account.provider === 'google' || account.provider === 'github') {
+        try {
+          console.log("SignIn Callback Started:", user.email);
+          await dbConnect();
+          const email = user.email.toLowerCase();
+          const existingUser = await User.findOne({ email });
+          console.log("User Exists:", !!existingUser);
+
+          if (!existingUser) {
+            console.log("Creating new user...");
+            await User.create({
+              name: user.name,
+              email: email,
+              role: 'user',
+            });
+            console.log("New user created successfully");
+          }
+          return true;
+        } catch (error) {
+          console.error("Error in SignIn Callback:", error);
+          // ⚠️ FAIL OPEN: Return true to allow login even if DB check fails
+          return true;
+        }
+      }
+      return true;
     },
 
+    /* ================= JWT ================= */
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role || 'user'; // Default role
-        token.id = user._id || 'temp_id';
+        token.role = user.role;
+        token.id = user._id;
       }
-      // DB Logic commented out for testing
-      /*
+
+      // Fix for OAuth: Fetch role from DB if missing
       if (!token.role && token.email) {
-         try {
-           await dbConnect();
-           const dbUser = await User.findOne({ email: token.email });
-           if (dbUser) {
-             token.role = dbUser.role;
-             token.id = dbUser._id.toString();
-           }
-         } catch (error) {
-           console.error("Error in JWT callback (DB fetch):", error);
-         }
+        try {
+          await dbConnect();
+          const dbUser = await User.findOne({ email: token.email });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser._id.toString();
+          }
+        } catch (error) {
+          console.error("Error in JWT callback (DB fetch):", error);
+          // Fallback: do not fail session
+        }
       }
-      */
+
       return token;
     },
 
