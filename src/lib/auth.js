@@ -17,6 +17,7 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
 
     /* ================= CREDENTIALS ================= */
@@ -61,17 +62,18 @@ export const authOptions = {
       if (account.provider === 'google' || account.provider === 'github') {
         try {
           await dbConnect();
-          const existingUser = await User.findOne({ email: user.email });
+          const email = user.email.toLowerCase(); // 🔹 Normalize email
+          const existingUser = await User.findOne({ email });
 
           if (!existingUser) {
             await User.create({
               name: user.name,
-              email: user.email,
-              image: user.image,
-              role: 'user', // Default role
-              provider: account.provider,
+              email: email, // 🔹 Use normalized
+              // image: user.image, // ❌ Removed: Not in User Schema
+              role: 'user',
+              // provider: account.provider, // ❌ Removed: Not in User Schema
             });
-            console.log(`New user created: ${user.email}`);
+            console.log(`New user created: ${email}`);
           }
           return true;
         } catch (error) {
