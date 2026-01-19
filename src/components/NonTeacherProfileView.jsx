@@ -12,10 +12,11 @@ const ensureAbsoluteUrl = (url) => {
   return `https://${url}`;
 };
 
-const NonTeacherProfileView = ({ profile }) => {
+const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
   if (!profile) return null;
 
   const social = profile.socialLinks || {};
+  const showDob = profile.dobVisibility !== 'hr_only' || isAdmin;
 
   return (
     <div className="bg-gray-50/50 pb-12 font-sans w-full">
@@ -208,7 +209,7 @@ const NonTeacherProfileView = ({ profile }) => {
               <ul className="space-y-4 text-sm">
                 <li className="flex justify-between items-center border-b border-gray-50 pb-3">
                   <span className="text-gray-500">Date of Birth</span>
-                  <span className="font-semibold text-gray-900">{profile.dob || "-"}</span>
+                  <span className="font-semibold text-gray-900">{showDob ? (profile.dob || "-") : "Confidential"}</span>
                 </li>
                 <li className="flex justify-between items-center border-b border-gray-50 pb-3">
                   <span className="text-gray-500">Gender</span>

@@ -21,6 +21,10 @@ const STATE_OPTIONS = [
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
+const DOB_VISIBILITY_OPTIONS = [
+  { label: 'Visible to Everyone', value: 'everyone' },
+  { label: 'Show to HR Only', value: 'hr_only' }
+];
 
 // Helper Components
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon }) => {
@@ -93,7 +97,7 @@ export default function EditNonTeacher() {
   const [error, setError] = useState('');
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', city: '', state: '', dob: '', gender: '',
+    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
     maritalStatus: '', nationality: '', religion: '',
 
     // Arrays & CSVs
@@ -126,6 +130,7 @@ export default function EditNonTeacher() {
           city: data.city || '',
           state: data.state || '',
           dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
+          dobVisibility: data.dobVisibility || 'everyone',
           gender: data.gender || '',
           maritalStatus: data.maritalStatus || '',
           nationality: data.nationality || 'Indian',
@@ -325,6 +330,7 @@ export default function EditNonTeacher() {
                   <FormField label="State" name="state" value={form.state} onChange={handleChange} options={STATE_OPTIONS} icon={MapPin} />
 
                   <FormField label="Date of Birth" name="dob" type="date" value={form.dob} onChange={handleChange} icon={Calendar} />
+                  <FormField label="DOB Visibility" name="dobVisibility" value={form.dobVisibility} onChange={handleChange} options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
                   <FormField label="Gender" name="gender" value={form.gender} onChange={handleChange} options={GENDER_OPTIONS} icon={User} />
 
                   <FormField label="Marital Status" name="maritalStatus" value={form.maritalStatus} onChange={handleChange} options={MARITAL_STATUS_OPTIONS} icon={User} />

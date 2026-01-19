@@ -52,6 +52,7 @@ export default function TeacherDetailsPage() {
         <p><strong>Experience:</strong> {teacher.experience} years</p>
         <p><strong>Gender:</strong> {teacher.gender}</p>
         <p><strong>Education:</strong> {teacher.education}</p>
+        <p><strong>DOB:</strong> {teacher.dob ? new Date(teacher.dob).toLocaleDateString() : 'N/A'} ({teacher.dobVisibility || 'everyone'})</p>
         <p><strong>Max Qualification:</strong> {teacher.maxQualification} ({teacher.maxQualificationCollege})</p>
         <p><strong>Graduation:</strong> {teacher.graduationQualification} ({teacher.graduationCollege})</p>
 

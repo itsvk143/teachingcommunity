@@ -54,6 +54,11 @@ const TeacherSchema = new mongoose.Schema(
     },
     age: { type: String, trim: true },
     dob: { type: Date },
+    dobVisibility: {
+      type: String,
+      enum: ['everyone', 'hr_only'],
+      default: 'everyone',
+    },
     photoUrl: { type: String, trim: true },
     about: { type: String, trim: true },
 

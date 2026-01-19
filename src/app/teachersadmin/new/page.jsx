@@ -31,6 +31,10 @@ const EXAM_OPTIONS = [
   'JEE Mains', 'JEE Advanced', 'NEET', 'Foundation (8-10)',
   'Boards (11-12)', 'Olympiads', 'CUET', 'KVPY', 'CAT', 'GATE', 'UPSC', 'Other'
 ];
+const DOB_VISIBILITY_OPTIONS = [
+  { label: 'Visible to Everyone', value: 'everyone' },
+  { label: 'Show to HR Only', value: 'hr_only' }
+];
 
 // Helper Components
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon }) => {
@@ -163,7 +167,7 @@ export default function NewTeacher() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', age: '', photoUrl: '',
+    name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -301,6 +305,7 @@ export default function NewTeacher() {
                   <FormField label="WhatsApp" name="whatsapp" type="tel" value={formData.whatsapp} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit WhatsApp" />
                   <FormField label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={GENDER} icon={User} />
                   <FormField label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required icon={Calendar} />
+                  <FormField label="DOB Visibility" name="dobVisibility" value={formData.dobVisibility} onChange={handleChange} required options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
                   <div className="md:col-span-2">
                     <FormField label="Photo URL" name="photoUrl" value={formData.photoUrl} onChange={handleChange} required icon={Upload} placeholder="https://..." />
                   </div>

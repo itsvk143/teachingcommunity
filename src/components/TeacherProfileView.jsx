@@ -40,7 +40,9 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
     return age;
   };
 
-  const displayAge = calculateAge(teacher.dob) || teacher.age;
+  const displayAge = (teacher.dobVisibility === 'hr_only' && !canViewSalary)
+    ? null
+    : (calculateAge(teacher.dob) || teacher.age);
 
   return (
     <div className="bg-gray-50/50 min-h-full font-sans">

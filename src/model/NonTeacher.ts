@@ -86,7 +86,12 @@ const NonTeacherSchema = new mongoose.Schema(
     },
 
     // Personal Details
-    dob: { type: String, trim: true },
+    dob: { type: Date },
+    dobVisibility: {
+      type: String,
+      enum: ['everyone', 'hr_only'],
+      default: 'everyone',
+    },
     address: { type: String, trim: true },
     city: { type: String, trim: true },
     maritalStatus: { type: String, trim: true },
