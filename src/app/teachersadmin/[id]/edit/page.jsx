@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, DollarSign, Loader2, AlertCircle
+  Upload, Calendar, MapPin, DollarSign, Loader2, AlertCircle, School
 } from 'lucide-react';
 
 // Constants (reused to ensure consistency)
@@ -98,8 +98,8 @@ export default function EditTeacher() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', age: '', photoUrl: '',
     maxQualification: '', maxQualificationCollege: '', graduationQualification: '', graduationCollege: '', education: '',
-    class10: { boardUniv: '', year: '', percentage: '', medium: '' },
-    class12: { boardUniv: '', year: '', percentage: '', medium: '' },
+    class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
+    class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     subject: '', experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
     currentEmployeeCode: '', previousEmployeeCodes: '',
     ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: '',
@@ -159,8 +159,8 @@ export default function EditTeacher() {
             linkedin: data.socialLinks?.linkedin || '',
             instagram: data.socialLinks?.instagram || '',
           },
-          class10: data.educationalQualification?.find(q => q.qualification === 'Class 10') || { boardUniv: '', year: '', percentage: '', medium: '' },
-          class12: data.educationalQualification?.find(q => q.qualification === 'Class 12') || { boardUniv: '', year: '', percentage: '', medium: '' },
+          class10: data.educationalQualification?.find(q => q.qualification === 'Class 10') || { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
+          class12: data.educationalQualification?.find(q => q.qualification === 'Class 12') || { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
         };
 
         setFormData(normalizedData);
@@ -340,9 +340,28 @@ export default function EditTeacher() {
                 {/* Optional Schooling */}
                 <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                   <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Schooling (Optional)</h3>
+
+                  {/* Class 10th */}
+                  <div className="mb-6 border-b border-gray-100 pb-4">
+                    <h4 className="font-semibold text-gray-700 mb-2">Class 10th</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                      <div className="col-span-2 md:col-span-4">
+                        <FormField label="School Name" name="class10.schoolName" value={formData.class10.schoolName} onChange={handleChange} placeholder="School Name" icon={School} />
+                      </div>
+                      <FormField label="Board" name="class10.boardUniv" value={formData.class10.boardUniv} onChange={handleChange} />
+                      <FormField label="Year" name="class10.year" value={formData.class10.year} onChange={handleChange} />
+                      <FormField label="%" name="class10.percentage" value={formData.class10.percentage} onChange={handleChange} />
+                      <FormField label="Medium" name="class10.medium" value={formData.class10.medium} onChange={handleChange} />
+                    </div>
+                  </div>
+
+                  {/* Class 12th */}
                   <div className="mb-4">
                     <h4 className="font-semibold text-gray-700 mb-2">Class 12th</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="col-span-2 md:col-span-4">
+                        <FormField label="School Name" name="class12.schoolName" value={formData.class12.schoolName} onChange={handleChange} placeholder="School Name" icon={School} />
+                      </div>
                       <FormField label="Board" name="class12.boardUniv" value={formData.class12.boardUniv} onChange={handleChange} />
                       <FormField label="Year" name="class12.year" value={formData.class12.year} onChange={handleChange} />
                       <FormField label="%" name="class12.percentage" value={formData.class12.percentage} onChange={handleChange} />

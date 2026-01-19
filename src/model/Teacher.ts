@@ -69,6 +69,7 @@ const TeacherSchema = new mongoose.Schema(
         year: { type: String, trim: true },
         percentage: { type: String, trim: true },
         medium: { type: String, trim: true }, // English/Hindi
+        schoolName: { type: String, trim: true }, // Optional School Name
       },
     ],
 

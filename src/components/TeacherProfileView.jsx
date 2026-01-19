@@ -229,9 +229,13 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                   <div key={idx} className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{edu.qualification}</h4>
                     <h3 className="font-bold text-gray-900">{edu.boardUniv}</h3>
-                    <div className="flex gap-4 mt-2 text-xs font-medium text-gray-500">
+                    {edu.schoolName && (
+                      <p className="text-sm text-gray-600 mt-0.5">{edu.schoolName}</p>
+                    )}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs font-medium text-gray-500">
                       {edu.year && <span>Year: {edu.year}</span>}
                       {edu.percentage && <span>Score: {edu.percentage}</span>}
+                      {edu.medium && <span>Medium: {edu.medium}</span>}
                     </div>
                   </div>
                 ))}
