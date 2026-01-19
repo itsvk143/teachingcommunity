@@ -27,6 +27,10 @@ const STATE_OPTIONS = [
 const PREFERED_STATE_OPTIONS = [
   'PAN India', ...STATE_OPTIONS
 ];
+const EXAM_OPTIONS = [
+  'JEE Mains', 'JEE Advanced', 'NEET', 'Foundation (8-10)',
+  'Boards (11-12)', 'Olympiads', 'CUET', 'KVPY', 'CAT', 'GATE', 'UPSC', 'Other'
+];
 
 // Helper Components
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon }) => {
@@ -87,6 +91,70 @@ const FormField = ({ label, name, type = "text", value, onChange, required = fal
   );
 };
 
+const MultiSelect = ({ label, options, selected, onChange, placeholder, icon: Icon }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOption = (option) => {
+    const newSelected = selected.includes(option)
+      ? selected.filter(item => item !== option)
+      : [...selected, option];
+    onChange(newSelected);
+  };
+
+  return (
+    <div className="relative group">
+      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">{label}</label>
+      <div className="relative">
+        {Icon && (
+          <div className="absolute left-3 top-3 text-gray-400">
+            <Icon className="w-4 h-4" />
+          </div>
+        )}
+        <div
+          className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg cursor-pointer focus:ring-2 focus:ring-blue-500/20 min-h-[44px] flex flex-wrap gap-2 items-center"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {selected.length === 0 ? (
+            <span className="text-gray-400">{placeholder}</span>
+          ) : (
+            selected.map(item => (
+              <span key={item} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium border border-blue-100 flex items-center gap-1">
+                {item}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); toggleOption(item); }}
+                  className="hover:text-red-500"
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          )}
+        </div>
+
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            {options.map(option => (
+              <div
+                key={option}
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between ${selected.includes(option) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                  }`}
+                onClick={() => toggleOption(option)}
+              >
+                {option}
+                {selected.includes(option) && <CheckCircle className="w-4 h-4" />}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {isOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+      )}
+    </div>
+  );
+};
+
 export default function NewTeacher() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -101,7 +169,7 @@ export default function NewTeacher() {
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     subject: '', experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
     currentEmployeeCode: '', previousEmployeeCodes: '', // Optional
-    ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: '',
+    ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
     resumeLink: '', teachingVideoLink: '', about: '',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
@@ -146,7 +214,7 @@ export default function NewTeacher() {
 
     const payload = {
       ...formData,
-      exams: formData.exams ? formData.exams.split(',').map(e => e.trim()) : [],
+      exams: formData.exams, // Already an array
       currentlyWorkingIn: formData.currentlyWorkingIn === 'Other' ? formData.otherWorkPlace : formData.currentlyWorkingIn,
       educationalQualification: [
         ...(formData.class10.year ? [{ ...formData.class10, qualification: 'Class 10' }] : []),
@@ -330,7 +398,14 @@ export default function NewTeacher() {
                   <FormField label="Current State" name="state" value={formData.state} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                   <FormField label="Current City" name="city" value={formData.city} onChange={handleChange} required placeholder="e.g. Jaipur" icon={MapPin} />
                   <div className="md:col-span-2">
-                    <FormField label="Exams Taught (Comma separated)" name="exams" value={formData.exams} onChange={handleChange} placeholder="e.g. JEE Mains, NEET, Boards" icon={BookOpen} />
+                    <MultiSelect
+                      label="Exams Taught"
+                      options={EXAM_OPTIONS}
+                      selected={formData.exams}
+                      onChange={(newExams) => setFormData({ ...formData, exams: newExams })}
+                      placeholder="Select Exams"
+                      icon={BookOpen}
+                    />
                   </div>
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                 </div>
