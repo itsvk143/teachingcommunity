@@ -191,23 +191,38 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Max Qual */}
-                {teacher.maxQualification && (
-                  <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100 col-span-1 md:col-span-2">
-                    <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Highest Qualification</h4>
-                    <h3 className="text-lg font-bold text-gray-900">{teacher.maxQualification}</h3>
-                    <p className="text-gray-600 text-sm">{teacher.maxQualificationCollege}</p>
-                  </div>
-                )}
+                {/* Max Qual & Graduation Logic */}
+                {(() => {
+                  const isMaxQualValid = teacher.maxQualification && teacher.maxQualification.trim().toUpperCase() !== 'NA';
+                  const showGraduationAsHighest = !isMaxQualValid && teacher.graduationQualification;
 
-                {/* Graduation */}
-                {teacher.graduationQualification && (
-                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Graduation</h4>
-                    <h3 className="font-bold text-gray-900">{teacher.graduationQualification}</h3>
-                    <p className="text-gray-600 text-sm">{teacher.graduationCollege}</p>
-                  </div>
-                )}
+                  // Determine what to show in the "Featured" (Highest) slot
+                  const featuredTitle = showGraduationAsHighest ? "Highest Qualification" : "Highest Qualification";
+                  const featuredValue = showGraduationAsHighest ? teacher.graduationQualification : teacher.maxQualification;
+                  const featuredSub = showGraduationAsHighest ? teacher.graduationCollege : teacher.maxQualificationCollege;
+
+                  return (
+                    <>
+                      {/* Featured (Highest) Qualification Card */}
+                      {(isMaxQualValid || showGraduationAsHighest) && (
+                        <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100 col-span-1 md:col-span-2">
+                          <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{featuredTitle}</h4>
+                          <h3 className="text-lg font-bold text-gray-900">{featuredValue}</h3>
+                          <p className="text-gray-600 text-sm">{featuredSub}</p>
+                        </div>
+                      )}
+
+                      {/* Regular Graduation Card - Only show if Max Qual WAS valid (meaning Grad is secondary) */}
+                      {isMaxQualValid && teacher.graduationQualification && (
+                        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Graduation</h4>
+                          <h3 className="font-bold text-gray-900">{teacher.graduationQualification}</h3>
+                          <p className="text-gray-600 text-sm">{teacher.graduationCollege}</p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Past Academics */}
                 {teacher.educationalQualification?.map((edu, idx) => (
