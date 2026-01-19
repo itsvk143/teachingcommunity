@@ -93,8 +93,8 @@ export default function TeachersList() {
 
       const examMatch = filters.exam
         ? (teacher.exams && Array.isArray(teacher.exams)
-          ? teacher.exams.some(e => e.toLowerCase().includes(filters.exam.toLowerCase()))
-          : teacher.exams?.toLowerCase().includes(filters.exam.toLowerCase())
+          ? teacher.exams.some(e => typeof e === 'string' && e.toLowerCase().includes(filters.exam.toLowerCase()))
+          : (typeof teacher.exams === 'string' && teacher.exams.toLowerCase().includes(filters.exam.toLowerCase()))
         )
         : true;
 
