@@ -236,6 +236,22 @@ export default function EditNonTeacher() {
     setForm(prev => ({ ...prev, workExperience: updated }));
   };
 
+  const handleNext = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (step < steps.length) {
+      setStep(s => s + 1);
+    }
+  };
+
+  const handleBack = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (step > 1) {
+      setStep(s => s - 1);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -479,7 +495,7 @@ export default function EditNonTeacher() {
               {step > 1 ? (
                 <button
                   type="button"
-                  onClick={() => setStep(s => s - 1)}
+                  onClick={handleBack}
                   className="flex items-center px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" /> Back
@@ -497,7 +513,7 @@ export default function EditNonTeacher() {
               {step < totalSteps ? (
                 <button
                   type="button"
-                  onClick={() => setStep(s => s + 1)}
+                  onClick={handleNext}
                   className="flex items-center px-8 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
                 >
                   Next <ChevronRight className="w-4 h-4 ml-2" />

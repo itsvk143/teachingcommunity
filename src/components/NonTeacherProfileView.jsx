@@ -209,7 +209,7 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
               <ul className="space-y-4 text-sm">
                 <li className="flex justify-between items-center border-b border-gray-50 pb-3">
                   <span className="text-gray-500">Date of Birth</span>
-                  <span className="font-semibold text-gray-900">{showDob ? (profile.dob || "-") : "Confidential"}</span>
+                  <span className="font-semibold text-gray-900">{showDob ? (profile.dob ? new Date(profile.dob).toLocaleDateString('en-GB') : "-") : "Confidential"}</span>
                 </li>
                 <li className="flex justify-between items-center border-b border-gray-50 pb-3">
                   <span className="text-gray-500">Gender</span>
