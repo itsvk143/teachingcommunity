@@ -13,7 +13,7 @@ import {
 const COLLEGE_OPTIONS = ['IIT', 'NIT', 'Other', 'NA'];
 const GENDER = ['FEMALE', 'MALE', 'Other'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
-const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'PG', 'Other', 'NA'];
+const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const SUBJECT_OPTIONS = ['Physics', 'Chemistry', 'Maths', 'Botany', 'Zoology'];
 const WORK_PLACE_OPTIONS = ['School', 'Coaching', 'SIP', 'Online Coaching', 'Offline Coaching', 'Other'];
 const STATE_OPTIONS = [
@@ -165,7 +165,7 @@ export default function EditTeacher() {
 
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', age: '', photoUrl: '',
-    maxQualification: '', maxQualificationCollege: '', graduationQualification: '', graduationCollege: '', education: '',
+    maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     subject: '', experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
@@ -207,8 +207,9 @@ export default function EditTeacher() {
           photoUrl: data.photoUrl || '',
           about: data.about || '',
           maxQualification: data.maxQualification || '',
-          graduationQualification: data.graduationQualification || '',
           maxQualificationCollege: data.maxQualificationCollege || '',
+          maxQualificationCollegeSpecific: data.maxQualificationCollegeSpecific || '',
+          graduationQualification: data.graduationQualification || '',
           graduationCollege: data.graduationCollege || '',
           currentInstitute: data.currentInstitute || '',
           currentEmployeeCode: data.currentEmployeeCode || '',
@@ -389,8 +390,13 @@ export default function EditTeacher() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Highest Qualification</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Degree (PG)" name="maxQualification" value={formData.maxQualification} onChange={handleChange} required options={POSTGRADUATE_DEGREES} icon={BookOpen} />
+                    <FormField label="Degree (Master's)" name="maxQualification" value={formData.maxQualification} onChange={handleChange} required options={POSTGRADUATE_DEGREES} icon={BookOpen} />
                     <FormField label="College/Univ" name="maxQualificationCollege" value={formData.maxQualificationCollege} onChange={handleChange} required options={COLLEGE_OPTIONS} icon={BookOpen} />
+                    {formData.maxQualificationCollege === 'Other' && (
+                      <div className="md:col-span-2">
+                        <FormField label="College Name (Specific)" name="maxQualificationCollegeSpecific" value={formData.maxQualificationCollegeSpecific} onChange={handleChange} required placeholder="e.g. Stanford University" icon={BookOpen} />
+                      </div>
+                    )}
                   </div>
                 </div>
 

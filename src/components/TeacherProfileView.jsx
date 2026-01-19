@@ -209,6 +209,11 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                           <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{featuredTitle}</h4>
                           <h3 className="text-lg font-bold text-gray-900">{featuredValue}</h3>
                           <p className="text-gray-600 text-sm">{featuredSub}</p>
+                          {/* If Featured is Master's and has specific college */}
+                          {!showGraduationAsHighest && teacher.maxQualificationCollegeSpecific && (
+                            <p className="text-indigo-600/80 text-xs mt-1 font-medium">{teacher.maxQualificationCollegeSpecific}</p>
+                          )}
+                          {/* If Featured is Graduation (promoted) and has specific college */}
                           {showGraduationAsHighest && teacher.education && (
                             <p className="text-indigo-600/80 text-xs mt-1 font-medium">{teacher.education}</p>
                           )}

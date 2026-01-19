@@ -14,6 +14,18 @@ import {
   Loader2
 } from 'lucide-react';
 
+const EXAM_OPTIONS = [
+  'JEE Mains',
+  'JEE Advanced',
+  'NEET',
+  'Boards (9-10)',
+  'Boards (11-12)',
+  'Olympiads',
+  'Foundation (6-8)',
+  'Foundation (8-10)',
+  'Other'
+];
+
 export default function TeachersList() {
   const { data: session } = useSession();
   const [teachers, setTeachers] = useState([]);
@@ -159,15 +171,21 @@ export default function TeachersList() {
             />
           </div>
 
-          {/* Exam Filter */}
+          {/* Exam Filter Dropdown */}
           <div className="md:col-span-2 relative">
-            <input
+            <select
               name="exam"
-              placeholder="Exam (JEE/NEET)"
               value={filters.exam}
               onChange={handleChange}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
-            />
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700 active:text-gray-900"
+            >
+              <option value="">All Exams</option>
+              {EXAM_OPTIONS.map((exam) => (
+                <option key={exam} value={exam}>
+                  {exam}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Experience Filter */}
