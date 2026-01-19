@@ -108,6 +108,7 @@ export default function Dashboard() {
   const hasAnyProfile = teacherProfile || nonTeacherProfile || coachingProfile || schoolProfile || parentProfile || studentProfile;
 
   const isParentOrStudent = !!parentProfile || !!studentProfile;
+  const showHomeTuitions = isParentOrStudent || homeTuitions.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -124,6 +125,7 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500">{session.user?.email}</p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-5 py-2 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 transition font-medium"
@@ -135,9 +137,8 @@ export default function Dashboard() {
         {/* MAIN LAYOUT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* LEFT COLUMN: Profiles (2 Cols wide on LG) */}
-          {/* For Parents/Students: Show AFTER Tuitions on Mobile, but FIRST on Desktop */}
-          <div className={`lg:col-span-2 space-y-8 ${isParentOrStudent ? 'order-2 lg:order-1' : ''}`}>
+          {/* LEFT COLUMN: Profiles */}
+          <div className={`${showHomeTuitions ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-8 ${isParentOrStudent ? 'order-2 lg:order-1' : ''}`}>
 
             {/* REGISTER AS SECTION - Show if NO profiles */}
             {!hasAnyProfile && (
@@ -263,80 +264,81 @@ export default function Dashboard() {
           </div>
 
           {/* RIGHT COLUMN: Home Tuitions (1 Col wide on LG) */}
-          {/* For Parents/Students: Show FIRST on Mobile, but LAST on Desktop */}
-          <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-1 lg:order-2' : ''}`}>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
-              <div className="p-6 border-b flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Home className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-bold text-gray-800">My Tuitions</h3>
-                </div>
-                <button
-                  onClick={() => {
-                    if (hasAnyProfile) {
-                      router.push('/hometuition/new');
-                    } else {
-                      alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
-                    }
-                  }}
-                  className={`p-2 rounded-full transition shadow-sm ${hasAnyProfile ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                  title={hasAnyProfile ? "Post Requirement" : "Create a profile first"}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
-                {homeTuitions.length === 0 ? (
-                  <div className="text-center py-12 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
-                    <p className="text-gray-500 text-sm">You haven&apos;t posted any requirements yet.</p>
-                    <button
-                      onClick={() => {
-                        if (hasAnyProfile) {
-                          router.push('/hometuition/new');
-                        } else {
-                          alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
-                        }
-                      }}
-                      className={`font-semibold text-sm mt-2 ${hasAnyProfile ? 'text-indigo-600 hover:text-indigo-800' : 'text-gray-400 cursor-not-allowed'}`}
-                    >
-                      Post now
-                    </button>
+          {showHomeTuitions && (
+            <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-1 lg:order-2' : ''}`}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div className="p-6 border-b flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Home className="w-5 h-5 text-indigo-600" />
+                    <h3 className="font-bold text-gray-800">My Tuitions</h3>
                   </div>
-                ) : (
-                  homeTuitions.map((ht) => (
-                    <div key={ht._id} className="group bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-gray-800 text-base">{ht.subject}</h4>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${ht.mode === 'Online' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
-                          {ht.mode}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
-                        <BookOpen className="w-3 h-3" /> {ht.classGrade}
-                      </p>
-                      <p className="text-xs text-gray-400 mb-4 truncate">{ht.location}, {ht.city}</p>
+                  <button
+                    onClick={() => {
+                      if (hasAnyProfile) {
+                        router.push('/hometuition/new');
+                      } else {
+                        alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
+                      }
+                    }}
+                    className={`p-2 rounded-full transition shadow-sm ${hasAnyProfile ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                    title={hasAnyProfile ? "Post Requirement" : "Create a profile first"}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
 
-                      <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-50">
-                        <button
-                          onClick={() => router.push(`/hometuition/${ht._id}/edit`)}
-                          className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition"
-                        >
-                          <Pencil className="w-3 h-3" /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteHomeTuition(ht._id)}
-                          className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition"
-                        >
-                          <Trash2 className="w-3 h-3" /> Delete
-                        </button>
-                      </div>
+                <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
+                  {homeTuitions.length === 0 ? (
+                    <div className="text-center py-12 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
+                      <p className="text-gray-500 text-sm">You haven&apos;t posted any requirements yet.</p>
+                      <button
+                        onClick={() => {
+                          if (hasAnyProfile) {
+                            router.push('/hometuition/new');
+                          } else {
+                            alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
+                          }
+                        }}
+                        className={`font-semibold text-sm mt-2 ${hasAnyProfile ? 'text-indigo-600 hover:text-indigo-800' : 'text-gray-400 cursor-not-allowed'}`}
+                      >
+                        Post now
+                      </button>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    homeTuitions.map((ht) => (
+                      <div key={ht._id} className="group bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-gray-800 text-base">{ht.subject}</h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${ht.mode === 'Online' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
+                            {ht.mode}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" /> {ht.classGrade}
+                        </p>
+                        <p className="text-xs text-gray-400 mb-4 truncate">{ht.location}, {ht.city}</p>
+
+                        <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-50">
+                          <button
+                            onClick={() => router.push(`/hometuition/${ht._id}/edit`)}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition"
+                          >
+                            <Pencil className="w-3 h-3" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteHomeTuition(ht._id)}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition"
+                          >
+                            <Trash2 className="w-3 h-3" /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
