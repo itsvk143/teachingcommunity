@@ -99,7 +99,10 @@ export default function TeachersList() {
         : true;
 
       const legacyExamMatch = filters.exam
-        ? teacher.subject?.toLowerCase().includes(filters.exam.toLowerCase()) // Fallback to subject if exams missing
+        ? (Array.isArray(teacher.subject)
+          ? teacher.subject.join(' ').toLowerCase().includes(filters.exam.toLowerCase())
+          : (typeof teacher.subject === 'string' && teacher.subject.toLowerCase().includes(filters.exam.toLowerCase()))
+        )
         : true;
 
 
