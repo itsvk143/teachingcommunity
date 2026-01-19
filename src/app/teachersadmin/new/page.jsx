@@ -12,6 +12,7 @@ import {
 // Constants
 const COLLEGE_OPTIONS = ['IIT', 'NIT', 'Other', 'NA'];
 const GENDER = ['FEMALE', 'MALE', 'Other'];
+const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const SUBJECT_OPTIONS = ['Physics', 'Chemistry', 'Maths', 'Botany', 'Zoology'];
@@ -167,7 +168,7 @@ export default function NewTeacher() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
+    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -304,6 +305,7 @@ export default function NewTeacher() {
                   <FormField label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit mobile" />
                   <FormField label="WhatsApp" name="whatsapp" type="tel" value={formData.whatsapp} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit WhatsApp" />
                   <FormField label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={GENDER} icon={User} />
+                  <FormField label="Marital Status" name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required options={MARITAL_STATUS_OPTIONS} icon={User} />
                   <FormField label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required icon={Calendar} />
                   <FormField label="DOB Visibility" name="dobVisibility" value={formData.dobVisibility} onChange={handleChange} required options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
                   <div className="md:col-span-2">

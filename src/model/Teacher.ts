@@ -27,6 +27,7 @@ const TeacherSchema = new mongoose.Schema(
     },
 
     gender: { type: String, trim: true },
+    maritalStatus: { type: String, trim: true },
 
     subject: {
       type: [String],

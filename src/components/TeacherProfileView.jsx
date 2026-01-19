@@ -292,6 +292,10 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                   <span className="font-medium text-gray-900 capitalize">{teacher.gender || "-"}</span>
                 </li>
                 <li className="flex justify-between py-2 border-b border-gray-50">
+                  <span className="text-gray-500">Marital Status</span>
+                  <span className="font-medium text-gray-900">{teacher.maritalStatus || "-"}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-gray-50">
                   <span className="text-gray-500">Native State</span>
                   <span className="font-medium text-gray-900">{teacher.nativeState || "-"}</span>
                 </li>

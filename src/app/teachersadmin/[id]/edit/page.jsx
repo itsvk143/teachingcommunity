@@ -12,6 +12,7 @@ import {
 // Constants (reused to ensure consistency)
 const COLLEGE_OPTIONS = ['IIT', 'NIT', 'Other', 'NA'];
 const GENDER = ['FEMALE', 'MALE', 'Other'];
+const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const SUBJECT_OPTIONS = ['Physics', 'Chemistry', 'Maths', 'Botany', 'Zoology'];
@@ -168,7 +169,7 @@ export default function EditTeacher() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
+    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -201,6 +202,7 @@ export default function EditTeacher() {
           whatsapp: data.whatsapp || '',
           subject: Array.isArray(data.subject) ? data.subject[0] : (data.subject || ''),
           gender: data.gender || '',
+          maritalStatus: data.maritalStatus || '',
           education: data.education || '',
           experience: data.experience || '',
           state: data.state || '',
@@ -270,6 +272,22 @@ export default function EditTeacher() {
       setFormData(prev => ({ ...prev, [parent]: { ...prev[parent], [key]: value } }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (step < steps.length) {
+      setStep(s => s + 1);
+    }
+  };
+
+  const handleBack = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (step > 1) {
+      setStep(s => s - 1);
     }
   };
 
@@ -381,6 +399,7 @@ export default function EditTeacher() {
                   <FormField label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={10} icon={User} />
                   <FormField label="WhatsApp" name="whatsapp" type="tel" value={formData.whatsapp} onChange={handleChange} required maxLength={10} icon={User} />
                   <FormField label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={GENDER} icon={User} />
+                  <FormField label="Marital Status" name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required options={MARITAL_STATUS_OPTIONS} icon={User} />
                   <FormField label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required icon={Calendar} />
                   <FormField label="DOB Visibility" name="dobVisibility" value={formData.dobVisibility} onChange={handleChange} required options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
                   <div className="md:col-span-2">
@@ -526,7 +545,7 @@ export default function EditTeacher() {
               {step > 1 ? (
                 <button
                   type="button"
-                  onClick={() => setStep(s => s - 1)}
+                  onClick={handleBack}
                   className="flex items-center px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" /> Back
@@ -544,7 +563,7 @@ export default function EditTeacher() {
               {step < totalSteps ? (
                 <button
                   type="button"
-                  onClick={() => setStep(s => s + 1)}
+                  onClick={handleNext}
                   className="flex items-center px-8 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
                 >
                   Next <ChevronRight className="w-4 h-4 ml-2" />
