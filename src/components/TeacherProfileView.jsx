@@ -209,6 +209,9 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                           <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{featuredTitle}</h4>
                           <h3 className="text-lg font-bold text-gray-900">{featuredValue}</h3>
                           <p className="text-gray-600 text-sm">{featuredSub}</p>
+                          {showGraduationAsHighest && teacher.education && (
+                            <p className="text-indigo-600/80 text-xs mt-1 font-medium">{teacher.education}</p>
+                          )}
                         </div>
                       )}
 
@@ -218,6 +221,7 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Graduation</h4>
                           <h3 className="font-bold text-gray-900">{teacher.graduationQualification}</h3>
                           <p className="text-gray-600 text-sm">{teacher.graduationCollege}</p>
+                          {teacher.education && <p className="text-gray-500 text-xs mt-1">{teacher.education}</p>}
                         </div>
                       )}
                     </>
@@ -274,6 +278,18 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                     {teacher.preferedState?.join(', ') || "No preference"}
                   </div>
                 </li>
+                {teacher.exams && teacher.exams.length > 0 && (
+                  <li className="pt-2 border-t border-gray-50">
+                    <div className="text-gray-500 mb-2">Exams Taught</div>
+                    <div className="flex flex-wrap gap-2">
+                      {teacher.exams.map((exam, index) => (
+                        <span key={index} className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold border border-blue-100">
+                          {exam}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                )}
               </ul>
             </div>
 
