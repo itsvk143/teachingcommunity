@@ -52,12 +52,12 @@ export default function Dashboard() {
             htRes.json()
           ]);
 
-          if (Array.isArray(teacherData) && teacherData.length > 0) setTeacherProfile(teacherData[0]);
-          if (Array.isArray(nonTeacherData) && nonTeacherData.length > 0) setNonTeacherProfile(nonTeacherData[0]);
-          if (Array.isArray(coachingData) && coachingData.length > 0) setCoachingProfile(coachingData[0]);
-          if (Array.isArray(schoolData) && schoolData.length > 0) setSchoolProfile(schoolData[0]);
-          if (parentData) setParentProfile(parentData);
-          if (studentData) setStudentProfile(studentData);
+          if (teacherData?.teachers?.length > 0) setTeacherProfile(teacherData.teachers[0]);
+          if (nonTeacherData?.staff?.length > 0) setNonTeacherProfile(nonTeacherData.staff[0]);
+          if (coachingData?.length > 0) setCoachingProfile(coachingData[0]);
+          if (schoolData?.schools?.length > 0) setSchoolProfile(schoolData.schools[0]);
+          if (parentData && !parentData.error) setParentProfile(parentData);
+          if (studentData && !studentData.error) setStudentProfile(studentData);
           if (Array.isArray(htData)) setHomeTuitions(htData);
 
         } catch (err) {
