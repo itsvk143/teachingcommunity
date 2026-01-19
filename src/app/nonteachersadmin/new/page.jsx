@@ -25,6 +25,15 @@ const DOB_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
   { label: 'Show to HR Only', value: 'hr_only' }
 ];
+const JOB_ROLE_OPTIONS = [
+  'MANAGEMENT',
+  'OPERATION',
+  'SALES & MARKETING',
+  'HR',
+  'ACCOUNTANT',
+  'LEGAL SUPPORT',
+  'OTHER'
+];
 
 // Helper Components
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon }) => {
@@ -97,7 +106,7 @@ export default function NewNonTeacher() {
     maritalStatus: '', nationality: 'Indian', religion: '',
 
     // Arrays & CSVs
-    jobRole: '', languages: '',
+    jobRole: '', otherJobRole: '', languages: '',
     experience: '', ctc: '', careerObjective: '', currentlyWorkingIn: '',
     currentInstitute: '', currentEmployeeCode: '', // New fields
 
@@ -175,9 +184,11 @@ export default function NewNonTeacher() {
       return;
     }
 
+    const finalJobRole = form.jobRole === 'OTHER' ? form.otherJobRole : form.jobRole;
+
     const payload = {
       ...form,
-      jobRole: form.jobRole.split(',').map(s => s.trim()).filter(Boolean),
+      jobRole: [finalJobRole].filter(Boolean), // Send as array of 1
       languages: form.languages.split(',').map(s => s.trim()).filter(Boolean),
       technicalSkills: form.technicalSkills.split(',').map(s => s.trim()).filter(Boolean),
       keySkills: form.keySkills.split(',').map(s => s.trim()).filter(Boolean),
@@ -280,7 +291,12 @@ export default function NewNonTeacher() {
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Job Profile</h2>
                 <div className="grid grid-cols-1 gap-6">
-                  <FormField label="Job Roles (Comma separated)" name="jobRole" value={form.jobRole} onChange={handleChange} required icon={Briefcase} placeholder="e.g. Accountant, Clerk, Admin" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="Job Role" name="jobRole" value={form.jobRole} onChange={handleChange} required options={JOB_ROLE_OPTIONS} icon={Briefcase} />
+                    {form.jobRole === 'OTHER' && (
+                      <FormField label="Specific Job Role" name="otherJobRole" value={form.otherJobRole} onChange={handleChange} required placeholder="e.g. Accountant" />
+                    )}
+                  </div>
                   <FormField label="Career Objective" name="careerObjective" value={form.careerObjective} onChange={handleChange} rows={4} placeholder="Summarize your career goals..." />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
