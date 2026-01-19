@@ -250,6 +250,22 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
           {/* 3. RIGHT SIDEBAR (Details, Social) - Spans 4 Cols */}
           <div className="lg:col-span-4 space-y-6">
 
+            {/* Exams Taught Card - Now Above Personal Details */}
+            {teacher.exams && teacher.exams.length > 0 && (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4 text-indigo-500" /> Exams Taught
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {teacher.exams.map((exam, index) => (
+                    <span key={index} className="inline-block bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100">
+                      {exam}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Personal Details Card */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
@@ -278,18 +294,6 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                     {teacher.preferedState?.join(', ') || "No preference"}
                   </div>
                 </li>
-                {teacher.exams && teacher.exams.length > 0 && (
-                  <li className="pt-2 border-t border-gray-50">
-                    <div className="text-gray-500 mb-2">Exams Taught</div>
-                    <div className="flex flex-wrap gap-2">
-                      {teacher.exams.map((exam, index) => (
-                        <span key={index} className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold border border-blue-100">
-                          {exam}
-                        </span>
-                      ))}
-                    </div>
-                  </li>
-                )}
               </ul>
             </div>
 
