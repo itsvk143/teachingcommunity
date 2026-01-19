@@ -107,6 +107,8 @@ export default function Dashboard() {
 
   const hasAnyProfile = teacherProfile || nonTeacherProfile || coachingProfile || schoolProfile || parentProfile || studentProfile;
 
+  const isParentOrStudent = !!parentProfile || !!studentProfile;
+
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -134,7 +136,8 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* LEFT COLUMN: Profiles (2 Cols wide on LG) */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* For Parents/Students: Show AFTER Tuitions on Mobile, but FIRST on Desktop */}
+          <div className={`lg:col-span-2 space-y-8 ${isParentOrStudent ? 'order-2 lg:order-1' : ''}`}>
 
             {/* REGISTER AS SECTION - Show if NO profiles */}
             {!hasAnyProfile && (
@@ -260,7 +263,8 @@ export default function Dashboard() {
           </div>
 
           {/* RIGHT COLUMN: Home Tuitions (1 Col wide on LG) */}
-          <div className="lg:col-span-1">
+          {/* For Parents/Students: Show FIRST on Mobile, but LAST on Desktop */}
+          <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-1 lg:order-2' : ''}`}>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
               <div className="p-6 border-b flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -268,9 +272,15 @@ export default function Dashboard() {
                   <h3 className="font-bold text-gray-800">My Tuitions</h3>
                 </div>
                 <button
-                  onClick={() => router.push('/hometuition/new')}
-                  className="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition shadow-sm"
-                  title="Post Requirement"
+                  onClick={() => {
+                    if (hasAnyProfile) {
+                      router.push('/hometuition/new');
+                    } else {
+                      alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
+                    }
+                  }}
+                  className={`p-2 rounded-full transition shadow-sm ${hasAnyProfile ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                  title={hasAnyProfile ? "Post Requirement" : "Create a profile first"}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -280,7 +290,18 @@ export default function Dashboard() {
                 {homeTuitions.length === 0 ? (
                   <div className="text-center py-12 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
                     <p className="text-gray-500 text-sm">You haven&apos;t posted any requirements yet.</p>
-                    <button onClick={() => router.push('/hometuition/new')} className="text-indigo-600 font-semibold text-sm mt-2">Post now</button>
+                    <button
+                      onClick={() => {
+                        if (hasAnyProfile) {
+                          router.push('/hometuition/new');
+                        } else {
+                          alert("Please create a profile (Student, Parent, Teacher, or Staff) to post a tuition requirement.");
+                        }
+                      }}
+                      className={`font-semibold text-sm mt-2 ${hasAnyProfile ? 'text-indigo-600 hover:text-indigo-800' : 'text-gray-400 cursor-not-allowed'}`}
+                    >
+                      Post now
+                    </button>
                   </div>
                 ) : (
                   homeTuitions.map((ht) => (

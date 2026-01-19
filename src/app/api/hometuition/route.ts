@@ -34,6 +34,31 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    // 🔒 SECURTY CHECK: User MUST have a profile to post
+    const userEmail = session.user?.email;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (session.user as any)?.id;
+
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Unauthorized: No email found' }, { status: 401 });
+    }
+
+    const [teacher, staff, school, coaching, parent, student] = await Promise.all([
+      import('@/model/Teacher').then(m => m.default.exists({ email: userEmail })),
+      import('@/model/NonTeacher').then(m => m.default.exists({ email: userEmail })),
+      import('@/model/School').then(m => m.default.exists({ owner_user_id: userId })),
+      import('@/model/Coaching').then(m => m.default.exists({ email: userEmail })),
+      import('@/model/ParentProfile').then(m => m.default.exists({ userEmail: userEmail })),
+      import('@/model/StudentProfile').then(m => m.default.exists({ userEmail: userEmail }))
+    ]);
+
+    if (!teacher && !staff && !school && !coaching && !parent && !student) {
+      return NextResponse.json(
+        { error: 'You must create a profile (Teacher, Staff, Parent, etc.) before posting.' },
+        { status: 403 }
+      );
+    }
+
     if (!body.name || !body.contact || !body.location || !body.classGrade || !body.subject) {
       return NextResponse.json(
         { error: 'Missing required fields' },
