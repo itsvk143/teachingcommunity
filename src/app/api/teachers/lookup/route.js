@@ -23,15 +23,21 @@ export async function GET(request) {
 
         let teacher;
 
-        // Check if it looks like a full ObjectId (24 hex chars)
+        // 1. Check if it looks like a full ObjectId (24 hex chars)
         if (/^[0-9a-fA-F]{24}$/.test(id)) {
-            teacher = await Teacher.findById(id).select('name photoUrl subject experience totalExperience').lean();
-        } else {
-            // Assume it's the short 6-char suffix displayed in directory on frontend
-            // Currently we can't efficiently query suffix on ObjectId. 
-            // We will fetch ALL teachers for this specific project scale (assuming <1000 active for now) and filter javascript side.
-            // This is not scalable but solves the immediate user issue without schema migration.
-            const allTeachers = await Teacher.find({}).select('name photoUrl subject experience totalExperience').lean();
+            teacher = await Teacher.findById(id).select('name photoUrl subject experience totalExperience unique_id').lean();
+        }
+
+        // 2. Check for unique_id (exact match, case insensitive)
+        if (!teacher) {
+            teacher = await Teacher.findOne({ unique_id: { $regex: new RegExp(`^${id}$`, 'i') } })
+                .select('name photoUrl subject experience totalExperience unique_id')
+                .lean();
+        }
+
+        // 3. Fallback: Suffix match (Legacy)
+        if (!teacher) {
+            const allTeachers = await Teacher.find({}).select('name photoUrl subject experience totalExperience unique_id').lean();
             teacher = allTeachers.find(t => t._id.toString().slice(-6) === id);
         }
 
@@ -46,7 +52,8 @@ export async function GET(request) {
                 photo_url: teacher.photoUrl,
                 subject: Array.isArray(teacher.subject) ? teacher.subject.join(', ') : teacher.subject,
                 experience: teacher.totalExperience || teacher.experience,
-                _id: teacher._id.toString()
+                _id: teacher._id.toString(),
+                unique_id: teacher.unique_id // Return unique_id
             }
         });
 

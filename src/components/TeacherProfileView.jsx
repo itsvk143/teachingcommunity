@@ -111,18 +111,25 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-3 w-full md:w-auto">
+            <div className="flex flex-col gap-3 w-full md:w-auto items-center md:items-stretch">
               {teacher.resumeLink && (
                 <a href={teacher.resumeLink} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-lg shadow-slate-200">
+                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-lg shadow-slate-200 w-full">
                   <FileText className="w-4 h-4" /> View Resume
                 </a>
               )}
               {teacher.teachingVideoLink && (
                 <a href={teacher.teachingVideoLink} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-semibold transition shadow-sm">
+                  className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-semibold transition shadow-sm w-full">
                   <Video className="w-4 h-4 text-red-500" /> Demo Video
                 </a>
+              )}
+              {teacher.unique_id && (
+                <div className="text-center mt-1">
+                  <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100">
+                    ID: {teacher.unique_id}
+                  </span>
+                </div>
               )}
             </div>
 
@@ -387,7 +394,7 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
         </div>
       </div>
 
-    </div>
+    </div >
   );
 };
 

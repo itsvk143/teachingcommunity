@@ -2,7 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
-import ReviewSection from '@/components/ReviewSection';
+import ClientReviewSection from '@/components/ClientReviewSection';
+
+
 import {
   MapPin,
   Phone,
@@ -515,7 +517,7 @@ export default async function CoachingDetailPage(props) {
             )}
 
             {/* Reviews */}
-            <ReviewSection entityId={coaching._id} entityType="coaching" initialReviews={coaching.reviews || coaching.platform_reviews || []} canReply={canEdit} />
+            <ClientReviewSection entityId={coaching._id} entityType="coaching" initialReviews={coaching.reviews || coaching.platform_reviews || []} canReply={canEdit} />
           </div>
 
           {/* RIGHT COLUMN (Sticky Sidebar) */}

@@ -54,6 +54,11 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
                   <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-blue-100">
                     <User className="w-3.5 h-3.5" /> {profile.experience ? `${profile.experience} Years Exp` : "Fresher"}
                   </span>
+                  {profile.unique_id && (
+                    <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100">
+                      <span className="text-gray-500">ID:</span> {profile.unique_id}
+                    </span>
+                  )}
                   {profile.gender && (
                     <span className="flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-gray-200">
                       {profile.gender}

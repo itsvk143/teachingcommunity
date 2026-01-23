@@ -272,6 +272,43 @@ export default function CoachingProfileView({ coaching, canEdit }) {
               </div>
             </div>
 
+            {/* Star Faculty Section */}
+            {coaching.top_faculties?.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-500" /> Star Faculty
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {coaching.top_faculties.map((fac, idx) => (
+                    <div key={idx} className="flex gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+                      {fac.photo_url ? (
+                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">
+                          <img src={fac.photo_url} alt={fac.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-sm shrink-0">
+                          {fac.name?.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm md:text-base">{fac.name}</h4>
+                        <p className="text-sm text-blue-700 font-medium">{fac.subject}</p>
+                        <div className="flex gap-2 text-xs text-gray-500 mt-0.5">
+                          {fac.experience && <span>{fac.experience} Exp</span>}
+                          {fac.teacher_id && (
+                            <>
+                              <span>•</span>
+                              <span className="font-mono bg-white px-1.5 rounded border">ID: {fac.teacher_id}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Results Section */}
             {coaching.top_results?.length > 0 && (
               <div className="bg-gradient-to-br from-blue-900 to-indigo-800 rounded-xl shadow-lg p-6 md:p-8 text-white">

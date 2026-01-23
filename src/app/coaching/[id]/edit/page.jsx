@@ -142,7 +142,8 @@ export default function EditCoaching({ params }) {
         temp_fac_subject: data.data.subject || '',
         temp_fac_exp: data.data.experience || '',
         temp_fac_photo: data.data.photo_url || '',
-        temp_fac_id: data.data._id || prev.temp_fac_id // Update to full ID if available
+        temp_fac_id: data.data.unique_id || data.data._id || prev.temp_fac_id, // Use unique_id (T1) if available
+        temp_fac_ref: data.data._id // Store real ID for potential linking
       }));
     } catch (err) {
       alert("Teacher not found or invalid ID: " + err.message);
@@ -161,6 +162,7 @@ export default function EditCoaching({ params }) {
         experience: prev.temp_fac_exp,
         photo_url: prev.temp_fac_photo,
         teacher_id: prev.temp_fac_id, // Store the ID
+        profile_ref: prev.temp_fac_ref // Store the MongoDB ID reference
       }],
       temp_fac_name: '', temp_fac_subject: '', temp_fac_exp: '', temp_fac_photo: '', temp_fac_id: ''
     }));
