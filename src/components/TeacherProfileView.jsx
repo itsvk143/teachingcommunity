@@ -3,8 +3,9 @@ import {
   Mail, Phone, MapPin, Briefcase, GraduationCap,
   User, FileText, Video, Linkedin,
   Facebook, Instagram, Twitter, MessageCircle, Link as LinkIcon,
-  Award, Calendar, CheckCircle2, Building2
+  Award, Calendar, CheckCircle2, Building2, Layers
 } from 'lucide-react';
+import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
 
 const getDirectImageUrl = (url) => {
   if (!url) return null;
@@ -187,66 +188,93 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
             </section>
 
             {/* EDUCATION CARDS */}
+            {/* EDUCATION CARDS */}
             <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-indigo-500" /> Education
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Max Qual & Graduation Logic */}
-                {(() => {
-                  const isMaxQualValid = teacher.maxQualification && teacher.maxQualification.trim().toUpperCase() !== 'NA';
-                  const showGraduationAsHighest = !isMaxQualValid && teacher.graduationQualification;
+              <div className="space-y-4">
 
-                  // Determine what to show in the "Featured" (Highest) slot
-                  const featuredTitle = showGraduationAsHighest ? "Highest Qualification" : "Highest Qualification";
-                  const featuredValue = showGraduationAsHighest ? teacher.graduationQualification : teacher.maxQualification;
-                  const featuredSub = showGraduationAsHighest ? teacher.graduationCollege : teacher.maxQualificationCollege;
+                {/* UG (Mandatory) */}
+                {teacher.qualifications?.ug?.degree && (
+                  <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100">
+                    <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Graduation (UG)</h4>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.ug.degree}</h3>
+                        {teacher.qualifications.ug.specialization && <p className="text-indigo-600 font-medium text-sm">{teacher.qualifications.ug.specialization}</p>}
+                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.ug.college}</p>
+                      </div>
+                      {teacher.qualifications.ug.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.ug.year}</span>}
+                    </div>
+                  </div>
+                )}
 
-                  return (
-                    <>
-                      {/* Featured (Highest) Qualification Card */}
-                      {(isMaxQualValid || showGraduationAsHighest) && (
-                        <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100 col-span-1 md:col-span-2">
-                          <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{featuredTitle}</h4>
-                          <h3 className="text-lg font-bold text-gray-900">{featuredValue}</h3>
-                          <p className="text-gray-600 text-sm">{featuredSub}</p>
-                          {/* If Featured is Master's and has specific college */}
-                          {!showGraduationAsHighest && teacher.maxQualificationCollegeSpecific && (
-                            <p className="text-indigo-600/80 text-xs mt-1 font-medium">{teacher.maxQualificationCollegeSpecific}</p>
-                          )}
-                          {/* If Featured is Graduation (promoted) and has specific college */}
-                          {showGraduationAsHighest && teacher.education && (
-                            <p className="text-indigo-600/80 text-xs mt-1 font-medium">{teacher.education}</p>
-                          )}
-                        </div>
-                      )}
+                {/* PG (Optional) */}
+                {teacher.qualifications?.pg?.degree && (
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Post Graduation (PG)</h4>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.pg.degree}</h3>
+                        {teacher.qualifications.pg.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.pg.specialization}</p>}
+                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.pg.college}</p>
+                      </div>
+                      {teacher.qualifications.pg.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.pg.year}</span>}
+                    </div>
+                  </div>
+                )}
 
-                      {/* Regular Graduation Card - Only show if Max Qual WAS valid (meaning Grad is secondary) */}
-                      {isMaxQualValid && teacher.graduationQualification && (
-                        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Graduation</h4>
-                          <h3 className="font-bold text-gray-900">{teacher.graduationQualification}</h3>
-                          <p className="text-gray-600 text-sm">{teacher.graduationCollege}</p>
-                          {teacher.education && <p className="text-gray-500 text-xs mt-1">{teacher.education}</p>}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                {/* Doctorate */}
+                {teacher.qualifications?.doctorate?.degree && (
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Doctorate</h4>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.doctorate.degree}</h3>
+                        {teacher.qualifications.doctorate.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.doctorate.specialization}</p>}
+                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.doctorate.college}</p>
+                      </div>
+                      {teacher.qualifications.doctorate.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.doctorate.year}</span>}
+                    </div>
+                  </div>
+                )}
 
-                {/* Past Academics */}
+                {/* Professional */}
+                {teacher.qualifications?.professional?.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {teacher.qualifications.professional.map((qual, idx) => (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Professional</h4>
+                        <h3 className="font-bold text-gray-800">{qual.degree}</h3>
+                        <p className="text-sm text-gray-600">{qual.year}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Fallback for Legacy Data (if no new qualifications exist) */}
+                {(!teacher.qualifications?.ug && !teacher.qualifications?.pg) && (teacher.graduationQualification || teacher.maxQualification) && (
+                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-amber-800 text-sm">
+                    <p><strong>Note:</strong> Displaying legacy education data.</p>
+                    {teacher.graduationQualification && <div className="mt-1">UG: {teacher.graduationQualification} ({teacher.graduationCollege})</div>}
+                    {teacher.maxQualification && <div className="mt-1">PG: {teacher.maxQualification} ({teacher.maxQualificationCollege})</div>}
+                  </div>
+                )}
+
+
+                {/* Past Academics (Schooling) */}
                 {teacher.educationalQualification?.map((edu, idx) => (
-                  <div key={idx} className="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{edu.qualification}</h4>
-                    <h3 className="font-bold text-gray-900">{edu.boardUniv}</h3>
-                    {edu.schoolName && (
-                      <p className="text-sm text-gray-600 mt-0.5">{edu.schoolName}</p>
-                    )}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs font-medium text-gray-500">
-                      {edu.year && <span>Year: {edu.year}</span>}
-                      {edu.percentage && <span>Score: {edu.percentage}</span>}
-                      {edu.medium && <span>Medium: {edu.medium}</span>}
+                  <div key={idx} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">{edu.qualification}</h4>
+                      <h3 className="font-bold text-gray-800">{edu.boardUniv}</h3>
+                      {edu.schoolName && <p className="text-sm text-gray-500">{edu.schoolName}</p>}
+                    </div>
+                    <div className="text-right text-xs text-gray-500 font-medium">
+                      {edu.year && <div className="bg-gray-100 px-2 py-1 rounded mb-1">{edu.year}</div>}
+                      {edu.percentage && <div>{edu.percentage}</div>}
                     </div>
                   </div>
                 ))}
@@ -282,6 +310,15 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                 <li className="flex justify-between py-2 border-b border-gray-50">
                   <span className="text-gray-500">Subject</span>
                   <span className="font-medium text-gray-900 text-right">{teacher.subject?.join(', ')}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-gray-50">
+                  <span className="text-gray-500">Categories</span>
+                  <span className="font-medium text-gray-900 text-right">
+                    {teacher.categories?.length > 0
+                      ? teacher.categories.map(c => TEACHING_CATEGORIES[c]?.label || c).join(', ')
+                      : (teacher.category ? (TEACHING_CATEGORIES[teacher.category]?.label || teacher.category) : "-")
+                    }
+                  </span>
                 </li>
                 <li className="flex justify-between py-2 border-b border-gray-50">
                   <span className="text-gray-500">Age</span>

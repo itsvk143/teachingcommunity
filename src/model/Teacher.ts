@@ -26,6 +26,8 @@ const TeacherSchema = new mongoose.Schema(
       match: [/^[0-9]{10}$/, 'WhatsApp number must be exactly 10 digits'],
     },
 
+    categories: { type: [String], default: [] },
+    category: { type: String, trim: true }, // Legacy/Fallback field
     gender: { type: String, trim: true },
     maritalStatus: { type: String, trim: true },
 
@@ -62,6 +64,34 @@ const TeacherSchema = new mongoose.Schema(
     },
     photoUrl: { type: String, trim: true },
     about: { type: String, trim: true },
+    qualifications: {
+      ug: {
+        degree: { type: String, trim: true },
+        specialization: { type: String, trim: true },
+        college: { type: String, trim: true },
+        year: { type: String, trim: true },
+      },
+      pg: {
+        degree: { type: String, trim: true },
+        specialization: { type: String, trim: true },
+        college: { type: String, trim: true },
+        year: { type: String, trim: true },
+      },
+      doctorate: {
+        degree: { type: String, trim: true },
+        specialization: { type: String, trim: true },
+        college: { type: String, trim: true },
+        year: { type: String, trim: true },
+      },
+      professional: [
+        {
+          degree: { type: String, trim: true },
+          specialization: { type: String, trim: true },
+          college: { type: String, trim: true }, // Optional or Institute
+          year: { type: String, trim: true },
+        },
+      ],
+    },
 
     maxQualification: { type: String, trim: true },
     graduationQualification: { type: String, trim: true },

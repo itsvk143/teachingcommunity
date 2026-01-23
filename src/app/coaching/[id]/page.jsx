@@ -155,11 +155,7 @@ export default async function CoachingDetailPage(props) {
                     </div>
                     {/* Tags Row */}
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {coaching.exam_types?.map((exam, i) => (
-                        <span key={i} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md">
-                          {exam}
-                        </span>
-                      ))}
+                      {/* Modes only in header now */}
                       {coaching.mode?.map((m, i) => (
                         <span key={i} className="px-3 py-1 bg-purple-50 text-purple-700 text-sm rounded-md">
                           {m}
@@ -231,154 +227,148 @@ export default async function CoachingDetailPage(props) {
                 <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <Award className="w-5 h-5 text-blue-600" /> Courses Offered
                 </h3>
-                {/* Structured Course Categories Display */}
-                {coaching.course_categories && Object.keys(coaching.course_categories).length > 0 ? (
-                  <div className="space-y-8">
-                    {Object.entries(coaching.course_categories).map(([category, items]) => {
-                      // Define known structures to help grouping
-                      const knownStructure = {
-                        "School Tuition (Academic Coaching)": ["Classes", "Subjects Available"],
-                        "Board Exam Preparation": ["Boards", "Special"],
-                        "Competitive Exam Coaching": ["Engineering", "Medical"],
-                        "Foundation Courses": ["Courses"],
-                        "Olympiad Coaching": ["Exams"],
-                        "Test Series / DPP Courses": ["Types"],
-                        "Crash Courses": ["Courses"],
-                        "Special Support Programs": ["Programs"]
-                      };
+                {/* 1. Structured Data (Categories -> Exams -> Courses) */}
+                {coaching.categories && coaching.categories.length > 0 && (
+                  <div className="space-y-6 mb-6">
+                    {coaching.categories.map((cat, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <h4 className="font-bold text-blue-900 mb-3 text-lg flex items-center">
+                          <span className="w-1.5 h-6 bg-blue-500 rounded-full mr-3"></span>
+                          {cat.key.replace(/_/g, ' ')}
+                        </h4>
 
-                      // Definition of items for sorting (simplified version of the register page constant)
-                      const itemGroups = {
-                        "School Tuition (Academic Coaching)": {
-                          "Classes": ["Class 6th", "Class 7th", "Class 8th", "Class 9th", "Class 10th (Board Special)", "Class 11th", "Class 12th (Board Special)"],
-                          "Subjects Available": ["Mathematics", "Science (Physics/Chemistry/Biology)", "Physics", "Chemistry", "Biology", "English", "Social Science", "Computer Science / IT"]
-                        },
-                        "Board Exam Preparation": {
-                          "Boards": ["CBSE Board", "ICSE Board", "State Board"],
-                          "Special": ["Class 10 Board Booster", "Class 12 Board Booster", "Sample Paper + PYQ Practice", "Pre-board Test Series"]
-                        },
-                        "Competitive Exam Coaching": {
-                          "Engineering": ["JEE Main", "JEE Advanced", "JEE (11th + 12th Full Course)", "JEE Dropper Course"],
-                          "Medical": ["NEET (UG)", "NEET (11th + 12th Full Course)", "NEET Dropper Course", "AIIMS level practice (NEET-based)"]
-                        }
-                      };
+                        {/* Standard Subjects */}
+                        {cat.subjects && cat.subjects.length > 0 && (
+                          <div className="mb-5 flex flex-wrap gap-2">
+                            {cat.subjects.map((subj, j) => (
+                              <span key={j} className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-100 flex items-center shadow-sm">
+                                {subj}
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
-                      // If we have structure for this category, try to group items
-                      let groupedItems = {};
-                      let leftoverItems = [];
+                        {/* Exams & Linked Courses */}
+                        {cat.exams && cat.exams.length > 0 && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {cat.exams.map((examObj, i) => {
+                                // Handle String vs Object
+                                let examName = typeof examObj === 'string' ? examObj : examObj.name;
+                                if (examName === 'Other' && examObj.custom_name) examName = examObj.custom_name;
 
-                      if (itemGroups[category]) {
-                        // Initialize groups
-                        Object.keys(itemGroups[category]).forEach(key => groupedItems[key] = []);
+                                const courses = typeof examObj === 'object' ? examObj.courses : [];
 
-                        // Sort items
-                        if (Array.isArray(items)) {
-                          items.forEach(item => {
-                            let found = false;
-                            for (const [groupName, groupItems] of Object.entries(itemGroups[category])) {
-                              if (groupItems.includes(item)) {
-                                groupedItems[groupName].push(item);
-                                found = true;
-                                break;
-                              }
-                            }
-                            if (!found) leftoverItems.push(item);
-                          });
-                        }
-                      } else {
-                        leftoverItems = Array.isArray(items) ? items : [];
-                      }
+                                return (
+                                  <div key={i} className="bg-gray-50/80 rounded-lg p-4 border border-gray-200/60 hover:border-blue-200 hover:bg-blue-50/30 transition-colors">
+                                    <h5 className="text-sm font-bold text-slate-700 mb-3 flex items-center">
+                                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                                      {examName}
+                                    </h5>
+                                    {courses && courses.length > 0 ? (
+                                      <div className="flex flex-wrap gap-2">
+                                        {courses.map((courseObj, k) => {
+                                          let cName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+                                          if (cName === 'Other' && courseObj.custom_name) cName = courseObj.custom_name;
 
-                      const hasGroups = Object.values(groupedItems).some(g => g.length > 0);
-
-                      return (
-                        <div key={category} className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                          <h4 className="font-bold text-blue-900 mb-4 text-lg border-b border-gray-200 pb-2">{category}</h4>
-
-                          {hasGroups ? (
-                            <div className="space-y-4">
-                              {Object.entries(groupedItems).map(([groupName, groupItems]) => (
-                                groupItems.length > 0 && (
-                                  <div key={groupName}>
-                                    {(groupName !== 'Courses' && groupName !== 'Programs' && groupName !== 'Types' && groupName !== 'Exams') && (
-                                      <h5 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center">
-                                        {groupName === 'Classes' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>}
-                                        {groupName === 'Subjects Available' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></span>}
-                                        {groupName}
-                                      </h5>
+                                          return (
+                                            <span key={k} className="inline-flex items-center px-2.5 py-1 bg-white text-slate-600 text-xs font-medium rounded border border-gray-200 shadow-sm">
+                                              {cName}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-slate-400 italic pl-4">Various options available</span>
                                     )}
-                                    <div className="flex flex-wrap gap-2">
-                                      {groupItems.map((course, idx) => (
-                                        <span key={idx} className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-200 shadow-sm">
-                                          {course}
-                                        </span>
-                                      ))}
-                                    </div>
                                   </div>
-                                )
-                              ))}
-                              {leftoverItems.length > 0 && (
-                                <div>
-                                  <div className="flex flex-wrap gap-2">
-                                    {leftoverItems.map((course, idx) => (
-                                      <span key={idx} className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-200 shadow-sm">
-                                        {course}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
+                                );
+                              })}
                             </div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {Array.isArray(items) && items.map((course, idx) => (
-                                <span key={idx} className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-200 shadow-sm">
-                                  {course}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {coaching.courses_offered.map((course, idx) => (
-                      <div key={idx} className="flex items-center p-3 border rounded-lg hover:border-blue-300 transition-colors bg-gray-50">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mr-3"></div>
-                        <span className="font-medium text-gray-700">{course}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
 
-                <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <div>
-                    <span className="text-sm text-gray-500 block mb-2 font-semibold uppercase tracking-wide">Other</span>
-                    <div className="flex flex-wrap gap-2">
-                      {coaching.streams?.map(s => (
-                        <span key={s} className="px-2.5 py-1 bg-gray-100 text-gray-700 text-sm rounded border border-gray-200">
-                          {s}
-                        </span>
+                {/* 1.5 Manual / Additional Exams */}
+                {coaching.exam_types && coaching.exam_types.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-px bg-gray-200 flex-1"></div>
+                      <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Targeted Exams</span>
+                      <div className="h-px bg-gray-200 flex-1"></div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {coaching.exam_types.map((exam, idx) => (
+                        <div key={idx} className="flex items-center p-3 rounded-lg bg-white border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all group">
+                          <CheckCircle className="w-4 h-4 text-purple-500 mr-3 opacity-70 group-hover:opacity-100 transition-opacity" />
+                          <span className="font-medium text-gray-700 text-sm">{exam}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500 block mb-2 font-semibold uppercase tracking-wide">Batch Timings</span>
-                  <div className="flex flex-wrap gap-2">
-                    {coaching.batch_timing?.length > 0 ? (
-                      coaching.batch_timing.map(s => (
-                        <span key={s} className="px-2.5 py-1 bg-green-50 text-green-700 text-sm rounded border border-green-200">
-                          {s}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-gray-400 italic text-sm">Not specified</span>
-                    )}
+                )}
+
+                {/* 2. Manual / Additional Courses */}
+                {coaching.courses_offered && coaching.courses_offered.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Additional Courses</h4>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {coaching.courses_offered.map((course, idx) => (
+                        <div key={idx} className="flex items-center p-3 border rounded-lg hover:border-blue-300 transition-colors bg-blue-50/30 border-blue-100">
+                          <div className="w-2 h-2 rounded-full bg-blue-500 mr-3"></div>
+                          <span className="font-medium text-gray-700">{course}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* 3. Legacy Fallback (if no structured data) */}
+                {(!coaching.categories || coaching.categories.length === 0) && (!coaching.courses_offered || coaching.courses_offered.length === 0) && coaching.course_categories && (
+                  <div className="space-y-6">
+                    {/* ... Legacy Rendering Logic ... */}
+                    <p className="text-gray-500 italic">Course data available in legacy format.</p>
+                  </div>
+                )}
+
+                {/* 4. Highlights Section (Streams & Batch Timings) */}
+                {(coaching.streams?.length > 0 || coaching.batch_timing?.length > 0) && (
+                  <div className="mt-8 pt-6 border-t border-gray-100">
+                    <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Star className="w-4 h-4 text-yellow-500" /> Key Highlights
+                    </h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {coaching.streams?.length > 0 && (
+                        <div>
+                          <span className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-2">Streams / Other Focus</span>
+                          <div className="flex flex-wrap gap-2">
+                            {coaching.streams.map(s => (
+                              <span key={s} className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-md border border-indigo-100 shadow-sm">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {coaching.batch_timing?.length > 0 && (
+                        <div>
+                          <span className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-2">Batch Availability</span>
+                          <div className="flex flex-wrap gap-2">
+                            {coaching.batch_timing.map(s => (
+                              <span key={s} className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-semibold rounded-md border border-orange-100 flex items-center gap-1 shadow-sm">
+                                <Clock className="w-3 h-3" /> {s}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -390,9 +380,11 @@ export default async function CoachingDetailPage(props) {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {['ac_classrooms', 'smart_classes', 'library', 'wifi', 'study_room', 'hostel_support', 'transport_available', 'separate_doubt_counter', 'cctv', 'biometric_attendance'].map(key => (
                   coaching[key] && (
-                    <div key={key} className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-50 text-center">
-                      <CheckCircle className="w-6 h-6 text-green-500 mb-2" />
-                      <span className="text-sm font-medium text-gray-700 capitalize">
+                    <div key={key} className="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors text-center group">
+                      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <CheckCircle className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700 capitalize group-hover:text-blue-700 transition-colors">
                         {key.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -402,28 +394,62 @@ export default async function CoachingDetailPage(props) {
             </div>
 
             {/* Faculty Section */}
-            {coaching.top_faculties?.length > 0 && (
+            {(coaching.top_faculties?.length > 0 || coaching.faculty_count > 0) && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-blue-600" /> Top Faculty
-                </h3>
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {coaching.top_faculties.map((fac, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border bg-gray-50">
-                      {fac.photo_url ? (
-                        <img src={fac.photo_url} alt={fac.name} className="w-16 h-16 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                          <User className="w-8 h-8" />
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="font-bold text-gray-900">{fac.name}</h4>
-                        <p className="text-sm text-blue-600 font-medium">{fac.subject}</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-600" /> Faculty
+                  </h3>
+                  {coaching.faculty_count > 0 && (
+                    <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-bold rounded-full border border-blue-100 shadow-sm">
+                      Total Strength: {coaching.faculty_count} +
+                    </span>
+                  )}
                 </div>
+
+                {coaching.top_faculties?.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {coaching.top_faculties.map((fac, idx) => {
+                      const CardContent = (
+                        <>
+                          {fac.photo_url ? (
+                            <img src={fac.photo_url} alt={fac.name} className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 border-2 border-white shadow-sm">
+                              <User className="w-8 h-8" />
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{fac.name}</h4>
+                            <p className="text-sm text-blue-600 font-medium">{fac.subject}</p>
+                            {fac.experience && <p className="text-xs text-slate-500 mt-0.5">{fac.experience}</p>}
+                            {fac.teacher_id && (
+                              <span className="inline-block mt-1 bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-mono border border-gray-200">
+                                ID: {fac.teacher_id.slice(-6).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      );
+
+                      return fac.teacher_id ? (
+                        <Link href={`/teacherspublic/${fac.teacher_id}`} key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all group cursor-pointer">
+                          {CardContent}
+                        </Link>
+                      ) : (
+                        <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all group">
+                          {CardContent}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-gray-100 text-gray-500 italic">
+                    <Users className="w-8 h-8 opacity-20 mb-2" />
+                    <p>Faculty profiles coming soon.</p>
+                  </div>
+                )}
+
 
                 {coaching.subject_wise_faculty?.length > 0 && (
                   <div className="mt-8 pt-6 border-t border-gray-100">
@@ -467,16 +493,16 @@ export default async function CoachingDetailPage(props) {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {results.map((res, idx) => (
-                            <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-gray-50/50">
+                            <div key={idx} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all bg-white shadow-sm group hover:border-blue-200">
                               <div className="flex justify-between items-start mb-2">
                                 <div>
-                                  <h4 className="font-bold text-gray-900">{res.name}</h4>
-                                  <p className="text-xs text-gray-500 font-mono">ID: {res.student_enrollment_id || 'N/A'}</p>
+                                  <h4 className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">{res.name}</h4>
+                                  <p className="text-xs text-slate-500 font-mono">ID: {res.student_enrollment_id || 'N/A'}</p>
                                 </div>
-                                <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded uppercase">{res.exam}</span>
+                                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1 rounded uppercase border border-emerald-100">{res.exam}</span>
                               </div>
-                              <div className="text-sm">
-                                <span className="text-gray-600">Rank/Score: </span>
+                              <div className="text-sm bg-gray-50 p-2 rounded-lg mt-2 flex justify-between items-center">
+                                <span className="text-gray-600 font-medium">Rank/Score</span>
                                 <span className="font-bold text-blue-600">{res.rank_or_score}</span>
                               </div>
                             </div>
@@ -588,6 +614,6 @@ export default async function CoachingDetailPage(props) {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }

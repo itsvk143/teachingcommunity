@@ -8,35 +8,9 @@ import {
   LayoutGrid, BookCheck, CheckSquare, Plus, Trash2
 } from 'lucide-react';
 
-const COURSE_CATEGORIES = {
-  "School Tuition (Academic Coaching)": {
-    "Classes": ["Class 6th", "Class 7th", "Class 8th", "Class 9th", "Class 10th (Board Special)", "Class 11th", "Class 12th (Board Special)"],
-    "Subjects Available": ["Mathematics", "Science (Physics/Chemistry/Biology)", "Physics", "Chemistry", "Biology", "English", "Social Science", "Computer Science / IT"]
-  },
-  "Foundation Courses": {
-    "Courses": ["Foundation Course (Class 6–8)", "NTSE Foundation", "Olympiad Foundation", "Pre-Foundation for JEE/NEET (Class 8–10)"]
-  },
-  "Board Exam Preparation": {
-    "Boards": ["CBSE Board", "ICSE Board", "State Board"],
-    "Special": ["Class 10 Board Booster", "Class 12 Board Booster", "Sample Paper + PYQ Practice", "Pre-board Test Series"]
-  },
-  "Competitive Exam Coaching": {
-    "Engineering": ["JEE Main", "JEE Advanced", "JEE (11th + 12th Full Course)", "JEE Dropper Course"],
-    "Medical": ["NEET (UG)", "NEET (11th + 12th Full Course)", "NEET Dropper Course", "AIIMS level practice (NEET-based)"]
-  },
-  "Olympiad Coaching": {
-    "Exams": ["NSO (Science Olympiad)", "IMO (Math Olympiad)", "NSEJS", "NSEP / NSEC / NSEA", "KVPY (if applicable)", "IOQM (Math Olympiad)"]
-  },
-  "Test Series / DPP Courses": {
-    "Types": ["Weekly Test Series", "Monthly Grand Test", "Chapter-wise Tests", "Full Syllabus Mock Tests", "DPP (Daily Practice Problems)", "PYQ Test Series"]
-  },
-  "Crash Courses": {
-    "Courses": ["JEE Crash Course", "NEET Crash Course", "Board Exam Crash Course", "Last 45 Days Revision Batch", "Last 30 Days Booster Batch"]
-  },
-  "Special Support Programs": {
-    "Programs": ["Doubt Clearing Sessions", "Revision Batch", "Backlog Completion Batch", "Personal Mentorship Program", "Performance Tracking + Parent Updates"]
-  }
-};
+import { COACHING_CATEGORIES } from '@/utils/coachingCategories';
+import { INDIAN_LOCATIONS, STATES } from '@/utils/locations';
+import TagInput from '@/components/TagInput';
 
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon, disabled = false }) => {
   const baseInputClasses = "w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-500";
@@ -111,13 +85,15 @@ export default function RegisterCoaching() {
     mode: [],
 
     exam_types: '', courses_offered: '', streams: '',
-    course_categories: {}, // Structured data
+    exam_types: [], courses_offered: [], streams: [],
+    categories: [], // Structured data
 
     batch_timing: [], course_fees: [], temp_course_name: '', temp_course_fee: '',
 
     top_results: [], temp_res_year: '', temp_res_name: '', temp_res_rank: '', temp_res_exam: '', temp_res_enrollment: '',
 
     description_short: '', description_long: '', fee_range_min: '', fee_range_max: '',
+    faculty_count: '',
     student_count: '', non_academic_staff_count: '', subject_wise_faculty_input: '',
 
     ac_classrooms: false, smart_classes: false, library: false, wifi: false, study_room: false, hostel_support: false,
@@ -176,11 +152,12 @@ export default function RegisterCoaching() {
       instituteName: form.name,
       ownerName: form.contact_person_name,
       phone: form.phone_primary || form.phone,
-      exam_types: form.exam_types.split(',').map(s => s.trim()).filter(Boolean),
-      courses_offered: form.courses_offered.split(',').map(s => s.trim()).filter(Boolean),
-      streams: form.streams.split(',').map(s => s.trim()).filter(Boolean),
+      exam_types: form.exam_types,
+      courses_offered: form.courses_offered,
+      streams: form.streams,
       fee_range_min: Number(form.fee_range_min) || undefined,
       fee_range_max: Number(form.fee_range_max) || undefined,
+      faculty_count: Number(form.faculty_count) || undefined,
       student_count: Number(form.student_count) || undefined,
       non_academic_staff_count: Number(form.non_academic_staff_count) || undefined,
       subject_wise_faculty: form.subject_wise_faculty_input
@@ -241,8 +218,8 @@ export default function RegisterCoaching() {
             {steps.map((s, i) => (
               <div key={i} className={`flex flex-col items-center ${step > i ? 'text-blue-600' : step === i + 1 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step > i + 1 ? 'bg-blue-600 border-blue-600 text-white' :
-                    step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
-                      'bg-white border-gray-300 text-gray-400'
+                  step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
+                    'bg-white border-gray-300 text-gray-400'
                   }`}>
                   <s.icon className="w-5 h-5" />
                 </div>
@@ -302,8 +279,31 @@ export default function RegisterCoaching() {
                   <div className="md:col-span-2">
                     <FormField label="Address Line 1" name="address_line1" value={form.address_line1} onChange={handleChange} icon={MapPin} />
                   </div>
-                  <FormField label="City" name="city" value={form.city} onChange={handleChange} required icon={MapPin} />
-                  <FormField label="State" name="state" value={form.state} onChange={handleChange} required icon={MapPin} />
+                  <FormField
+                    label="State"
+                    name="state"
+                    value={form.state}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setForm(prev => ({ ...prev, city: '' }));
+                    }}
+                    required
+                    icon={MapPin}
+                    options={STATES.map(s => ({ value: s, label: s }))}
+                    placeholder="Select State"
+                  />
+
+                  <FormField
+                    label="City"
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    required
+                    icon={MapPin}
+                    disabled={!form.state}
+                    options={form.state && INDIAN_LOCATIONS[form.state] ? INDIAN_LOCATIONS[form.state].map(c => ({ value: c, label: c })) : []}
+                    placeholder={form.state ? "Select City" : "Select State First"}
+                  />
                   <div className="md:col-span-2">
                     <FormField label="Google Maps URL" name="google_maps_url" type="url" value={form.google_maps_url} onChange={handleChange} icon={Globe} />
                   </div>
@@ -333,63 +333,307 @@ export default function RegisterCoaching() {
                   </div>
                 </div>
 
-                {/* Course Selection */}
+                {/* Structured Course Selection */}
                 <div className="space-y-4">
                   <h4 className="text-md font-bold text-gray-800 flex items-center gap-2">
-                    <BookCheck className="w-5 h-5 text-blue-600" /> Courses & Programs
+                    <BookCheck className="w-5 h-5 text-blue-600" /> Select Coaching Categories
                   </h4>
-                  <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                    {Object.entries(COURSE_CATEGORIES).map(([category, subData], idx) => (
-                      <div key={idx} className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                          <h5 className="font-semibold text-blue-800">{category}</h5>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAll(category, subData)}
-                            className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition"
-                          >
-                            Select All
-                          </button>
-                        </div>
-                        {Object.entries(subData).map(([subKey, items]) => (
-                          <div key={subKey} className="mb-4 last:mb-0">
-                            {(subKey !== 'Courses' && subKey !== 'Programs' && subKey !== 'Types' && subKey !== 'Exams' && subKey !== 'Boards') && (
-                              <h6 className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center">
-                                <span className={`w-1.5 h-1.5 rounded-full mr-2 ${subKey === 'Classes' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
-                                {subKey}
-                              </h6>
-                            )}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {items.map(item => {
-                                const uniqueVal = `${item}`;
-                                const isChecked = form.course_categories?.[category]?.includes(uniqueVal) || false;
-                                return (
-                                  <label key={uniqueVal} className={`flex items-start gap-2 p-2 rounded border cursor-pointer text-sm transition-all ${isChecked ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
-                                    }`}>
-                                    <input
-                                      type="checkbox"
-                                      className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 bg-white"
-                                      checked={isChecked}
-                                      onChange={() => handleCategoryChange(category, uniqueVal)}
-                                    />
-                                    <span className="leading-tight text-xs">{item}</span>
-                                  </label>
-                                );
-                              })}
+                  <div className="grid grid-cols-1 gap-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                    {Object.entries(COACHING_CATEGORIES).map(([catKey, catData]) => {
+                      const isCatSelected = form.categories?.some(c => c.key === catKey);
+                      const selectedCatData = form.categories?.find(c => c.key === catKey) || { exams: [], subjects: [] };
+
+                      return (
+                        <div key={catKey} className={`p-5 rounded-xl shadow-sm border transition-all ${isCatSelected ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-200 hover:border-blue-300'}`}>
+
+                          {/* Category Header */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                                  checked={isCatSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      // Add category
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: [...(prev.categories || []), { key: catKey, exams: [], subjects: [] }]
+                                      }));
+                                    } else {
+                                      // Remove category
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: prev.categories.filter(c => c.key !== catKey)
+                                      }));
+                                    }
+                                  }}
+                                />
+                                <span className="font-bold text-gray-800 text-lg">{catData.label}</span>
+                              </label>
+                              <p className="text-xs text-gray-500 mt-1 ml-7">{catData.description}</p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ))}
+
+                          {/* Expanded Selection Area */}
+                          {isCatSelected && (
+                            <div className="mt-4 ml-7 space-y-6 animate-in fade-in slide-in-from-top-2">
+
+                              {/* Exams & Courses Section */}
+                              <div className="space-y-4">
+                                <h6 className="text-sm font-bold text-blue-700 uppercase flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                  Select Exams & Courses
+                                </h6>
+
+                                {catData.exams.map((examObj) => {
+                                  const examName = examObj.exam || examObj; // Handle object or string (backward compact safety)
+                                  const availableCourses = examObj.courses || [];
+
+                                  const selectedExamObj = selectedCatData.exams.find(e => e.name === examName);
+                                  const isExamSelected = !!selectedExamObj;
+
+                                  return (
+                                    <div key={examName} className={`border rounded-lg p-3 transition-colors ${isExamSelected ? 'bg-white border-blue-200 shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
+                                      {/* Exam Checkbox */}
+                                      <label className="flex items-center gap-2 cursor-pointer mb-2">
+                                        <input
+                                          type="checkbox"
+                                          className="w-4 h-4 text-blue-600 rounded focus:ring-0 border-gray-300"
+                                          checked={isExamSelected}
+                                          onChange={(e) => {
+                                            setForm(prev => ({
+                                              ...prev,
+                                              categories: prev.categories.map(c => {
+                                                if (c.key === catKey) {
+                                                  let newExams = [...c.exams];
+                                                  if (e.target.checked) {
+                                                    // Add Exam with empty courses initially
+                                                    newExams.push({ name: examName, courses: [] });
+                                                  } else {
+                                                    // Remove Exam
+                                                    newExams = newExams.filter(x => x.name !== examName);
+                                                  }
+                                                  return { ...c, exams: newExams };
+                                                }
+                                                return c;
+                                              })
+                                            }));
+                                          }}
+                                        />
+                                        <span className={`font-semibold text-sm ${isExamSelected ? 'text-blue-800' : 'text-gray-600'}`}>{examName}</span>
+                                      </label>
+
+                                      {/* Custom Input for "Other" */}
+                                      {isExamSelected && examName === 'Other' && (
+                                        <div className="ml-6 mb-3 animate-in fade-in slide-in-from-top-1">
+                                          <input
+                                            type="text"
+                                            placeholder="Specify Exam Name (e.g. Olympiad Level 2)"
+                                            className="w-full p-2 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-100 outline-none"
+                                            value={selectedExamObj.custom_name || ''}
+                                            onChange={(e) => {
+                                              setForm(prev => ({
+                                                ...prev,
+                                                categories: prev.categories.map(c => {
+                                                  if (c.key === catKey) {
+                                                    const newExams = c.exams.map(ex => {
+                                                      if (ex.name === examName) {
+                                                        return { ...ex, custom_name: e.target.value };
+                                                      }
+                                                      return ex;
+                                                    });
+                                                    return { ...c, exams: newExams };
+                                                  }
+                                                  return c;
+                                                })
+                                              }));
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {/* Courses Grid (Only show if Exam Selected) */}
+                                      {isExamSelected && (
+                                        <div className="ml-6 mt-2">
+                                          <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Select Courses (Optional)</p>
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1">
+                                            {[...availableCourses, 'Other'].map(courseName => {
+                                              // Check if selected (handle both string and object for robustness, primarily object now)
+                                              const selectedCourseIdx = selectedExamObj.courses.findIndex(c =>
+                                                (typeof c === 'string' ? c : c.name) === courseName
+                                              );
+                                              const isCourseSelected = selectedCourseIdx !== -1;
+                                              const selectedCourseData = isCourseSelected ? selectedExamObj.courses[selectedCourseIdx] : null;
+
+                                              return (
+                                                <div key={courseName} className="col-span-1">
+                                                  <label className={`flex items-start gap-2 p-1.5 rounded border cursor-pointer text-xs transition-all ${isCourseSelected ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}>
+                                                    <input
+                                                      type="checkbox"
+                                                      className="mt-0.5 rounded text-blue-500 focus:ring-0 border-gray-300 w-3 h-3"
+                                                      checked={isCourseSelected}
+                                                      onChange={(e) => {
+                                                        setForm(prev => ({
+                                                          ...prev,
+                                                          categories: prev.categories.map(c => {
+                                                            if (c.key === catKey) {
+                                                              const newExams = c.exams.map(ex => {
+                                                                if (ex.name === examName) {
+                                                                  let newCourses = [...ex.courses];
+                                                                  if (e.target.checked) {
+                                                                    // Add New Course Object
+                                                                    newCourses.push({ name: courseName, custom_name: '' });
+                                                                  } else {
+                                                                    // Remove
+                                                                    newCourses = newCourses.filter(cx => (typeof cx === 'string' ? cx : cx.name) !== courseName);
+                                                                  }
+                                                                  return { ...ex, courses: newCourses };
+                                                                }
+                                                                return ex;
+                                                              });
+                                                              return { ...c, exams: newExams };
+                                                            }
+                                                            return c;
+                                                          })
+                                                        }));
+                                                      }}
+                                                    />
+                                                    <span className="leading-tight">{courseName}</span>
+                                                  </label>
+
+                                                  {/* Custom Input for Other Course */}
+                                                  {isCourseSelected && courseName === 'Other' && (
+                                                    <input
+                                                      type="text"
+                                                      placeholder="Specify Course Name"
+                                                      className="w-full mt-1 p-1.5 text-[10px] border border-blue-200 rounded focus:ring-1 focus:ring-blue-100 outline-none animate-in fade-in"
+                                                      value={selectedCourseData?.custom_name || ''}
+                                                      onChange={(e) => {
+                                                        setForm(prev => ({
+                                                          ...prev,
+                                                          categories: prev.categories.map(c => {
+                                                            if (c.key === catKey) {
+                                                              const newExams = c.exams.map(ex => {
+                                                                if (ex.name === examName) {
+                                                                  const newCourses = ex.courses.map((cx, idx) => {
+                                                                    if (idx === selectedCourseIdx) {
+                                                                      return { ...cx, custom_name: e.target.value };
+                                                                    }
+                                                                    return cx;
+                                                                  });
+                                                                  return { ...ex, courses: newCourses };
+                                                                }
+                                                                return ex;
+                                                              });
+                                                              return { ...c, exams: newExams };
+                                                            }
+                                                            return c;
+                                                          })
+                                                        }));
+                                                      }}
+                                                      onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                  )}
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Subjects Section */}
+                              <div className="bg-white p-4 rounded-xl border border-gray-100">
+                                <div className="flex justify-between items-center mb-3">
+                                  <h6 className="text-sm font-bold text-green-700 uppercase flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                    Subjects Offered
+                                  </h6>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const allSub = catData.subjects;
+                                      const currentSub = selectedCatData.subjects;
+                                      const isAll = allSub.every(s => currentSub.includes(s));
+
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: prev.categories.map(c => {
+                                          if (c.key === catKey) {
+                                            return { ...c, subjects: isAll ? [] : [...allSub] };
+                                          }
+                                          return c;
+                                        })
+                                      }));
+                                    }}
+                                    className="text-[10px] bg-green-50 text-green-600 px-2.5 py-1 rounded-full font-bold hover:bg-green-100 transition"
+                                  >
+                                    Select All
+                                  </button>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                  {catData.subjects.map(subj => (
+                                    <label key={subj} className={`flex items-start gap-2 p-1.5 rounded-lg border cursor-pointer text-xs transition-all ${selectedCatData.subjects.includes(subj) ? 'bg-green-50 border-green-200 text-green-800' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'}`}>
+                                      <input
+                                        type="checkbox"
+                                        className="mt-0.5 rounded text-green-600 focus:ring-0 border-gray-300 w-3 h-3"
+                                        checked={selectedCatData.subjects.includes(subj)}
+                                        onChange={(e) => {
+                                          setForm(prev => ({
+                                            ...prev,
+                                            categories: prev.categories.map(c => {
+                                              if (c.key === catKey) {
+                                                const newSub = e.target.checked
+                                                  ? [...c.subjects, subj]
+                                                  : c.subjects.filter(x => x !== subj);
+                                                return { ...c, subjects: newSub };
+                                              }
+                                              return c;
+                                            })
+                                          }));
+                                        }}
+                                      />
+                                      <span className="leading-tight">{subj}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Manual Entry */}
                 <div className="pt-4 p-5 bg-yellow-50 rounded-xl border border-yellow-200 space-y-4">
                   <h4 className="text-sm font-bold text-yellow-800 uppercase tracking-wide">Additional Details (Manual)</h4>
-                  <FormField label="Exam Types" name="exam_types" value={form.exam_types} onChange={handleChange} placeholder="NEET, JEE, UPSC..." />
-                  <FormField label="Courses Offered" name="courses_offered" value={form.courses_offered} onChange={handleChange} placeholder="2 Year Program, Crash Course..." />
-                  <FormField label="Other Streams" name="streams" value={form.streams} onChange={handleChange} placeholder="PCM, PCB, Commerce..." />
+                  <TagInput
+                    label="Exam Types"
+                    value={form.exam_types}
+                    onChange={(tags) => setForm(f => ({ ...f, exam_types: tags }))}
+                    placeholder="NEET, JEE, UPSC..."
+                  />
+                  <TagInput
+                    label="Courses Offered"
+                    value={form.courses_offered}
+                    onChange={(tags) => setForm(f => ({ ...f, courses_offered: tags }))}
+                    placeholder="2 Year Program, Crash Course..."
+                  />
+                  <TagInput
+                    label="Other Streams"
+                    value={form.streams}
+                    onChange={(tags) => setForm(f => ({ ...f, streams: tags }))}
+                    placeholder="PCM, PCB, Commerce..."
+                  />
                 </div>
               </div>
             )}
@@ -464,7 +708,10 @@ export default function RegisterCoaching() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Total Students" name="student_count" type="number" value={form.student_count} onChange={handleChange} placeholder="e.g. 500" icon={Users} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField label="Number of Teachers" name="faculty_count" type="number" value={form.faculty_count} onChange={handleChange} placeholder="e.g. 15" icon={User} />
+                    <FormField label="Total Students" name="student_count" type="number" value={form.student_count} onChange={handleChange} placeholder="e.g. 500" icon={Users} />
+                  </div>
                   <FormField label="Non-Academic Staff" name="non_academic_staff_count" type="number" value={form.non_academic_staff_count} onChange={handleChange} placeholder="e.g. 20" icon={Users} />
                 </div>
 

@@ -159,12 +159,83 @@ export default function CoachingProfileView({ coaching, canEdit }) {
                 <Award className="w-5 h-5 text-blue-500" /> Courses Offered
               </h3>
 
-              {coaching.course_categories && Object.keys(coaching.course_categories).length > 0 ? (
+              {coaching.categories && coaching.categories.length > 0 ? (
+                <div className="space-y-6">
+                  {coaching.categories.map((cat, idx) => (
+                    <div key={idx} className="bg-gray-50/50 rounded-xl p-5 border border-gray-200/60 transition hover:border-blue-200 hover:bg-white shadow-sm">
+                      <h4 className="font-bold text-gray-900 mb-3 text-base flex items-center">
+                        <span className="w-1.5 h-6 bg-blue-500 rounded-full mr-3"></span>
+                        {cat.key.replace(/_/g, ' ')}
+                        {/* Ideally map key to label using config, but key is readable enough or imported config */}
+                      </h4>
+
+                      {/* Exams & Courses */}
+                      {cat.exams && cat.exams.length > 0 && (
+                        <div className="mb-4 space-y-3">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Exams & Courses</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {cat.exams.map((examObj, i) => {
+                              // Support both string (old) and object (new) structure
+                              let examName = typeof examObj === 'string' ? examObj : examObj.name;
+                              if (examName === 'Other' && examObj.custom_name) {
+                                examName = examObj.custom_name;
+                              }
+                              const courses = typeof examObj === 'object' ? examObj.courses : [];
+
+                              return (
+                                <div key={i} className="bg-white border border-blue-100 rounded-lg p-3 shadow-sm">
+                                  <h5 className="text-sm font-bold text-blue-800 mb-2">{examName}</h5>
+                                  {courses && courses.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {courses.map((courseObj, k) => {
+                                        // Handle course being string or object
+                                        let cName = typeof courseObj === 'string' ? courseObj : courseObj.name;
+                                        const cCustom = typeof courseObj === 'string' ? null : courseObj.custom_name;
+
+                                        if (cName === 'Other' && cCustom) {
+                                          cName = cCustom;
+                                        }
+
+                                        return (
+                                          <span key={k} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded border border-blue-100">
+                                            {cName}
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-gray-400 italic">No specific courses listed</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Subjects */}
+                      {cat.subjects && cat.subjects.length > 0 && (
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Subjects</p>
+                          <div className="flex flex-wrap gap-2">
+                            {cat.subjects.map((subj, j) => (
+                              <span key={j} className="px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded border border-green-100">
+                                {subj}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : coaching.course_categories && Object.keys(coaching.course_categories).length > 0 ? (
+                // Legacy Fallback
                 <div className="space-y-6">
                   {Object.entries(coaching.course_categories).map(([category, items]) => (
                     <div key={category} className="bg-gray-50/50 rounded-xl p-5 border border-gray-200/60">
                       <h4 className="font-bold text-gray-800 mb-3 text-base flex items-center">
-                        <span className="w-1.5 h-6 bg-blue-500 rounded-full mr-3"></span>
+                        <span className="w-1.5 h-6 bg-gray-400 rounded-full mr-3"></span>
                         {category}
                       </h4>
                       <div className="flex flex-wrap gap-2 px-2">

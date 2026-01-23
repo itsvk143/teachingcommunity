@@ -6,39 +6,40 @@ import { useSession } from 'next-auth/react';
 import {
   CheckCircle, MapPin, BookOpen, AlertCircle, ArrowRight, ArrowLeft,
   Building, User, Phone, Mail, Globe, Trophy, Users, Star,
-  LayoutGrid, BookCheck, CheckSquare, Plus, Trash2, Save
+  LayoutGrid, BookCheck, CheckSquare, Plus, Trash2, Save, Pencil
 } from 'lucide-react';
+
+// ... existing code ...
+
+const handleAddResult = () => {
+  if (!form.temp_res_year || !form.temp_res_name || !form.temp_res_rank) {
+    alert("Please fill in Year, Name, and Rank/Score to add a result.");
+    return;
+  }
+
+  setForm(f => ({
+    ...f,
+    top_results: [...(f.top_results || []), { year: Number(f.temp_res_year), name: f.temp_res_name, rank_or_score: f.temp_res_rank, exam: f.temp_res_exam, student_enrollment_id: f.temp_res_enrollment }],
+    temp_res_name: '', temp_res_rank: '', temp_res_enrollment: ''
+  }));
+};
+
+const handleEditResult = (res, idx) => {
+  setForm(f => ({
+    ...f,
+    temp_res_year: res.year,
+    temp_res_name: res.name,
+    temp_res_rank: res.rank_or_score,
+    temp_res_exam: res.exam,
+    temp_res_enrollment: res.student_enrollment_id,
+    top_results: f.top_results.filter((_, i) => i !== idx)
+  }));
+};
 import React from 'react';
 
-const COURSE_CATEGORIES = {
-  "School Tuition (Academic Coaching)": {
-    "Classes": ["Class 6th", "Class 7th", "Class 8th", "Class 9th", "Class 10th (Board Special)", "Class 11th", "Class 12th (Board Special)"],
-    "Subjects Available": ["Mathematics", "Science (Physics/Chemistry/Biology)", "Physics", "Chemistry", "Biology", "English", "Social Science", "Computer Science / IT"]
-  },
-  "Foundation Courses": {
-    "Courses": ["Foundation Course (Class 6–8)", "NTSE Foundation", "Olympiad Foundation", "Pre-Foundation for JEE/NEET (Class 8–10)"]
-  },
-  "Board Exam Preparation": {
-    "Boards": ["CBSE Board", "ICSE Board", "State Board"],
-    "Special": ["Class 10 Board Booster", "Class 12 Board Booster", "Sample Paper + PYQ Practice", "Pre-board Test Series"]
-  },
-  "Competitive Exam Coaching": {
-    "Engineering": ["JEE Main", "JEE Advanced", "JEE (11th + 12th Full Course)", "JEE Dropper Course"],
-    "Medical": ["NEET (UG)", "NEET (11th + 12th Full Course)", "NEET Dropper Course", "AIIMS level practice (NEET-based)"]
-  },
-  "Olympiad Coaching": {
-    "Exams": ["NSO (Science Olympiad)", "IMO (Math Olympiad)", "NSEJS", "NSEP / NSEC / NSEA", "KVPY (if applicable)", "IOQM (Math Olympiad)"]
-  },
-  "Test Series / DPP Courses": {
-    "Types": ["Weekly Test Series", "Monthly Grand Test", "Chapter-wise Tests", "Full Syllabus Mock Tests", "DPP (Daily Practice Problems)", "PYQ Test Series"]
-  },
-  "Crash Courses": {
-    "Courses": ["JEE Crash Course", "NEET Crash Course", "Board Exam Crash Course", "Last 45 Days Revision Batch", "Last 30 Days Booster Batch"]
-  },
-  "Special Support Programs": {
-    "Programs": ["Doubt Clearing Sessions", "Revision Batch", "Backlog Completion Batch", "Personal Mentorship Program", "Performance Tracking + Parent Updates"]
-  }
-};
+import { COACHING_CATEGORIES } from '@/utils/coachingCategories';
+import { INDIAN_LOCATIONS, STATES } from '@/utils/locations';
+import TagInput from '@/components/TagInput';
 
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon, disabled = false }) => {
   const baseInputClasses = "w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-500";
@@ -114,13 +115,56 @@ export default function EditCoaching({ params }) {
     name: '', brand_name: '', contact_person_name: '', email: '', phone_primary: '', website_url: '',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
     exam_types: '', courses_offered: '', streams: '',
+    exam_types: '', courses_offered: '', streams: '',
+    categories: [],
     course_categories: {},
     batch_timing: [], course_fees: [], temp_course_name: '', temp_course_fee: '',
     top_results: [], temp_res_year: '', temp_res_name: '', temp_res_rank: '', temp_res_exam: '', temp_res_enrollment: '',
     description_short: '', description_long: '', fee_range_min: '', fee_range_max: '',
+    faculty_count: '',
+    // Faculty Management
+    temp_fac_name: '', temp_fac_subject: '', temp_fac_exp: '', temp_fac_photo: '', temp_fac_id: '',
     student_count: '', non_academic_staff_count: '', subject_wise_faculty_input: '',
     ac_classrooms: false, smart_classes: false, library: false, wifi: false, study_room: false, hostel_support: false,
   });
+
+  const handleTeacherLookup = async () => {
+    if (!form.temp_fac_id) return alert("Please enter a Teacher ID");
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/teachers/lookup?id=${form.temp_fac_id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setForm(prev => ({
+        ...prev,
+        temp_fac_name: data.data.name || '',
+        temp_fac_subject: data.data.subject || '',
+        temp_fac_exp: data.data.experience || '',
+        temp_fac_photo: data.data.photo_url || '',
+        temp_fac_id: data.data._id || prev.temp_fac_id // Update to full ID if available
+      }));
+    } catch (err) {
+      alert("Teacher not found or invalid ID: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddFaculty = () => {
+    if (!form.temp_fac_name) return alert("Faculty Name is required");
+    setForm(prev => ({
+      ...prev,
+      top_faculties: [...(prev.top_faculties || []), {
+        name: prev.temp_fac_name,
+        subject: prev.temp_fac_subject,
+        experience: prev.temp_fac_exp,
+        photo_url: prev.temp_fac_photo,
+        teacher_id: prev.temp_fac_id, // Store the ID
+      }],
+      temp_fac_name: '', temp_fac_subject: '', temp_fac_exp: '', temp_fac_photo: '', temp_fac_id: ''
+    }));
+  };
 
   useEffect(() => {
     Promise.resolve(params).then(setUnwrappedParams);
@@ -156,16 +200,18 @@ export default function EditCoaching({ params }) {
         google_maps_url: data.google_maps_url || '',
         description_short: data.description_short || '',
         description_long: data.description_long || '',
-        exam_types: data.exam_types?.join(', ') || '',
-        courses_offered: data.courses_offered?.join(', ') || '',
+        exam_types: Array.isArray(data.exam_types) ? data.exam_types : [],
+        courses_offered: Array.isArray(data.courses_offered) ? data.courses_offered : [],
+        streams: Array.isArray(data.streams) ? data.streams : [],
+        categories: data.categories || [],
         course_categories: data.course_categories || {},
         batch_timing: data.batch_timing || [],
         course_fees: data.course_fees || [],
         top_results: data.top_results || [],
-        streams: data.streams?.join(', ') || '',
         subject_wise_faculty_input: subjectWiseInput || '',
         fee_range_min: data.fee_range_min || '',
         fee_range_max: data.fee_range_max || '',
+        faculty_count: data.faculty_count || '',
         student_count: data.student_count || '',
         non_academic_staff_count: data.non_academic_staff_count || '',
         ac_classrooms: data.ac_classrooms || false,
@@ -222,23 +268,30 @@ export default function EditCoaching({ params }) {
     });
   };
 
-  const nextStep = () => setStep(s => s + 1);
-  const prevStep = () => setStep(s => s - 1);
+  const nextStep = (e) => { e?.preventDefault(); setStep(s => s + 1); };
+  const prevStep = (e) => { e?.preventDefault(); setStep(s => s - 1); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!unwrappedParams?.id) return;
+
+    // Prevent saving if there are unsaved result details
+    if (form.temp_res_year || form.temp_res_name || form.temp_res_rank) {
+      alert("You have unsaved details in 'Add Student Result'. Please clicked 'Add Result' to save them to the list, or clear the inputs.");
+      return;
+    }
 
     setSaving(true);
     setError('');
 
     const payload = {
       ...form,
-      exam_types: form.exam_types.split(',').map(s => s.trim()).filter(Boolean),
-      courses_offered: form.courses_offered.split(',').map(s => s.trim()).filter(Boolean),
-      streams: form.streams.split(',').map(s => s.trim()).filter(Boolean),
+      exam_types: form.exam_types,
+      courses_offered: form.courses_offered,
+      streams: form.streams,
       fee_range_min: Number(form.fee_range_min) || undefined,
       fee_range_max: Number(form.fee_range_max) || undefined,
+      faculty_count: Number(form.faculty_count) || undefined,
       student_count: Number(form.student_count) || undefined,
       non_academic_staff_count: Number(form.non_academic_staff_count) || undefined,
       subject_wise_faculty: form.subject_wise_faculty_input
@@ -273,10 +326,29 @@ export default function EditCoaching({ params }) {
     }
   };
 
+  const handleAddResult = () => {
+    if (form.temp_res_year && form.temp_res_name && form.temp_res_rank) {
+      setForm(f => ({
+        ...f,
+        top_results: [...(f.top_results || []), { year: Number(f.temp_res_year), name: f.temp_res_name, rank_or_score: f.temp_res_rank, exam: f.temp_res_exam, student_enrollment_id: f.temp_res_enrollment }],
+        temp_res_name: '', temp_res_rank: '', temp_res_enrollment: '' // Keep year and exam populated for convenience? Or clear all? original code cleared specific ones.
+      }));
+    }
+  };
+
+  // Prevent form submission on Enter key in Result inputs
+  const handleResultKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddResult();
+    }
+  };
+
   const steps = [
     { title: "Basic Info", icon: Building },
     { title: "Courses", icon: BookOpen },
     { title: "Facilities", icon: LayoutGrid },
+    { title: "Faculty", icon: Users },
     { title: "Results", icon: Trophy }
   ];
   const progress = (step / steps.length) * 100;
@@ -303,8 +375,8 @@ export default function EditCoaching({ params }) {
             {steps.map((s, i) => (
               <div key={i} className={`flex flex-col items-center ${step > i ? 'text-blue-600' : step === i + 1 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step > i + 1 ? 'bg-blue-600 border-blue-600 text-white' :
-                    step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
-                      'bg-white border-gray-300 text-gray-400'
+                  step === i + 1 ? 'bg-white border-blue-600 text-blue-600' :
+                    'bg-white border-gray-300 text-gray-400'
                   }`}>
                   <s.icon className="w-5 h-5" />
                 </div>
@@ -326,7 +398,13 @@ export default function EditCoaching({ params }) {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-8">
+          <form
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.preventDefault();
+            }}
+            onSubmit={handleSubmit}
+            className="p-8"
+          >
 
             {/* STEP 1: BASIC INFO */}
             {step === 1 && (
@@ -364,8 +442,31 @@ export default function EditCoaching({ params }) {
                   <div className="md:col-span-2">
                     <FormField label="Address Line 1" name="address_line1" value={form.address_line1} onChange={handleChange} icon={MapPin} />
                   </div>
-                  <FormField label="City" name="city" value={form.city} onChange={handleChange} required icon={MapPin} />
-                  <FormField label="State" name="state" value={form.state} onChange={handleChange} required icon={MapPin} />
+                  <FormField
+                    label="State"
+                    name="state"
+                    value={form.state}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setForm(prev => ({ ...prev, city: '' }));
+                    }}
+                    required
+                    icon={MapPin}
+                    options={STATES.map(s => ({ value: s, label: s }))}
+                    placeholder="Select State"
+                  />
+
+                  <FormField
+                    label="City"
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    required
+                    icon={MapPin}
+                    disabled={!form.state}
+                    options={form.state && INDIAN_LOCATIONS[form.state] ? INDIAN_LOCATIONS[form.state].map(c => ({ value: c, label: c })) : []}
+                    placeholder={form.state ? "Select City" : "Select State First"}
+                  />
                 </div>
 
                 {/* Mode */}
@@ -392,61 +493,307 @@ export default function EditCoaching({ params }) {
                   </div>
                 </div>
 
-                {/* Course Selection */}
+                {/* Structured Course Selection */}
                 <div className="space-y-4">
                   <h4 className="text-md font-bold text-gray-800 flex items-center gap-2">
-                    <BookCheck className="w-5 h-5 text-blue-600" /> Courses & Programs
+                    <BookCheck className="w-5 h-5 text-blue-600" /> Select Coaching Categories
                   </h4>
-                  <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                    {Object.entries(COURSE_CATEGORIES).map(([category, subData], idx) => (
-                      <div key={idx} className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                          <h5 className="font-semibold text-blue-800">{category}</h5>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAll(category, subData)}
-                            className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition"
-                          >
-                            Select All
-                          </button>
-                        </div>
-                        {Object.entries(subData).map(([subKey, items]) => (
-                          <div key={subKey} className="mb-4 last:mb-0">
-                            {(subKey !== 'Courses' && subKey !== 'Programs' && subKey !== 'Types' && subKey !== 'Exams' && subKey !== 'Boards') && (
-                              <h6 className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center">
-                                <span className={`w-1.5 h-1.5 rounded-full mr-2 ${subKey === 'Classes' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
-                                {subKey}
-                              </h6>
-                            )}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {items.map(item => {
-                                const uniqueVal = `${item}`;
-                                const isChecked = form.course_categories?.[category]?.includes(uniqueVal) || false;
-                                return (
-                                  <label key={uniqueVal} className={`flex items-start gap-2 p-2 rounded border cursor-pointer text-sm transition-all ${isChecked ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
-                                    }`}>
-                                    <input
-                                      type="checkbox"
-                                      className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 bg-white"
-                                      checked={isChecked}
-                                      onChange={() => handleCategoryChange(category, uniqueVal)}
-                                    />
-                                    <span className="leading-tight text-xs">{item}</span>
-                                  </label>
-                                );
-                              })}
+                  <div className="grid grid-cols-1 gap-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                    {Object.entries(COACHING_CATEGORIES).map(([catKey, catData]) => {
+                      const isCatSelected = form.categories?.some(c => c.key === catKey);
+                      const selectedCatData = form.categories?.find(c => c.key === catKey) || { exams: [], subjects: [] };
+
+                      return (
+                        <div key={catKey} className={`p-5 rounded-xl shadow-sm border transition-all ${isCatSelected ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-200 hover:border-blue-300'}`}>
+
+                          {/* Category Header */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                                  checked={isCatSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      // Add category
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: [...(prev.categories || []), { key: catKey, exams: [], subjects: [] }]
+                                      }));
+                                    } else {
+                                      // Remove category
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: prev.categories.filter(c => c.key !== catKey)
+                                      }));
+                                    }
+                                  }}
+                                />
+                                <span className="font-bold text-gray-800 text-lg">{catData.label}</span>
+                              </label>
+                              <p className="text-xs text-gray-500 mt-1 ml-7">{catData.description}</p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ))}
+
+                          {/* Expanded Selection Area */}
+                          {isCatSelected && (
+                            <div className="mt-4 ml-7 space-y-6 animate-in fade-in slide-in-from-top-2">
+
+                              {/* Exams & Courses Section */}
+                              <div className="space-y-4">
+                                <h6 className="text-sm font-bold text-blue-700 uppercase flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                  Select Exams & Courses
+                                </h6>
+
+                                {catData.exams.map((examObj) => {
+                                  const examName = examObj.exam || examObj;
+                                  const availableCourses = examObj.courses || [];
+
+                                  const selectedExamObj = selectedCatData.exams.find(e => e.name === examName);
+                                  const isExamSelected = !!selectedExamObj;
+
+                                  return (
+                                    <div key={examName} className={`border rounded-lg p-3 transition-colors ${isExamSelected ? 'bg-white border-blue-200 shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
+                                      {/* Exam Checkbox */}
+                                      <label className="flex items-center gap-2 cursor-pointer mb-2">
+                                        <input
+                                          type="checkbox"
+                                          className="w-4 h-4 text-blue-600 rounded focus:ring-0 border-gray-300"
+                                          checked={isExamSelected}
+                                          onChange={(e) => {
+                                            setForm(prev => ({
+                                              ...prev,
+                                              categories: prev.categories.map(c => {
+                                                if (c.key === catKey) {
+                                                  let newExams = [...c.exams];
+                                                  if (e.target.checked) {
+                                                    // Add Exam with empty courses initially
+                                                    newExams.push({ name: examName, courses: [] });
+                                                  } else {
+                                                    // Remove Exam
+                                                    newExams = newExams.filter(x => x.name !== examName);
+                                                  }
+                                                  return { ...c, exams: newExams };
+                                                }
+                                                return c;
+                                              })
+                                            }));
+                                          }}
+                                        />
+                                        <span className={`font-semibold text-sm ${isExamSelected ? 'text-blue-800' : 'text-gray-600'}`}>{examName}</span>
+                                      </label>
+
+                                      {/* Custom Input for "Other" */}
+                                      {isExamSelected && examName === 'Other' && (
+                                        <div className="ml-6 mb-3 animate-in fade-in slide-in-from-top-1">
+                                          <input
+                                            type="text"
+                                            placeholder="Specify Exam Name (e.g. Olympiad Level 2)"
+                                            className="w-full p-2 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-100 outline-none"
+                                            value={selectedExamObj.custom_name || ''}
+                                            onChange={(e) => {
+                                              setForm(prev => ({
+                                                ...prev,
+                                                categories: prev.categories.map(c => {
+                                                  if (c.key === catKey) {
+                                                    const newExams = c.exams.map(ex => {
+                                                      if (ex.name === examName) {
+                                                        return { ...ex, custom_name: e.target.value };
+                                                      }
+                                                      return ex;
+                                                    });
+                                                    return { ...c, exams: newExams };
+                                                  }
+                                                  return c;
+                                                })
+                                              }));
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {/* Courses Grid (Only show if Exam Selected) */}
+                                      {isExamSelected && (
+                                        <div className="ml-6 mt-2">
+                                          <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Select Courses (Optional)</p>
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1">
+                                            {[...availableCourses, 'Other'].map(courseName => {
+                                              // Check if selected (handle both string and object for robustness)
+                                              const selectedCourseIdx = selectedExamObj.courses.findIndex(c =>
+                                                (typeof c === 'string' ? c : c.name) === courseName
+                                              );
+                                              const isCourseSelected = selectedCourseIdx !== -1;
+                                              const selectedCourseData = isCourseSelected ? selectedExamObj.courses[selectedCourseIdx] : null;
+
+                                              return (
+                                                <div key={courseName} className="col-span-1">
+                                                  <label className={`flex items-start gap-2 p-1.5 rounded border cursor-pointer text-xs transition-all ${isCourseSelected ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}>
+                                                    <input
+                                                      type="checkbox"
+                                                      className="mt-0.5 rounded text-blue-500 focus:ring-0 border-gray-300 w-3 h-3"
+                                                      checked={isCourseSelected}
+                                                      onChange={(e) => {
+                                                        setForm(prev => ({
+                                                          ...prev,
+                                                          categories: prev.categories.map(c => {
+                                                            if (c.key === catKey) {
+                                                              const newExams = c.exams.map(ex => {
+                                                                if (ex.name === examName) {
+                                                                  let newCourses = [...ex.courses];
+                                                                  if (e.target.checked) {
+                                                                    // Add New Course Object
+                                                                    newCourses.push({ name: courseName, custom_name: '' });
+                                                                  } else {
+                                                                    // Remove
+                                                                    newCourses = newCourses.filter(cx => (typeof cx === 'string' ? cx : cx.name) !== courseName);
+                                                                  }
+                                                                  return { ...ex, courses: newCourses };
+                                                                }
+                                                                return ex;
+                                                              });
+                                                              return { ...c, exams: newExams };
+                                                            }
+                                                            return c;
+                                                          })
+                                                        }));
+                                                      }}
+                                                    />
+                                                    <span className="leading-tight">{courseName}</span>
+                                                  </label>
+
+                                                  {/* Custom Input for Other Course */}
+                                                  {isCourseSelected && courseName === 'Other' && (
+                                                    <input
+                                                      type="text"
+                                                      placeholder="Specify Course Name"
+                                                      className="w-full mt-1 p-1.5 text-[10px] border border-blue-200 rounded focus:ring-1 focus:ring-blue-100 outline-none animate-in fade-in"
+                                                      value={selectedCourseData?.custom_name || ''}
+                                                      onChange={(e) => {
+                                                        setForm(prev => ({
+                                                          ...prev,
+                                                          categories: prev.categories.map(c => {
+                                                            if (c.key === catKey) {
+                                                              const newExams = c.exams.map(ex => {
+                                                                if (ex.name === examName) {
+                                                                  const newCourses = ex.courses.map((cx, idx) => {
+                                                                    if (idx === selectedCourseIdx) {
+                                                                      return { ...cx, custom_name: e.target.value };
+                                                                    }
+                                                                    return cx;
+                                                                  });
+                                                                  return { ...ex, courses: newCourses };
+                                                                }
+                                                                return ex;
+                                                              });
+                                                              return { ...c, exams: newExams };
+                                                            }
+                                                            return c;
+                                                          })
+                                                        }));
+                                                      }}
+                                                      onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                  )}
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Subjects Section */}
+                              <div className="bg-white p-4 rounded-xl border border-gray-100">
+                                <div className="flex justify-between items-center mb-3">
+                                  <h6 className="text-sm font-bold text-green-700 uppercase flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                    Subjects Offered
+                                  </h6>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const allSub = catData.subjects;
+                                      const currentSub = selectedCatData.subjects;
+                                      const isAll = allSub.every(s => currentSub.includes(s));
+
+                                      setForm(prev => ({
+                                        ...prev,
+                                        categories: prev.categories.map(c => {
+                                          if (c.key === catKey) {
+                                            return { ...c, subjects: isAll ? [] : [...allSub] };
+                                          }
+                                          return c;
+                                        })
+                                      }));
+                                    }}
+                                    className="text-[10px] bg-green-50 text-green-600 px-2.5 py-1 rounded-full font-bold hover:bg-green-100 transition"
+                                  >
+                                    Select All
+                                  </button>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                  {catData.subjects.map(subj => (
+                                    <label key={subj} className={`flex items-start gap-2 p-1.5 rounded-lg border cursor-pointer text-xs transition-all ${selectedCatData.subjects.includes(subj) ? 'bg-green-50 border-green-200 text-green-800' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'}`}>
+                                      <input
+                                        type="checkbox"
+                                        className="mt-0.5 rounded text-green-600 focus:ring-0 border-gray-300 w-3 h-3"
+                                        checked={selectedCatData.subjects.includes(subj)}
+                                        onChange={(e) => {
+                                          setForm(prev => ({
+                                            ...prev,
+                                            categories: prev.categories.map(c => {
+                                              if (c.key === catKey) {
+                                                const newSub = e.target.checked
+                                                  ? [...c.subjects, subj]
+                                                  : c.subjects.filter(x => x !== subj);
+                                                return { ...c, subjects: newSub };
+                                              }
+                                              return c;
+                                            })
+                                          }));
+                                        }}
+                                      />
+                                      <span className="leading-tight">{subj}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Manual Entry */}
                 <div className="pt-4 p-5 bg-yellow-50 rounded-xl border border-yellow-200 space-y-4">
                   <h4 className="text-sm font-bold text-yellow-800 uppercase tracking-wide">Additional Details (Manual)</h4>
-                  <FormField label="Other Streams" name="streams" value={form.streams} onChange={handleChange} placeholder="PCM, PCB, etc." />
+                  <TagInput
+                    label="Exam Types"
+                    value={form.exam_types}
+                    onChange={(tags) => setForm(f => ({ ...f, exam_types: tags }))}
+                    placeholder="NEET, JEE, UPSC..."
+                  />
+                  <TagInput
+                    label="Courses Offered"
+                    value={form.courses_offered}
+                    onChange={(tags) => setForm(f => ({ ...f, courses_offered: tags }))}
+                    placeholder="2 Year Program, Crash Course..."
+                  />
+                  <TagInput
+                    label="Other Streams"
+                    value={form.streams}
+                    onChange={(tags) => setForm(f => ({ ...f, streams: tags }))}
+                    placeholder="PCM, PCB, etc."
+                  />
                 </div>
               </div>
             )}
@@ -486,7 +833,10 @@ export default function EditCoaching({ params }) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Total Students" name="student_count" type="number" value={form.student_count} onChange={handleChange} placeholder="e.g. 500" icon={Users} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField label="Number of Teachers" name="faculty_count" type="number" value={form.faculty_count} onChange={handleChange} placeholder="e.g. 15" icon={User} />
+                    <FormField label="Total Students" name="student_count" type="number" value={form.student_count} onChange={handleChange} placeholder="e.g. 500" icon={Users} />
+                  </div>
                   <FormField label="Non-Academic Staff" name="non_academic_staff_count" type="number" value={form.non_academic_staff_count} onChange={handleChange} placeholder="e.g. 20" icon={Users} />
                 </div>
 
@@ -512,8 +862,83 @@ export default function EditCoaching({ params }) {
               </div>
             )}
 
-            {/* STEP 4: RESULTS */}
+            {/* STEP 4: FACULTY */}
             {step === 4 && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <h3 className="text-lg font-bold text-gray-800 border-b pb-3 mb-6 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-500" /> Manage Faculty
+                </h3>
+
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+                  <h4 className="text-sm font-bold text-blue-800 mb-4 uppercase tracking-wide">Add New Faculty Member</h4>
+
+                  {/* ID Lookup */}
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      placeholder="Enter Teacher ID to Auto-fill"
+                      value={form.temp_fac_id}
+                      onChange={(e) => setForm(f => ({ ...f, temp_fac_id: e.target.value }))}
+                      className="flex-1 p-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTeacherLookup}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-bold disabled:opacity-50"
+                      disabled={loading}
+                    >
+                      {loading ? 'Fetching...' : 'Fetch Details'}
+                    </button>
+                  </div>
+
+                  {/* Manual / Auto-filled Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <input type="text" placeholder="Name *" value={form.temp_fac_name} onChange={(e) => setForm(f => ({ ...f, temp_fac_name: e.target.value }))} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="Subject" value={form.temp_fac_subject} onChange={(e) => setForm(f => ({ ...f, temp_fac_subject: e.target.value }))} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="Experience (e.g. 5 Years)" value={form.temp_fac_exp} onChange={(e) => setForm(f => ({ ...f, temp_fac_exp: e.target.value }))} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                  </div>
+
+                  <button type="button" onClick={handleAddFaculty} className="w-full sm:w-auto bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 text-sm font-bold flex items-center justify-center">
+                    <Plus className="w-4 h-4 mr-2" /> Add Faculty to List
+                  </button>
+                </div>
+
+                {/* List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {form.top_faculties?.map((fac, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white shadow-sm relative group">
+                      {fac.photo_url ? (
+                        <img src={fac.photo_url} alt={fac.name} className="w-12 h-12 rounded-full object-cover border" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                          <User className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div>
+                        <h5 className="font-bold text-gray-900 text-sm">{fac.name}</h5>
+                        <p className="text-xs text-blue-600 font-medium">{fac.subject}</p>
+                        {fac.teacher_id && <p className="text-[10px] text-gray-400 font-mono mt-0.5">ID: {fac.teacher_id}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, top_faculties: f.top_faculties.filter((_, i) => i !== idx) }))}
+                        className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!form.top_faculties || form.top_faculties.length === 0) && (
+                    <div className="col-span-full text-center py-8 text-gray-400 italic bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                      No faculty members added yet. Add manually or search by ID.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: RESULTS */}
+            {step === 5 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h3 className="text-lg font-bold text-gray-800 border-b pb-3 mb-6 flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-blue-500" /> Results & Achievements
@@ -522,21 +947,13 @@ export default function EditCoaching({ params }) {
                 <div className="bg-green-50 p-6 rounded-xl border border-green-100">
                   <h4 className="text-sm font-bold text-green-800 mb-4 uppercase tracking-wide">Add Student Result</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
-                    <input type="number" placeholder="Year" name="temp_res_year" value={form.temp_res_year} onChange={handleChange} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" placeholder="Name" name="temp_res_name" value={form.temp_res_name} onChange={handleChange} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" placeholder="Rank/Score" name="temp_res_rank" value={form.temp_res_rank} onChange={handleChange} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" placeholder="Exam" name="temp_res_exam" value={form.temp_res_exam} onChange={handleChange} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" placeholder="ID" name="temp_res_enrollment" value={form.temp_res_enrollment} onChange={handleChange} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="number" placeholder="Year" name="temp_res_year" value={form.temp_res_year} onChange={handleChange} onKeyDown={handleResultKeyDown} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="Name" name="temp_res_name" value={form.temp_res_name} onChange={handleChange} onKeyDown={handleResultKeyDown} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="Rank/Score" name="temp_res_rank" value={form.temp_res_rank} onChange={handleChange} onKeyDown={handleResultKeyDown} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="Exam" name="temp_res_exam" value={form.temp_res_exam} onChange={handleChange} onKeyDown={handleResultKeyDown} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" placeholder="ID" name="temp_res_enrollment" value={form.temp_res_enrollment} onChange={handleChange} onKeyDown={handleResultKeyDown} className="p-2.5 rounded-lg border border-gray-300 text-sm" />
                   </div>
-                  <button type="button" onClick={() => {
-                    if (form.temp_res_year && form.temp_res_name && form.temp_res_rank) {
-                      setForm(f => ({
-                        ...f,
-                        top_results: [...(f.top_results || []), { year: Number(f.temp_res_year), name: f.temp_res_name, rank_or_score: f.temp_res_rank, exam: f.temp_res_exam, student_enrollment_id: f.temp_res_enrollment }],
-                        temp_res_name: '', temp_res_rank: '', temp_res_enrollment: ''
-                      }));
-                    }
-                  }} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-bold flex items-center">
+                  <button type="button" onClick={handleAddResult} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-bold flex items-center">
                     <Plus className="w-4 h-4 mr-1" /> Add Result
                   </button>
                 </div>
@@ -553,9 +970,14 @@ export default function EditCoaching({ params }) {
                         <span className="font-bold text-green-600">Rank: {res.rank_or_score}</span>
                         <span className="text-gray-500 text-xs">ID: {res.student_enrollment_id}</span>
                       </div>
-                      <button type="button" onClick={() => setForm(f => ({ ...f, top_results: f.top_results.filter((_, i) => i !== idx) }))} className="text-red-400 hover:text-red-600 p-1">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => handleEditResult(res, idx)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, top_results: f.top_results.filter((_, i) => i !== idx) }))} className="text-red-400 hover:text-red-600 p-1" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {form.top_results?.length === 0 && (
@@ -578,11 +1000,11 @@ export default function EditCoaching({ params }) {
               )}
 
               {step < steps.length ? (
-                <button type="button" onClick={nextStep} className="flex items-center px-8 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all">
+                <button key="next-btn" type="button" onClick={nextStep} className="flex items-center px-8 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all">
                   Next <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               ) : (
-                <button type="submit" disabled={saving} className="flex items-center px-8 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+                <button key="submit-btn" type="submit" disabled={saving} className="flex items-center px-8 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed">
                   {saving ? 'Saving...' : 'Update Details'}
                   {!saving && <Save className="w-5 h-5 ml-2" />}
                 </button>

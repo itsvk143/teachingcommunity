@@ -11,20 +11,14 @@ import {
   Mail,
   Filter,
   User,
-  Loader2
+  Loader2,
+  Layers,
+  BookOpen
 } from 'lucide-react';
+import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
 
-const EXAM_OPTIONS = [
-  'JEE Mains',
-  'JEE Advanced',
-  'NEET',
-  'Boards (9-10)',
-  'Boards (11-12)',
-  'Olympiads',
-  'Foundation (6-8)',
-  'Foundation (8-10)',
-  'Other'
-];
+const ALL_EXAMS = Array.from(new Set(Object.values(TEACHING_CATEGORIES).flatMap(c => c.exams))).sort();
+const ALL_SUBJECTS = Array.from(new Set(Object.values(TEACHING_CATEGORIES).flatMap(c => c.subjects))).sort();
 
 export default function TeachersList() {
   const { data: session } = useSession();
@@ -36,6 +30,7 @@ export default function TeachersList() {
   /* ================= FILTER STATES ================= */
   const [filters, setFilters] = useState({
     search: '', // Combined Name/Email search for cleaner UI
+    category: '',
     subject: '',
     experience: '',
     state: '',
@@ -106,7 +101,12 @@ export default function TeachersList() {
         : true;
 
 
-      return isSearchMatch && subjectMatch && experienceMatch && stateMatch && (cityMatch || !filters.city) && (examMatch || !filters.exam);
+      const categoryMatch = filters.category
+        ? (teacher.categories?.includes(filters.category) || teacher.category === filters.category) // Support both new array and old string
+        : true;
+
+
+      return isSearchMatch && categoryMatch && subjectMatch && experienceMatch && stateMatch && (cityMatch || !filters.city) && (examMatch || !filters.exam);
     });
 
     setFilteredTeachers(filtered);
@@ -163,27 +163,58 @@ export default function TeachersList() {
             />
           </div>
 
-          {/* Subject Filter */}
+          {/* Category Filter */}
           <div className="md:col-span-2 relative">
-            <input
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Layers className="h-4 w-4 text-gray-400" />
+            </div>
+            <select
+              name="category"
+              value={filters.category}
+              onChange={handleChange}
+              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700 active:text-gray-900"
+            >
+              <option value="">All Categories</option>
+              {Object.entries(TEACHING_CATEGORIES).map(([key, val]) => (
+                <option key={key} value={key}>{val.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subject Filter (Dropdown now preferred since we have structure, but keep text search capability or allow dropdown?) 
+              Let's use a Text Input with Datalist or just simple Text Input for flexibility, 
+              OR if a category is selected, show numeric list.
+          */}
+          <div className="md:col-span-2 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <BookOpen className="h-4 w-4 text-gray-400" />
+            </div>
+            <select
               name="subject"
-              placeholder="Subject"
               value={filters.subject}
               onChange={handleChange}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
-            />
+              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700"
+            >
+              <option value="">All Subjects</option>
+              {(filters.category ? TEACHING_CATEGORIES[filters.category].subjects : ALL_SUBJECTS).map(sub => (
+                <option key={sub} value={sub}>{sub}</option>
+              ))}
+            </select>
           </div>
 
           {/* Exam Filter Dropdown */}
           <div className="md:col-span-2 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <BookOpen className="h-4 w-4 text-gray-400" />
+            </div>
             <select
               name="exam"
               value={filters.exam}
               onChange={handleChange}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700 active:text-gray-900"
+              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700 active:text-gray-900"
             >
               <option value="">All Exams</option>
-              {EXAM_OPTIONS.map((exam) => (
+              {(filters.category ? TEACHING_CATEGORIES[filters.category].exams : ALL_EXAMS).map((exam) => (
                 <option key={exam} value={exam}>
                   {exam}
                 </option>

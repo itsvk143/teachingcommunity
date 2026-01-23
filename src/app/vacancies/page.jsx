@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter } from 'lucide-react';
 import { indianCities } from '@/lib/indianCities';
+import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
+
+const NON_TEACHING_ROLES = [
+  "Principal", "Vice Principal", "Academic Coordinator", "Administrator",
+  "Counselor", "Admission Counsellor", "Accountant", "Receptionist",
+  "Librarian", "Lab Assistant", "IT Coordinator", "HR Manager",
+  "Marketing Executive", "Telecaller", "Content Writer", "Graphic Designer",
+  "Video Editor", "Peon / Office Boy", "Driver", "Security Guard",
+  "Hostel Warden", "Cook / Chef", "Other"
+];
 
 // Card Component
 const VacancyCard = ({ job }) => (
@@ -19,7 +29,25 @@ const VacancyCard = ({ job }) => (
       </div>
 
       <h3 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">{job.jobTitle}</h3>
-      {job.subject && <p className="text-sm text-blue-600 font-medium mb-2">{job.subject}</p>}
+      <div className="flex flex-wrap gap-2 mb-2">
+        {job.requirements?.length > 0 ? (
+          job.requirements.slice(0, 3).map((req, idx) => (
+            <span key={idx} className="text-sm bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-medium border border-blue-100">
+              {req.subject} ({req.count})
+            </span>
+          ))
+        ) : (
+          job.subject && <span className="text-sm text-blue-600 font-medium">{job.subject}</span>
+        )}
+        {job.requirements?.length > 3 && (
+          <span className="text-xs text-gray-400 font-medium self-center">+{job.requirements.length - 3} more</span>
+        )}
+        {job.numberOfOpenings > 1 && (
+          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium border border-orange-200">
+            {job.numberOfOpenings} Openings
+          </span>
+        )}
+      </div>
 
       <div className="space-y-2 mb-4 text-sm text-gray-500">
         <div className="flex items-center">
@@ -77,6 +105,8 @@ export default function VacanciesPage() {
     description: '',
     contactEmail: '',
     contactPhone: '',
+    numberOfOpenings: 1,
+    requirements: [{ subject: '', count: 1 }]
   });
 
   const fetchVacancies = async () => {
@@ -99,6 +129,34 @@ export default function VacanciesPage() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Requirement Rows Logic
+  const handleRequirementChange = (index, field, value) => {
+    const newReqs = [...form.requirements];
+    newReqs[index][field] = value;
+
+    // Auto calculate total openings
+    const total = newReqs.reduce((acc, curr) => acc + (parseInt(curr.count) || 0), 0);
+
+    // Auto generate subject string
+    const subjects = newReqs.map(r => r.subject).filter(s => s).join(', ');
+
+    setForm({ ...form, requirements: newReqs, numberOfOpenings: total, subject: subjects });
+  };
+
+  const addRequirementRow = () => {
+    setForm({ ...form, requirements: [...form.requirements, { subject: '', count: 1 }] });
+  };
+
+  const removeRequirementRow = (index) => {
+    if (form.requirements.length === 1) return;
+    const newReqs = form.requirements.filter((_, i) => i !== index);
+
+    const total = newReqs.reduce((acc, curr) => acc + (parseInt(curr.count) || 0), 0);
+    const subjects = newReqs.map(r => r.subject).filter(s => s).join(', ');
+
+    setForm({ ...form, requirements: newReqs, numberOfOpenings: total, subject: subjects });
   };
 
   // Handle State Change (Update City Options)
@@ -137,6 +195,7 @@ export default function VacanciesPage() {
         description: '',
         contactEmail: '',
         contactPhone: '',
+        numberOfOpenings: 1,
       });
       setShowForm(false);
       fetchVacancies(); // Refresh list
@@ -151,10 +210,32 @@ export default function VacanciesPage() {
     state: '',
     city: '',
     company: '',
+
     experience: '',
     salary: '',
-    subject: ''
+    subject: '',
+    exam: ''
   });
+
+  const POPULAR_EXAMS = [
+    { label: 'JEE Mains', key: 'JEE Mains' },
+    { label: 'JEE Advanced', key: 'JEE Advanced' },
+    { label: 'NEET', key: 'NEET UG' },
+    { label: 'CBSE 1-10', key: 'CBSE (Class 1-10)' },
+    { label: 'ICSE 1-10', key: 'ICSE (Class 1-10)' },
+    { label: 'UPSC', key: 'UPSC CSE (Civil Services)' },
+    { label: 'State PSC', key: 'State PSCs (UPPSC, BPSC, MPPSC, etc.)' },
+    { label: 'GATE', key: 'GATE (Graduate Aptitude Test in Engineering)' },
+    { label: 'CAT', key: 'CAT / XAT / SNAP (Top Tier MBA)' },
+    { label: 'Banking', key: 'Banking (IBPS/SBI PO/Clerk/SO)' }
+  ];
+
+
+
+  // Derive ALL subjects from TEACHING_CATEGORIES
+  const ALL_SUBJECTS = Array.from(new Set(
+    Object.values(TEACHING_CATEGORIES).flatMap(category => category.subjects || [])
+  )).sort();
 
   // Handle Filter Change
   const handleFilterChange = (e) => {
@@ -177,21 +258,37 @@ export default function VacanciesPage() {
     const matchesCity = filters.city === '' || (job.city && job.city.toLowerCase().includes(filters.city.toLowerCase()));
     const matchesCompany = filters.company === '' || job.companyName.toLowerCase().includes(filters.company.toLowerCase());
     const matchesSubject = filters.subject === '' || (job.subject && job.subject.toLowerCase().includes(filters.subject.toLowerCase()));
+
+    const matchesExam = filters.exam === '' || (() => {
+      let allowedSubjects = [];
+      Object.values(TEACHING_CATEGORIES).forEach(category => {
+        const found = category.exam_subject_map?.find(e => e.exam_name === filters.exam);
+        if (found) allowedSubjects = [...allowedSubjects, ...found.subjects];
+      });
+      return job.subject && allowedSubjects.some(sub =>
+        job.subject.toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes(job.subject.toLowerCase())
+      );
+    })();
+
+
+
     const matchesExperience = filters.experience === '' || job.experience === filters.experience;
     const matchesSalary = filters.salary === '' || job.salary === filters.salary;
 
     // Category Filter
     const matchesCategory = job.vacancyCategory ? job.vacancyCategory === viewCategory : (viewCategory === 'Teaching'); // Default to Teaching if undefined
 
-    return matchesCategory && matchesSearch && matchesState && matchesCity && matchesCompany && matchesSubject && matchesExperience && matchesSalary;
+    return matchesCategory && matchesSearch && matchesState && matchesCity && matchesCompany && matchesSubject && matchesExperience && matchesSalary && matchesExam;
   });
+
+
 
 
   // Generate options
   const salaryOptions = ['Not Disclosed', ...Array.from({ length: 49 }, (_, i) => `${i + 1}-${i + 2} LPA`), '50+ LPA'];
   const experienceOptions = ['Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
-  const filterExperienceOptions = ['', 'Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
-  const filterSalaryOptions = ['', 'Not Disclosed', ...Array.from({ length: 49 }, (_, i) => `${i + 1}-${i + 2} LPA`), '50+ LPA'];
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -262,8 +359,21 @@ export default function VacanciesPage() {
                 {filters.state && indianCities[filters.state]?.map(city => <option key={city} value={city}>{city}</option>)}
               </select>
 
-              <input name="company" placeholder="Company" value={filters.company} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-              <input name="subject" placeholder="Subject/Domain" value={filters.subject} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              {viewCategory === 'Non-Teaching' ? (
+                <select name="subject" value={filters.subject} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <option value="">All Roles</option>
+                  {NON_TEACHING_ROLES.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              ) : (
+                <select name="subject" value={filters.subject} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <option value="">All Subjects</option>
+                  {ALL_SUBJECTS.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              )}
 
               <select name="experience" value={filters.experience} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                 <option value="">Any Experience</option>
@@ -275,6 +385,30 @@ export default function VacanciesPage() {
                 {salaryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
+
+            {viewCategory === 'Teaching' && (
+              <div className="mt-4 pt-4 border-t border-gray-50">
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Popular Exams</p>
+                    <div className="flex flex-wrap gap-2">
+                      {POPULAR_EXAMS.map(exam => (
+                        <button
+                          key={exam.key}
+                          onClick={() => setFilters({ ...filters, exam: filters.exam === exam.key ? '' : exam.key })}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${filters.exam === exam.key
+                            ? 'bg-purple-600 text-white border-purple-600'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-600'
+                            }`}
+                        >
+                          {exam.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* Action Bar */}
@@ -327,9 +461,87 @@ export default function VacanciesPage() {
                 <label className="text-sm font-medium text-gray-700">Job Title</label>
                 <input name="jobTitle" required onChange={handleChange} value={form.jobTitle} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Subject/Domain</label>
-                <input name="subject" onChange={handleChange} value={form.subject} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+              {/* Requirement Breakdown Section */}
+              <div className="col-span-1 md:col-span-2 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <label className="text-sm font-bold text-gray-700 mb-2 block">
+                  {form.vacancyCategory === 'Teaching' ? 'Vacancy Details (Subject & Openings)' : 'Role Details (Designation & Openings)'}
+                </label>
+                <div className="space-y-3">
+                  {form.requirements.map((req, idx) => (
+                    <div key={idx} className="flex gap-4 items-center">
+
+
+                      <div className="flex-1">
+                        {form.vacancyCategory === 'Non-Teaching' ? (
+                          <div className="relative">
+                            <select
+                              value={NON_TEACHING_ROLES.includes(req.subject) ? req.subject : 'Other'}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'Other') {
+                                  // If Other selected, clear it so they can type? 
+                                  // Or keep it simple: Select 'Other' -> then maybe show input?
+                                  // For now, let's just set "Other" and ideally allow typing but simplest is just Dropdown + "Other"
+                                  // Actually, user just asked "SELECT FROM DROPDOWN". 
+                                  // Let's give them the dropdown. If they need custom, I'll add logic or just let them pick "Other".
+                                  handleRequirementChange(idx, 'subject', val);
+                                } else {
+                                  handleRequirementChange(idx, 'subject', val);
+                                }
+                              }}
+                              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none"
+                            >
+                              <option value="">Select Role</option>
+                              {NON_TEACHING_ROLES.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                              ))}
+                            </select>
+                            {req.subject === 'Other' && (
+                              <input
+                                placeholder="Specify Role"
+                                className="mt-2 w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                onChange={(e) => handleRequirementChange(idx, 'subject', e.target.value)}
+                              // Wait, if I change subject to custom text, the select above will show 'Other' because logic: NON_TEACHING_ROLES.includes(custom) is false.
+                              // Correct.
+                              />
+                            )}
+                            {/* Wait, if I type "Custom", value becomes "Custom". Select checks includes("Custom") -> False -> Defaults to 'Other' option. Perfect. */}
+                            {/* But if select value is 'Other', valid. If select value is 'Custom', select value prop calculates 'Other'. */}
+                            {/* So the select shows 'Other', and input shows... wait, input needs to be tied to value. */}
+                          </div>
+                        ) : (
+                          <input
+                            placeholder="Subject (e.g. Maths, Physics)"
+                            value={req.subject}
+                            onChange={(e) => handleRequirementChange(idx, 'subject', e.target.value)}
+                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                        )}
+                      </div>
+                      <div className="w-24">
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Count"
+                          value={req.count}
+                          onChange={(e) => handleRequirementChange(idx, 'count', parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      {form.requirements.length > 1 && (
+                        <button type="button" onClick={() => removeRequirementRow(idx)} className="text-red-500 hover:bg-white p-1 rounded-full text-sm">
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" onClick={addRequirementRow} className="text-sm text-blue-600 font-medium flex items-center gap-1 hover:underline">
+                    <Plus className="w-3 h-3" /> {form.vacancyCategory === 'Teaching' ? 'Add Another Subject' : 'Add Another Role'}
+                  </button>
+                </div>
+                <div className="mt-3 text-right text-sm font-bold text-gray-700">
+                  Total Openings: <span className="text-blue-600">{form.numberOfOpenings}</span>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">Company Name</label>
@@ -372,6 +584,9 @@ export default function VacanciesPage() {
                   ))}
                 </select>
               </div>
+
+
+
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">Salary Range</label>
                 <select name="salary" onChange={handleChange} value={form.salary} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">

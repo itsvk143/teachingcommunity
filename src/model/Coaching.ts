@@ -59,9 +59,27 @@ const CoachingSchema = new mongoose.Schema(
       default: [],
     },
     course_categories: {
-      type: Object, // Structured mapping: { "School Tuition": ["Class 6", "Maths"], ... }
+      type: Object, // Legacy support
       default: {},
     },
+    categories: [
+      {
+        key: String, // e.g. "SCHOOL_TUTION"
+        exams: [
+          {
+            name: String, // e.g. "Class 1-5"
+            custom_name: String, // For "Other"
+            courses: [
+              {
+                name: String,
+                custom_name: String
+              }
+            ],
+          }
+        ],
+        subjects: [String]
+      }
+    ],
     mode: {
       type: [String], // Offline / Online / Hybrid
       default: [],
@@ -165,6 +183,8 @@ const CoachingSchema = new mongoose.Schema(
         subject: String,
         experience: String,
         photo_url: String,
+        teacher_id: String, // Manual or System ID
+        profile_ref: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' } // Link to actual profile
       },
     ],
     teaching_methodology: { type: [String], default: [] },

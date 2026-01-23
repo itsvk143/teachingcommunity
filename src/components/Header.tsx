@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import Nav from "./Nav";
@@ -32,8 +33,8 @@ const Header = () => {
 
         {/* LOGO SECTION */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition-colors">
-            <GraduationCap className="text-blue-600 h-6 w-6" />
+          <div className="relative w-10 h-10 mr-2">
+            <Image src="/logo.png" alt="TC" fill className="object-contain" />
           </div>
           <h1 className="text-xl xl:text-2xl font-bold text-gray-800 tracking-tight">
             Teaching<span className="text-blue-600">Community</span>

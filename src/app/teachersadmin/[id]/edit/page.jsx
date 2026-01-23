@@ -6,8 +6,10 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, DollarSign, Loader2, AlertCircle, School
+  Upload, Calendar, MapPin, DollarSign, Loader2, AlertCircle, School, Layers
 } from 'lucide-react';
+import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
+import { EDUCATION_CONFIG } from '@/utils/educationConfig';
 
 // Constants (reused to ensure consistency)
 const COLLEGE_OPTIONS = ['IIT', 'NIT', 'Other', 'NA'];
@@ -15,7 +17,6 @@ const GENDER = ['FEMALE', 'MALE', 'Other'];
 const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
-const SUBJECT_OPTIONS = ['Physics', 'Chemistry', 'Maths', 'Botany', 'Zoology'];
 const WORK_PLACE_OPTIONS = ['School', 'Coaching', 'SIP', 'Online Coaching', 'Offline Coaching', 'Other'];
 const STATE_OPTIONS = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
@@ -25,10 +26,7 @@ const STATE_OPTIONS = [
   'Uttarakhand', 'West Bengal'
 ];
 const PREFERED_STATE_OPTIONS = ['PAN India', ...STATE_OPTIONS];
-const EXAM_OPTIONS = [
-  'JEE Mains', 'JEE Advanced', 'NEET', 'Foundation (8-10)',
-  'Boards (11-12)', 'Olympiads', 'CUET', 'KVPY', 'CAT', 'GATE', 'UPSC', 'Other'
-];
+
 const DOB_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
   { label: 'Show to HR Only', value: 'hr_only' }
@@ -96,11 +94,22 @@ const FormField = ({ label, name, type = "text", value, onChange, required = fal
 const MultiSelect = ({ label, options, selected, onChange, placeholder, icon: Icon }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleOption = (option) => {
-    const newSelected = selected.includes(option)
-      ? selected.filter(item => item !== option)
-      : [...selected, option];
+  // Helper to ensure options are array (sometimes derived values might be undefined if categories not set)
+  const safeOptions = Array.isArray(options) ? options : [];
+
+  const toggleOption = (optionValue) => {
+    const newSelected = selected.includes(optionValue)
+      ? selected.filter(item => item !== optionValue)
+      : [...selected, optionValue];
     onChange(newSelected);
+  };
+
+  const getLabel = (val) => {
+    if (safeOptions.length > 0 && typeof safeOptions[0] === 'object') {
+      const found = safeOptions.find(o => o.value === val);
+      return found ? found.label : val;
+    }
+    return val;
   };
 
   return (
@@ -121,7 +130,7 @@ const MultiSelect = ({ label, options, selected, onChange, placeholder, icon: Ic
           ) : (
             selected.map(item => (
               <span key={item} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium border border-blue-100 flex items-center gap-1">
-                {item}
+                {getLabel(item)}
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); toggleOption(item); }}
@@ -136,17 +145,21 @@ const MultiSelect = ({ label, options, selected, onChange, placeholder, icon: Ic
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-            {options.map(option => (
-              <div
-                key={option}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between ${selected.includes(option) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                  }`}
-                onClick={() => toggleOption(option)}
-              >
-                {option}
-                {selected.includes(option) && <CheckCircle className="w-4 h-4" />}
-              </div>
-            ))}
+            {safeOptions.map(option => {
+              const value = typeof option === 'object' ? option.value : option;
+              const label = typeof option === 'object' ? option.label : option;
+              return (
+                <div
+                  key={value}
+                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between ${selected.includes(value) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                    }`}
+                  onClick={() => toggleOption(value)}
+                >
+                  {label}
+                  {selected.includes(value) && <CheckCircle className="w-4 h-4" />}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -173,8 +186,14 @@ export default function EditTeacher() {
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
-    subject: '', experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
-    currentEmployeeCode: '', previousEmployeeCodes: '',
+    qualifications: {
+      ug: { degree: '', specialization: '', college: '', year: '' },
+      pg: { degree: '', specialization: '', college: '', year: '' },
+      doctorate: { degree: '', specialization: '', college: '', year: '' },
+      professional: [],
+    },
+    categories: [], subject: [], experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
+    currentEmployeeCode: '', previousEmployeeCodes: '', examAchievements: [],
     ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
     resumeLink: '', teachingVideoLink: '', about: '',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
@@ -200,9 +219,18 @@ export default function EditTeacher() {
           email: data.email || '',
           phone: data.phone || '',
           whatsapp: data.whatsapp || '',
-          subject: Array.isArray(data.subject) ? data.subject[0] : (data.subject || ''),
+          categories: Array.isArray(data.categories) ? data.categories : (data.category ? [data.category] : []),
+          category: Array.isArray(data.categories) && data.categories.length > 0 ? data.categories[0] : (data.category || ''), // UI State
+          qualifications: data.qualifications || {
+            ug: { degree: '', specialization: '', college: '', year: '' },
+            pg: { degree: '', specialization: '', college: '', year: '' },
+            doctorate: { degree: '', specialization: '', college: '', year: '' },
+            professional: [],
+          },
+          subject: Array.isArray(data.subject) ? data.subject : (data.subject ? [data.subject] : []),
           gender: data.gender || '',
           maritalStatus: data.maritalStatus || '',
+          examAchievements: data.examAchievements || [],
           education: data.education || '',
           experience: data.experience || '',
           state: data.state || '',
@@ -228,12 +256,12 @@ export default function EditTeacher() {
           otherWorkPlace: otherPlace,
           ctc: data.ctc || '',
           resumeLink: data.resumeLink || '',
-          teachingVideoLink: data.teachingvideoLink || data.teachingVideoLink || '', // Handle capitalization inconsistency
+          teachingVideoLink: data.teachingvideoLink || data.teachingVideoLink || '',
           socialLinks: {
             facebook: data.socialLinks?.facebook || '',
             twitter: data.socialLinks?.twitter || '',
             linkedin: data.socialLinks?.linkedin || '',
-            instagram: data.socialLinks?.instagram || '',
+            instagram: data.socialLinks?.instagram || ''
           },
           class10: data.educationalQualification?.find(q => q.qualification === 'Class 10') || { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
           class12: data.educationalQualification?.find(q => q.qualification === 'Class 12') || { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -270,6 +298,10 @@ export default function EditTeacher() {
     } else if (name.includes('.')) {
       const [parent, key] = name.split('.');
       setFormData(prev => ({ ...prev, [parent]: { ...prev[parent], [key]: value } }));
+    } else if (name === 'category') {
+      // Reset subject and exams only if explicitly changing category by user interaction? 
+      // Currently simple logic: if category changes, clear dependents.
+      setFormData(prev => ({ ...prev, category: value, subject: [], exams: [] }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -291,6 +323,65 @@ export default function EditTeacher() {
     }
   };
 
+
+  const handleQualificationChange = (level, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      qualifications: {
+        ...prev.qualifications,
+        [level]: { ...prev.qualifications[level], [field]: value }
+      }
+    }));
+  };
+
+  const addProfessionalQualification = () => {
+    setFormData(prev => ({
+      ...prev,
+      qualifications: {
+        ...prev.qualifications,
+        professional: [...prev.qualifications.professional, { degree: '', specialization: '', college: '', year: '' }]
+      }
+    }));
+  };
+
+  const removeProfessionalQualification = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      qualifications: {
+        ...prev.qualifications,
+        professional: prev.qualifications.professional.filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+  const handleProfessionalChange = (index, field, value) => {
+    const updated = [...formData.qualifications.professional];
+    updated[index][field] = value;
+    setFormData(prev => ({
+      ...prev,
+      qualifications: { ...prev.qualifications, professional: updated }
+    }));
+  };
+  const handleExamAchievementChange = (index, field, value) => {
+    const updated = [...formData.examAchievements];
+    updated[index][field] = value;
+    setFormData(prev => ({ ...prev, examAchievements: updated }));
+  };
+
+  const addExamAchievement = () => {
+    setFormData(prev => ({
+      ...prev,
+      examAchievements: [...prev.examAchievements, { exam: '', year: '', result: '' }]
+    }));
+  };
+
+  const removeExamAchievement = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      examAchievements: prev.examAchievements.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -304,6 +395,7 @@ export default function EditTeacher() {
 
     const payload = {
       ...formData,
+      categories: formData.category ? [formData.category] : [], // Map UI category back to array
       exams: formData.exams, // Already an array
       currentlyWorkingIn: formData.currentlyWorkingIn === 'Other' ? formData.otherWorkPlace : formData.currentlyWorkingIn,
       educationalQualification: [
@@ -412,28 +504,174 @@ export default function EditTeacher() {
             {/* Step 2: Education */}
             {step === 2 && (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Highest Qualification</h2>
+
+                {/* UG (Compulsory) */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                  <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6 flex items-center">
+                    <span className="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">UG</span>
+                    Graduation (Compulsory)
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Degree (Master's)" name="maxQualification" value={formData.maxQualification} onChange={handleChange} required options={POSTGRADUATE_DEGREES} icon={BookOpen} />
-                    <FormField label="College/Univ" name="maxQualificationCollege" value={formData.maxQualificationCollege} onChange={handleChange} required options={COLLEGE_OPTIONS} icon={BookOpen} />
-                    {formData.maxQualificationCollege === 'Other' && (
-                      <div className="md:col-span-2">
-                        <FormField label="College Name (Specific)" name="maxQualificationCollegeSpecific" value={formData.maxQualificationCollegeSpecific} onChange={handleChange} required placeholder="e.g. Stanford University" icon={BookOpen} />
-                      </div>
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Degree *</label>
+                      <select
+                        value={formData.qualifications?.ug?.degree || ''}
+                        onChange={(e) => handleQualificationChange('ug', 'degree', e.target.value)}
+                        className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      >
+                        <option value="">Select Degree</option>
+                        {EDUCATION_CONFIG.UG.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
+                      {(() => {
+                        const selectedDegree = EDUCATION_CONFIG.UG.degrees.find(d => d.degree === formData.qualifications?.ug?.degree);
+                        if (selectedDegree && selectedDegree.specializations && selectedDegree.specializations.length > 0) {
+                          return (
+                            <select
+                              value={formData.qualifications?.ug?.specialization || ''}
+                              onChange={(e) => handleQualificationChange('ug', 'specialization', e.target.value)}
+                              className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                            >
+                              <option value="">Select Specialization</option>
+                              {selectedDegree.specializations.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          );
+                        } else {
+                          return <input
+                            type="text"
+                            value={formData.qualifications?.ug?.specialization || ''}
+                            onChange={(e) => handleQualificationChange('ug', 'specialization', e.target.value)}
+                            placeholder="Specialization (Optional)"
+                            className="w-full p-2.5 border border-gray-200 rounded-lg outline-none"
+                          />;
+                        }
+                      })()}
+                    </div>
+
+                    <FormField label="College / University" name="ug_college" value={formData.qualifications?.ug?.college || ''} onChange={(e) => handleQualificationChange('ug', 'college', e.target.value)} placeholder="University Name" icon={School} />
+                    <FormField label="Year of Passing" name="ug_year" value={formData.qualifications?.ug?.year || ''} onChange={(e) => handleQualificationChange('ug', 'year', e.target.value)} placeholder="YYYY" />
+                  </div>
+                </div>
+
+                {/* PG (Optional) */}
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
+                    <span className="flex items-center"><span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">PG</span> Post Graduation</span>
+                    <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded border">Optional</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Degree</label>
+                      <select
+                        value={formData.qualifications?.pg?.degree || ''}
+                        onChange={(e) => handleQualificationChange('pg', 'degree', e.target.value)}
+                        className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      >
+                        <option value="">Select Degree</option>
+                        {EDUCATION_CONFIG.PG.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
+                      </select>
+                    </div>
+
+                    {formData.qualifications?.pg?.degree && (
+                      <>
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
+                          {(() => {
+                            const selectedDegree = EDUCATION_CONFIG.PG.degrees.find(d => d.degree === formData.qualifications?.pg?.degree);
+                            if (selectedDegree && selectedDegree.specializations && selectedDegree.specializations.length > 0) {
+                              return (
+                                <select
+                                  value={formData.qualifications?.pg?.specialization || ''}
+                                  onChange={(e) => handleQualificationChange('pg', 'specialization', e.target.value)}
+                                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                >
+                                  <option value="">Select Specialization</option>
+                                  {selectedDegree.specializations.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                              );
+                            } else {
+                              return <input type="text" value={formData.qualifications?.pg?.specialization || ''} onChange={(e) => handleQualificationChange('pg', 'specialization', e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg" />;
+                            }
+                          })()}
+                        </div>
+                        <FormField label="College / University" name="pg_college" value={formData.qualifications?.pg?.college || ''} onChange={(e) => handleQualificationChange('pg', 'college', e.target.value)} placeholder="University Name" icon={School} />
+                        <FormField label="Year of Passing" name="pg_year" value={formData.qualifications?.pg?.year || ''} onChange={(e) => handleQualificationChange('pg', 'year', e.target.value)} placeholder="YYYY" />
+                      </>
                     )}
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Graduation</h2>
+                {/* Doctorate (Optional) */}
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
+                    <span className="flex items-center"><span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">Dr</span> Doctorate (PhD)</span>
+                    <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded border">Optional</span>
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Degree (UG)" name="graduationQualification" value={formData.graduationQualification} onChange={handleChange} required options={UNDERGRADUATE_DEGREES} icon={BookOpen} />
-                    <FormField label="College/Univ" name="graduationCollege" value={formData.graduationCollege} onChange={handleChange} required options={COLLEGE_OPTIONS} icon={BookOpen} />
-                    <div className="md:col-span-2">
-                      <FormField label="College Name (Specific)" name="education" value={formData.education} onChange={handleChange} required icon={BookOpen} />
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Degree</label>
+                      <select
+                        value={formData.qualifications?.doctorate?.degree || ''}
+                        onChange={(e) => handleQualificationChange('doctorate', 'degree', e.target.value)}
+                        className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      >
+                        <option value="">Select Degree</option>
+                        {EDUCATION_CONFIG.Doctorate.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
+                      </select>
                     </div>
+                    {formData.qualifications?.doctorate?.degree && (
+                      <>
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
+                          <select
+                            value={formData.qualifications?.doctorate?.specialization || ''}
+                            onChange={(e) => handleQualificationChange('doctorate', 'specialization', e.target.value)}
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
+                          >
+                            <option value="">Select Specialization</option>
+                            {EDUCATION_CONFIG.Doctorate.degrees[0].specializations.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                        <FormField label="University" name="doc_college" value={formData.qualifications?.doctorate?.college || ''} onChange={(e) => handleQualificationChange('doctorate', 'college', e.target.value)} placeholder="University Name" icon={School} />
+                        <FormField label="Year" name="doc_year" value={formData.qualifications?.doctorate?.year || ''} onChange={(e) => handleQualificationChange('doctorate', 'year', e.target.value)} placeholder="YYYY" />
+                      </>
+                    )}
                   </div>
+                </div>
+
+                {/* Professional Qualifications */}
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-gray-700 flex items-center">
+                      <span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">Pro</span>
+                      Professional Qualifications
+                    </h3>
+                    <button type="button" onClick={addProfessionalQualification} className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">+ Add</button>
+                  </div>
+
+                  {formData.qualifications?.professional?.map((qual, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-white rounded border border-gray-200 relative">
+                      <button type="button" onClick={() => removeProfessionalQualification(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-600">×</button>
+                      <div className="col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Degree/Exam</label>
+                        <select
+                          value={qual.degree}
+                          onChange={(e) => handleProfessionalChange(index, 'degree', e.target.value)}
+                          className="w-full p-2 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                        >
+                          <option value="">Select Qualification</option>
+                          {EDUCATION_CONFIG.Professional.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
+                        </select>
+                      </div>
+                      <div className="col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Year/Details</label>
+                        <input type="text" value={qual.year} onChange={(e) => handleProfessionalChange(index, 'year', e.target.value)} placeholder="Year or Score" className="w-full p-2 text-sm border border-gray-200 rounded" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Optional Schooling */}
@@ -475,8 +713,88 @@ export default function EditTeacher() {
             {step === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Professional Details</h2>
+
+                {/* Category Selection */}
+                <div className="mb-6">
+                  <FormField
+                    label="Teaching Category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                    options={Object.entries(TEACHING_CATEGORIES).map(([key, val]) => ({ label: val.label, value: key }))}
+                    icon={Layers}
+                  />
+                  {formData.category && (
+                    <p className="text-sm text-gray-500 mt-2 ml-1">
+                      {TEACHING_CATEGORIES[formData.category]?.description}
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Teaching Subject" name="subject" value={formData.subject} onChange={handleChange} required options={SUBJECT_OPTIONS} icon={BookOpen} />
+
+                  {/* Dynamic Subjects & Exams */}
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(() => {
+                      const currentCat = formData.category ? TEACHING_CATEGORIES[formData.category] : null;
+                      const hasMap = currentCat?.exam_subject_map;
+
+                      let availableExams = [];
+                      let availableSubjects = [];
+                      let subjectPlaceholder = formData.category ? "Select Subjects" : "Select Category First";
+
+                      if (hasMap) {
+                        availableExams = currentCat.exam_subject_map.map(e => e.exam_name);
+
+                        if (formData.exams && formData.exams.length > 0) {
+                          const selectedMapItems = currentCat.exam_subject_map.filter(item => formData.exams.includes(item.exam_name));
+                          const subjectSet = new Set();
+                          selectedMapItems.forEach(item => item.subjects.forEach(s => subjectSet.add(s)));
+                          availableSubjects = Array.from(subjectSet).sort();
+                        } else {
+                          subjectPlaceholder = "Select Exams First";
+                          availableSubjects = [];
+                        }
+                      } else {
+                        availableExams = currentCat?.exams || [];
+                        availableSubjects = currentCat?.subjects || [];
+                      }
+
+                      return (
+                        <>
+                          <MultiSelect
+                            label="Exams Taught"
+                            options={availableExams}
+                            selected={formData.exams}
+                            onChange={(newExams) => {
+                              let newSubjects = formData.subject;
+                              // If using map logic, filter out subjects that are no longer valid for the new set of exams
+                              if (hasMap) {
+                                const validSubjects = new Set();
+                                const selectedMapItems = currentCat.exam_subject_map.filter(item => newExams.includes(item.exam_name));
+                                selectedMapItems.forEach(item => item.subjects.forEach(s => validSubjects.add(s)));
+                                newSubjects = formData.subject.filter(s => validSubjects.has(s));
+                              }
+                              setFormData({ ...formData, exams: newExams, subject: newSubjects });
+                            }}
+                            placeholder={formData.category ? "Select Exams" : "Select Category First"}
+                            icon={BookOpen}
+                          />
+
+                          <MultiSelect
+                            label="Subjects"
+                            options={availableSubjects}
+                            selected={formData.subject}
+                            onChange={(newSub) => setFormData({ ...formData, subject: newSub })}
+                            placeholder={subjectPlaceholder}
+                            icon={BookOpen}
+                          />
+                        </>
+                      );
+                    })()}
+                  </div>
+
                   <FormField label="Experience (Yrs)" name="experience" value={formData.experience} onChange={handleChange} required icon={Briefcase} />
                   <FormField label="Currently Working In" name="currentlyWorkingIn" value={formData.currentlyWorkingIn} onChange={handleChange} required options={WORK_PLACE_OPTIONS} icon={Briefcase} />
 
@@ -502,16 +820,6 @@ export default function EditTeacher() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                   <FormField label="Current State" name="state" value={formData.state} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                   <FormField label="Current City" name="city" value={formData.city} onChange={handleChange} required placeholder="e.g. Jaipur" icon={MapPin} />
-                  <div className="md:col-span-2">
-                    <MultiSelect
-                      label="Exams Taught"
-                      options={EXAM_OPTIONS}
-                      selected={formData.exams}
-                      onChange={(newExams) => setFormData({ ...formData, exams: newExams })}
-                      placeholder="Select Exams"
-                      icon={BookOpen}
-                    />
-                  </div>
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                 </div>
               </div>

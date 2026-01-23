@@ -26,6 +26,16 @@ const VacancySchema = new mongoose.Schema(
       required: true,
     },
 
+    numberOfOpenings: {
+      type: Number,
+      default: 1,
+    },
+
+    requirements: [{
+      subject: { type: String, required: true },
+      count: { type: Number, default: 1 }
+    }],
+
     experience: {
       type: String,
       trim: true,
