@@ -29,8 +29,39 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-blue-600 text-white py-16 md:py-24">
+      {/* About Us Section */}
+      <div className="bg-white py-16 md:py-24">
+        <div className="container mx-auto px-4 text-center">
+          <span className="text-blue-600 font-bold tracking-wider uppercase text-sm">Our Mission</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-8">Empowering the Education Ecosystem</h2>
+          <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-4xl mx-auto">
+            Teaching Community is more than just a platform; it is India's premier network dedicated to transforming how education professionals connect.
+            We bridge the gap between talented educators and leading institutions, ensuring that quality education helps shape the future.
+          </p>
+          <p className="text-lg text-gray-600 leading-relaxed max-w-4xl mx-auto">
+            From helping coaching centers find star faculty to connecting students with expert home tutors, we simplify recruitment and discovery.
+            Our commitment is to transparency, quality, and growth for every stakeholder in the learning journey.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 border-t border-gray-100 pt-8">
+            <div className="p-4">
+              <h3 className="text-4xl font-bold text-blue-600 mb-2">500+</h3>
+              <p className="text-gray-600 font-medium">Institutes Listed</p>
+            </div>
+            <div className="p-4">
+              <h3 className="text-4xl font-bold text-blue-600 mb-2">10k+</h3>
+              <p className="text-gray-600 font-medium">Students Helped</p>
+            </div>
+            <div className="p-4">
+              <h3 className="text-4xl font-bold text-blue-600 mb-2">24/7</h3>
+              <p className="text-gray-600 font-medium">Support Available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Section (Blue Banner) */}
+      <div className="bg-blue-600 text-white py-16 md:py-20 mb-12">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in Touch</h1>
           <p className="text-blue-100 text-lg max-w-2xl mx-auto">
@@ -39,8 +70,8 @@ export default function Contact() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 -mt-10">
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="grid md:grid-cols-2">
 
             {/* Contact Info Side */}
@@ -166,34 +197,7 @@ export default function Contact() {
           </div>
         </div>
 
-        {/* About Us Section */}
-        <div className="mt-20 max-w-4xl mx-auto text-center">
-          <span className="text-blue-600 font-bold tracking-wider uppercase text-sm">About Us</span>
-          <h2 className="text-3xl font-bold text-gray-900 mt-2 mb-8">Connecting Students with Excellence</h2>
-          <p className="text-lg text-gray-600 leading-relaxed mb-6">
-            Teaching Community is dedicated to bridging the gap between ambitious students and top-tier educational institutes.
-            We believe that every student deserves access to the best guidance, and every excellent educator deserves to be discovered.
-          </p>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Whether you are a student looking for the perfect coaching center for NEET/JEE preparation or an institute aiming to showcase your facilities
-            and faculty, we provide the platform to make those connections happen seamlessly.
-          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-4xl font-bold text-blue-600 mb-2">500+</h3>
-              <p className="text-gray-600 font-medium">Institutes Listed</p>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-4xl font-bold text-blue-600 mb-2">10k+</h3>
-              <p className="text-gray-600 font-medium">Students Helped</p>
-            </div>
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-4xl font-bold text-blue-600 mb-2">24/7</h3>
-              <p className="text-gray-600 font-medium">Support Available</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

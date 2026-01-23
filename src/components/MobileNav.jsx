@@ -21,7 +21,7 @@ const MobileNav = () => {
 
         {/* Header / Logo */}
         <div className="mt-8 mb-8 text-center">
-          <Link href="/">
+          <Link href="/contact">
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
               Teaching<span className="text-blue-600">Community</span>
             </h1>
@@ -37,8 +37,8 @@ const MobileNav = () => {
                 <Link
                   href={link.path}
                   className={`${isActive
-                      ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600 pl-3"
-                      : "text-gray-600 hover:text-blue-600 pl-4"
+                    ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600 pl-3"
+                    : "text-gray-600 hover:text-blue-600 pl-4"
                     } text-lg font-medium py-2 transition-all flex items-center`}
                 >
                   {link.name}

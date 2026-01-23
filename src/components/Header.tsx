@@ -32,7 +32,7 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center px-4 md:px-6">
 
         {/* LOGO SECTION */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/contact" className="flex items-center gap-2 group">
           <div className="relative w-10 h-10 mr-2">
             <Image src="/logo.png" alt="TC" fill className="object-contain" />
           </div>
