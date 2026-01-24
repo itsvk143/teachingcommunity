@@ -1,12 +1,53 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Briefcase, Users, UserCog, Home as HomeIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+const CAROUSEL_ITEMS = [
+    {
+        id: 1,
+        title: "TEACHER",
+        image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        color: "from-blue-600 to-blue-900"
+    },
+    {
+        id: 2,
+        title: "NON ACADEMIC STAFF",
+        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        color: "from-teal-600 to-teal-900"
+    },
+    {
+        id: 3,
+        title: "HOMETUTION",
+        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        color: "from-orange-600 to-orange-900"
+    },
+    {
+        id: 4,
+        title: "COACHING",
+        image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        color: "from-indigo-600 to-indigo-900"
+    },
+    {
+        id: 5,
+        title: "SCHOOL",
+        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        color: "from-purple-600 to-purple-900"
+    }
+];
 
 export default function HeroSection() {
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, []);
+
     const fadeInUp = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -105,54 +146,61 @@ export default function HeroSection() {
                         </motion.div>
                     </motion.div>
 
-                    {/* Visual/Image Side */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="relative hidden lg:block"
-                    >
-                        {/* Abstract Composition */}
-                        <div className="relative w-full aspect-square max-w-[500px] mx-auto">
-                            <div className="absolute top-[10%] right-[10%] w-[80%] h-[80%] bg-gradient-to-tr from-blue-100 to-indigo-100 rounded-[2rem] transform rotate-3"></div>
+                    {/* Image Carousel Side */}
+                    <div className="relative hidden lg:block h-[500px] w-full">
+                        <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/50 bg-gray-100">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentSlide}
+                                    initial={{ opacity: 0, scale: 1.1 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.7 }}
+                                    className="absolute inset-0"
+                                >
+                                    {/* Image */}
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={CAROUSEL_ITEMS[currentSlide].image}
+                                        alt={CAROUSEL_ITEMS[currentSlide].title}
+                                        className="w-full h-full object-cover"
+                                    />
 
-                            {/* Floating Cards Simulation */}
-                            <div className="absolute top-0 right-0 p-6 bg-white rounded-2xl shadow-xl border border-gray-100 w-64 transform translate-x-6">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">JD</div>
-                                    <div>
-                                        <p className="font-bold text-sm">John Doe</p>
-                                        <p className="text-xs text-gray-500">Physics Faculty</p>
-                                    </div>
-                                </div>
-                                <div className="h-2 w-full bg-gray-100 rounded-full mb-2">
-                                    <div className="h-full w-[80%] bg-green-500 rounded-full"></div>
-                                </div>
-                                <p className="text-xs text-gray-500">Profile Completeness: 80%</p>
-                            </div>
+                                    {/* Gradient Overlay */}
+                                    <div className={`absolute inset-0 bg-gradient-to-t ${CAROUSEL_ITEMS[currentSlide].color} mix-blend-multiply opacity-60`}></div>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
 
-                            <div className="absolute bottom-10 left-10 p-6 bg-white rounded-2xl shadow-xl border border-gray-100 w-64 transform -translate-x-6 z-20">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                                        <Briefcase className="w-5 h-5" />
+                                    {/* Text Content */}
+                                    <div className="absolute bottom-10 left-10 right-10 z-10">
+                                        <motion.div
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <h2 className="text-4xl font-black text-white tracking-wide uppercase mb-2 drop-shadow-lg">
+                                                {CAROUSEL_ITEMS[currentSlide].title}
+                                            </h2>
+                                            <div className="h-1.5 w-24 bg-white rounded-full"></div>
+                                        </motion.div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-sm">NEET Chemistry</p>
-                                        <p className="text-xs text-gray-500">₹12L - ₹18L PA</p>
-                                    </div>
-                                </div>
-                                <Button size="sm" className="w-full bg-blue-600 text-xs h-8">Apply Now</Button>
-                            </div>
+                                </motion.div>
+                            </AnimatePresence>
 
-                            {/* Center Element */}
-                            <div className="absolute inset-0 m-auto w-48 h-48 bg-white/80 backdrop-blur-sm rounded-full border border-white/50 shadow-2xl flex items-center justify-center z-10">
-                                <div className="text-center">
-                                    <span className="block text-4xl font-extrabold text-blue-600">5k+</span>
-                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Teachers</span>
-                                </div>
+                            {/* Progress Indicators */}
+                            <div className="absolute top-8 right-8 flex gap-2 z-20">
+                                {CAROUSEL_ITEMS.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-white' : 'w-2 bg-white/40'}`}
+                                    />
+                                ))}
                             </div>
                         </div>
-                    </motion.div>
+
+                        {/* Decorative floating elements */}
+                        <div className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+                        <div className="absolute -z-10 top-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full blur-2xl opacity-50"></div>
+                    </div>
 
                 </div>
             </div>
