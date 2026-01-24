@@ -21,25 +21,25 @@ const CAROUSEL_ITEMS = [
     {
         id: 3,
         title: "NON ACADEMIC STAFF",
-        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "/nonteacher.jpg",
         color: "from-teal-600 to-teal-900"
     },
     {
         id: 4,
         title: "HOMETUTION",
-        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "/hometution.jpg",
         color: "from-orange-600 to-orange-900"
     },
     {
         id: 5,
         title: "COACHING",
-        image: "/teacher.jpg",
+        image: "/coaching.jpg",
         color: "from-indigo-600 to-indigo-900"
     },
     {
         id: 6,
         title: "SCHOOL",
-        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "/school.jpg",
         color: "from-purple-600 to-purple-900"
     },
     {
