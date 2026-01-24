@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import Nav from "./Nav";
 import MobileNav from "./MobileNav";
-import { GraduationCap, LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
+import { LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
 
 const Header = () => {
   const { data: session } = useSession();
