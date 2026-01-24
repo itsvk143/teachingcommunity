@@ -67,7 +67,7 @@ export default async function TeacherProfilePage(props) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
       <div className="w-full max-w-7xl mx-auto px-4">
-        <TeacherProfileView teacher={teacher} canViewSalary={canViewSalary} />
+        <TeacherProfileView teacher={teacher} canViewSalary={false} />
       </div>
     </div>
   );
