@@ -9,32 +9,44 @@ const CAROUSEL_ITEMS = [
     {
         id: 1,
         title: "TEACHER",
-        image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "/teacher.jpg",
         color: "from-blue-600 to-blue-900"
     },
     {
         id: 2,
+        title: "STUDENT",
+        image: "/student.jpg",
+        color: "from-green-600 to-green-900"
+    },
+    {
+        id: 3,
         title: "NON ACADEMIC STAFF",
         image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
         color: "from-teal-600 to-teal-900"
     },
     {
-        id: 3,
+        id: 4,
         title: "HOMETUTION",
         image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
         color: "from-orange-600 to-orange-900"
     },
     {
-        id: 4,
+        id: 5,
         title: "COACHING",
-        image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "/teacher.jpg",
         color: "from-indigo-600 to-indigo-900"
     },
     {
-        id: 5,
+        id: 6,
         title: "SCHOOL",
         image: "https://unsplash.com/illustrations/a-red-school-building-with-a-sign-that-says-school-DJljIquCNzc",
         color: "from-purple-600 to-purple-900"
+    },
+    {
+        id: 7,
+        title: "PARENTS",
+        image: "/parent.jpg",
+        color: "from-pink-600 to-pink-900"
     }
 ];
 
