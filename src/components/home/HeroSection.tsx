@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Briefcase, Users, UserCog, Home as HomeIcon, ArrowRight, Search } from "lucide-react";
+import { Briefcase, Users, UserCog, Home as HomeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
@@ -41,7 +41,7 @@ export default function HeroSection() {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                             </span>
-                            India's #1 Education Network
+                            India&apos;s #1 Education Network
                         </motion.div>
 
                         <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">

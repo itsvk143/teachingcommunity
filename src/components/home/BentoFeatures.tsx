@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, ShieldCheck, Zap, UserCheck, ArrowRight, CheckCircle } from "lucide-react";
+import { Search, ShieldCheck, Zap, UserCheck, CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function BentoFeatures() {
@@ -98,9 +98,7 @@ export default function BentoFeatures() {
                             <Zap className="w-6 h-6" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-3">Zero Commission</h3>
-                        <p className="text-gray-600 text-sm">
-                            We don't charge a cut from your salary or hiring budget. A transparent subscription model for institutes, and free for teachers.
-                        </p>
+                        We don&apos;t charge a cut from your salary or hiring budget. A transparent subscription model for institutes, and free for teachers.
                     </motion.div>
 
                     {/* Card 4: CTA */}
