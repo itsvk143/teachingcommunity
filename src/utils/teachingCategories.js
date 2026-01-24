@@ -127,9 +127,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "Foundation for JEE/NEET (Class 8-10)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Botany",
           "Zoology",
           "Mathematics",
@@ -165,9 +163,7 @@ export const TEACHING_CATEGORIES = {
     ],
     "subjects": [
       "Physics",
-      "Physical Chemistry",
-      "Organic Chemistry",
-      "Inorganic Chemistry",
+      "Chemistry",
       "Mathematics",
       "Botany",
       "Zoology",
