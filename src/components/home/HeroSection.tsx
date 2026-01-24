@@ -33,7 +33,7 @@ const CAROUSEL_ITEMS = [
     {
         id: 5,
         title: "SCHOOL",
-        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+        image: "https://unsplash.com/illustrations/a-red-school-building-with-a-sign-that-says-school-DJljIquCNzc",
         color: "from-purple-600 to-purple-900"
     }
 ];
@@ -68,7 +68,7 @@ export default function HeroSection() {
             <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-blue-50/50 rounded-full blur-3xl opacity-60 z-0 translate-x-1/2 -translate-y-1/2"></div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-8 items-center">
 
                     {/* Text Content */}
                     <motion.div
@@ -147,7 +147,7 @@ export default function HeroSection() {
                     </motion.div>
 
                     {/* Image Carousel Side */}
-                    <div className="relative hidden lg:block h-[500px] w-full">
+                    <div className="relative block h-[400px] lg:h-[500px] w-full mt-12 lg:mt-0">
                         <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/50 bg-gray-100">
                             <AnimatePresence mode="wait">
                                 <motion.div
