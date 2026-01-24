@@ -176,9 +176,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "JEE Mains",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Aptitude Test (B.Arch)",
           "Drawing Test (B.Arch)"
@@ -188,9 +186,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "JEE Advanced",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics"
         ]
       },
@@ -198,9 +194,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "NEET UG",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Botany",
           "Zoology"
         ]
@@ -209,9 +203,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "CBSE / ISC Class 11-12 (Science)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology",
@@ -228,9 +220,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "State CETs (MHT-CET, KCET, WBJEE, GUJCET, etc.)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology"
@@ -240,9 +230,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "BITSAT / VITEEE / SRMJEEE",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology",
@@ -255,9 +243,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "IAT (IISER) / NEST (NISER)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology"
@@ -267,9 +253,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "CUET UG (Science Domain)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology",
@@ -282,9 +266,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "ICAR AIEEA (Agriculture)",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Mathematics",
           "Botany",
           "Zoology",
@@ -295,9 +277,7 @@ export const TEACHING_CATEGORIES = {
         "exam_name": "AIIMS Nursing / B.Sc Nursing Entrances",
         "subjects": [
           "Physics",
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
+          "Chemistry",
           "Botany",
           "Zoology",
           "General Knowledge",
