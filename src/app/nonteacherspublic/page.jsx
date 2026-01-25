@@ -16,6 +16,17 @@ import {
   FileText,
   ChevronRight
 } from 'lucide-react';
+import { STATE_OPTIONS } from '@/utils/indianCities';
+
+const JOB_ROLE_OPTIONS = [
+  'MANAGEMENT',
+  'OPERATION',
+  'SALES & MARKETING',
+  'HR',
+  'ACCOUNTANT',
+  'LEGAL SUPPORT',
+  'OTHER'
+];
 
 export default function NonTeachersList() {
   const { data: session } = useSession();
@@ -173,13 +184,17 @@ export default function NonTeachersList() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Briefcase className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
               </div>
-              <input
+              <select
                 name="jobRole"
-                placeholder="Filter by Job Role"
                 value={filters.jobRole}
                 onChange={handleChange}
-                className="pl-10 w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
-              />
+                className="pl-10 w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer text-gray-600"
+              >
+                <option value="">All Job Roles</option>
+                {JOB_ROLE_OPTIONS.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
             </div>
 
             {/* Experience Filter */}
@@ -199,13 +214,17 @@ export default function NonTeachersList() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
               </div>
-              <input
+              <select
                 name="state"
-                placeholder="Location / State"
                 value={filters.state}
                 onChange={handleChange}
-                className="pl-10 w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
-              />
+                className="pl-10 w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer text-gray-600"
+              >
+                <option value="">All Locations</option>
+                {STATE_OPTIONS.map((state) => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
+              </select>
             </div>
           </div>
         </motion.div>
