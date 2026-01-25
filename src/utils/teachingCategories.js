@@ -3,6 +3,7 @@ export const TEACHING_CATEGORIES = {
     "label": "Class 1-10 (School & Foundation)",
     "description": "For teachers focusing on school curriculum, Olympiads, and foundation courses.",
     "exams": [
+      "Pre-Primary / Kindergarten (Nursery, LKG, UKG)",
       "CBSE (Class 1-10)",
       "ICSE (Class 1-10)",
       "State Boards (All States)",
@@ -25,6 +26,18 @@ export const TEACHING_CATEGORIES = {
       "EVS (Environmental Science)"
     ],
     "exam_subject_map": [
+      {
+        "exam_name": "Pre-Primary / Kindergarten (Nursery, LKG, UKG)",
+        "subjects": [
+          "English (Phonics & Alphabets)",
+          "Mathematics (Numbers & Basic Counting)",
+          "General Awareness / EVS (Fruits, Animals, Colors)",
+          "Hindi / Regional Language (Basic Varnamala)",
+          "Rhymes & Storytelling",
+          "Art & Craft / Drawing",
+          "Physical Development & Activity"
+        ]
+      },
       {
         "exam_name": "CBSE (Class 1-10)",
         "subjects": [
