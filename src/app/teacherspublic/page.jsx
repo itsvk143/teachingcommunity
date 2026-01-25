@@ -16,6 +16,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
+import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
 
 const ALL_EXAMS = Array.from(new Set(Object.values(TEACHING_CATEGORIES).flatMap(c => c.exams))).sort();
 const ALL_SUBJECTS = Array.from(new Set(Object.values(TEACHING_CATEGORIES).flatMap(c => c.subjects))).sort();
@@ -234,15 +235,24 @@ export default function TeachersList() {
             />
           </div>
 
+
           {/* State Filter */}
           <div className="md:col-span-2 relative">
-            <input
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MapPin className="h-4 w-4 text-gray-400" />
+            </div>
+            <select
               name="state"
-              placeholder="State"
               value={filters.state}
-              onChange={handleChange}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
-            />
+              onChange={(e) => {
+                // When state changes, clear city
+                setFilters(prev => ({ ...prev, state: e.target.value, city: '' }));
+              }}
+              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700"
+            >
+              <option value="">All States</option>
+              {STATE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
 
           {/* City Filter */}
@@ -250,13 +260,18 @@ export default function TeachersList() {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MapPin className="h-4 w-4 text-gray-400" />
             </div>
-            <input
+            <select
               name="city"
-              placeholder="City"
               value={filters.city}
               onChange={handleChange}
-              className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
-            />
+              disabled={!filters.state}
+              className={`pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-gray-700 ${!filters.state ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <option value="">{filters.state ? 'All Cities' : 'Select State First'}</option>
+              {filters.state && CITIES_BY_STATE[filters.state]?.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
           </div>
         </div>
 

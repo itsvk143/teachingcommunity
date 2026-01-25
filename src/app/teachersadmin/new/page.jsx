@@ -9,6 +9,7 @@ import {
   Upload, Calendar, MapPin, DollarSign, School, Layers
 } from 'lucide-react';
 import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
+import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
 import { EDUCATION_CONFIG } from '@/utils/educationConfig';
 
 // Constants
@@ -18,14 +19,7 @@ const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const WORK_PLACE_OPTIONS = ['School', 'Coaching', 'SIP', 'Online Coaching', 'Offline Coaching', 'Other'];
-const STATE_OPTIONS = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
-  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan',
-  'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
-  'Uttarakhand', 'West Bengal'
-];
+// STATE_OPTIONS removed from here as it is imported
 const PREFERED_STATE_OPTIONS = [
   'PAN India', ...STATE_OPTIONS
 ];
@@ -781,8 +775,29 @@ export default function NewTeacher() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                  <FormField label="Current State" name="state" value={formData.state} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
-                  <FormField label="Current City" name="city" value={formData.city} onChange={handleChange} required placeholder="e.g. Jaipur" icon={MapPin} />
+                  <FormField
+                    label="Current State"
+                    name="state"
+                    value={formData.state}
+                    onChange={(e) => {
+                      // Custom handler to clear city when state changes
+                      const newState = e.target.value;
+                      setFormData(prev => ({ ...prev, state: newState, city: '' }));
+                    }}
+                    required
+                    options={STATE_OPTIONS}
+                    icon={MapPin}
+                  />
+                  <FormField
+                    label="Current City"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                    placeholder={formData.state ? "Select City" : "Select State First"}
+                    options={formData.state ? CITIES_BY_STATE[formData.state] || [] : []}
+                    icon={MapPin}
+                  />
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
                 </div>
               </div>
