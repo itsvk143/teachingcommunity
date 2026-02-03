@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import dbConnect from '@/lib/dbConnect';
 import Application from '@/model/Application';
 import Vacancy from '@/model/Vacancy';
 import { authOptions } from '@/lib/auth';
 
-export async function POST(req) {
+export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions as AuthOptions);
+        const user = session?.user as { id: string; email: string; role: string } | undefined;
 
-        if (!session || !session.user || !session.user.id) {
+        if (!user || !user.id) {
             return NextResponse.json(
                 { message: 'Unauthorized. Please log in to apply.' },
                 { status: 401 }
@@ -39,7 +40,7 @@ export async function POST(req) {
         // Check if already applied
         const existingApplication = await Application.findOne({
             vacancyId,
-            userId: session.user.id,
+            userId: user.id,
         });
 
         if (existingApplication) {
@@ -52,7 +53,7 @@ export async function POST(req) {
         // Create Application
         const application = await Application.create({
             vacancyId,
-            userId: session.user.id,
+            userId: user.id,
         });
 
         return NextResponse.json(
