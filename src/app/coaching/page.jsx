@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, MapPin, Filter, X, BookOpen, GraduationCap } from 'lucide-react';
+import ContactReveal from '@/components/ContactReveal';
 import { COACHING_CATEGORIES } from '@/utils/coachingCategories';
 import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
 
@@ -288,9 +289,9 @@ export default function CoachingDirectory() {
 
                     <div className="pt-4 border-t border-gray-100 mt-auto space-y-2">
                       {/* Quick Contact Info (Obfuscated if not needed, or shown) */}
-                      <div className="text-xs text-gray-500 flex justify-between">
+                      <div className="text-xs text-gray-500 flex items-center justify-between">
                         <span>Contact:</span>
-                        <span className="font-medium text-gray-800">{phone || 'N/A'}</span>
+                        <ContactReveal phone={phone} />
                       </div>
 
                       <Link

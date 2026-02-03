@@ -12,7 +12,7 @@ const STATS = [
 ];
 
 const INSTITUTES = [
-    "Aakash Institute", "Allen Career Institute", "Physics Wallah", "Unacademy", "FIITJEE", "Resonance", "Narayana Group", "Sri Chaitanya"
+    "Aakash Institute", "Allen Career Institute", "Physics Wallah", "Unacademy", "FIITJEE", "Resonance", "Narayana Group", "Sri Chaitanya", "Vedantu"
 ];
 
 export default function StatsSection() {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   MapPin, Phone, Mail, Globe, Calendar, Users,
   Home, BookOpen, CheckCircle, Edit, Flag, Award,
-  School, Trophy, LayoutGrid, DollarSign, Video, Image as ImageIcon,
+  School, Trophy, LayoutGrid, IndianRupee, Video, Image as ImageIcon,
   Shield, AlertTriangle, Bus, Clock, UserCheck, Linkedin, Facebook, Instagram, Twitter, Youtube,
   MessageSquare
 } from 'lucide-react';
@@ -323,7 +323,7 @@ export default function SchoolProfileView({ school }) {
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 p-8 shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                  <h3 className="text-lg font-bold text-green-900 flex items-center"><DollarSign className="w-5 h-5 mr-1" /> Fee Structure</h3>
+                  <h3 className="text-lg font-bold text-green-900 flex items-center"><IndianRupee className="w-5 h-5 mr-1" /> Fee Structure</h3>
                   <p className="text-green-700 text-sm">Estimated annual costs</p>
                 </div>
                 {school.admission_open && (

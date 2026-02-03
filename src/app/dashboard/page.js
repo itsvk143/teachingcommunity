@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [parentProfile, setParentProfile] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [homeTuitions, setHomeTuitions] = useState([]);
+  const [userVacancies, setUserVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch profiles if user is logged in
@@ -37,19 +38,20 @@ export default function Dashboard() {
             fetch(`/api/non-teachers?email=${email}`),
             fetch(`/api/coaching?email=${email}`),
             fetch(`/api/schools?email=${email}`),
-            fetch(`/api/parents?email=${email}`),
             fetch(`/api/students?email=${email}`),
-            fetch(`/api/hometuition?email=${email}`)
+            fetch(`/api/hometuition?email=${email}`),
+            fetch(`/api/vacancies?postedBy=${session.user.id}`) // Fetch user's vacancies
           ]);
 
-          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData] = await Promise.all([
+          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData, vacData] = await Promise.all([
             teacherRes.json(),
             nonTeacherRes.json(),
             coachingRes.json(),
             schoolRes.json(),
             parentRes.json(),
             studentRes.json(),
-            htRes.json()
+            htRes.json(),
+            vacRes.json()
           ]);
 
           if (teacherData?.teachers?.length > 0) setTeacherProfile(teacherData.teachers[0]);
@@ -59,6 +61,7 @@ export default function Dashboard() {
           if (parentData && !parentData.error) setParentProfile(parentData);
           if (studentData && !studentData.error) setStudentProfile(studentData);
           if (Array.isArray(htData)) setHomeTuitions(htData);
+          if (Array.isArray(vacData)) setUserVacancies(vacData);
 
         } catch (err) {
           console.error("Failed to fetch profiles", err);
@@ -340,6 +343,78 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* RIGHT COLUMN 2: My Vacancies (Show if has vacancies or is coaching/school/admin) */}
+          {(userVacancies.length > 0 || session.user.role === 'coaching' || session.user.role === 'school' || session.user.role === 'hr') && (
+            <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-3' : ''} mt-8 lg:mt-0`}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div className="p-6 border-b flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-indigo-600" />
+                    <h3 className="font-bold text-gray-800">My Job Posts</h3>
+                  </div>
+                  <button
+                    onClick={() => router.push('/jobs/new')}
+                    className="p-2 rounded-full transition shadow-sm bg-indigo-600 text-white hover:bg-indigo-700"
+                    title="Post New Job"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
+                  {userVacancies.length === 0 ? (
+                    <div className="text-center py-8 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
+                      <p className="text-gray-500 text-sm">No active job posts.</p>
+                      <button
+                        onClick={() => router.push('/jobs/new')}
+                        className="font-semibold text-sm mt-2 text-indigo-600 hover:text-indigo-800"
+                      >
+                        Post a Vacancy
+                      </button>
+                    </div>
+                  ) : (
+                    userVacancies.map((job) => (
+                      <div key={job._id} className="group bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition p-4">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-bold text-gray-800 text-sm truncate w-full pr-2">{job.jobTitle}</h4>
+                          <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wide shrink-0 ${job.isApproved ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                            {job.isApproved ? 'Live' : 'Pending'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2 truncate">{job.companyName}</p>
+                        <p className="text-xs text-gray-400 mb-3 truncate">{job.location}</p>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
+                          <button
+                            onClick={() => router.push(`/jobs/${job._id}/edit`)}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition border border-gray-100"
+                          >
+                            <Pencil className="w-3 h-3" /> Edit
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Delete this vacancy?")) return;
+                              try {
+                                await fetch('/api/vacancies/admin', { // Reusing admin delete logic but might need safer endpoint or check ownership in backend
+                                  method: 'DELETE',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ id: job._id })
+                                });
+                                setUserVacancies(prev => prev.filter(v => v._id !== job._id));
+                              } catch (err) { alert("Failed to delete"); }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition border border-red-50"
+                          >
+                            <Trash2 className="w-3 h-3" /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

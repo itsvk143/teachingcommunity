@@ -17,6 +17,7 @@ export default function PostJob() {
     description: '',
     contactEmail: '',
     contactPhone: '',
+    googleFormLink: '',
   });
 
   const handleChange = (e) => {
@@ -168,6 +169,24 @@ export default function PostJob() {
                   value={form.contactPhone}
                   onChange={handleChange}
                 />
+              </div>
+            </div>
+
+            {/* Google Form Link */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Google Form Link (Optional)</label>
+                <input
+                  name="googleFormLink"
+                  type="url"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="https://forms.google.com/..."
+                  value={form.googleFormLink}
+                  onChange={handleChange}
+                />
+                <p className="text-xs text-gray-500">
+                  If provided, applicants will see an option to apply via this form.
+                </p>
               </div>
             </div>
 

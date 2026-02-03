@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, LogOut, LayoutDashboard, Shield } from "lucide-react";
@@ -18,6 +18,7 @@ const MobileNav = () => {
         <Menu className="w-8 h-8 text-blue-600" />
       </SheetTrigger>
       <SheetContent className="flex flex-col bg-white overflow-y-auto w-[300px] sm:w-[400px]">
+        <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
 
         {/* Header / Logo */}
         <div className="mt-8 mb-8 text-center">

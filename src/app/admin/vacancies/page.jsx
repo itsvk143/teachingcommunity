@@ -2,6 +2,8 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Users, Edit } from 'lucide-react';
 
 export default function AdminVacanciesPage() {
   const { data: session } = useSession();
@@ -174,7 +176,19 @@ export default function AdminVacanciesPage() {
                       {job.isApproved ? 'Approved' : 'Pending'}
                     </button>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+                    <Link
+                      href={`/admin/vacancies/${job._id}/applicants`}
+                      className="text-blue-600 hover:text-blue-800 font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition flex items-center gap-1"
+                    >
+                      <Users className="w-3 h-3" /> Applications
+                    </Link>
+                    <Link
+                      href={`/jobs/${job._id}/edit`}
+                      className="text-gray-600 hover:text-gray-800 font-medium bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded transition flex items-center gap-1 border border-gray-200"
+                    >
+                      <Edit className="w-3 h-3" /> Edit
+                    </Link>
                     <button
                       onClick={() => deleteVacancy(job._id)}
                       className="text-red-500 hover:text-red-700 font-medium bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
 import ClientReviewSection from '@/components/ClientReviewSection';
+import ContactRevealCard from '@/components/ContactRevealCard';
 
 
 import {
@@ -529,10 +530,7 @@ export default async function CoachingDetailPage(props) {
 
               <div className="space-y-4">
                 {coaching.phone_primary && (
-                  <a href={`tel:${coaching.phone_primary}`} className="flex items-center gap-3 text-gray-700 hover:text-blue-600 p-3 rounded-lg bg-gray-50 hover:bg-blue-50 transition">
-                    <Phone className="w-5 h-5 text-gray-400" />
-                    <span className="font-medium">{coaching.phone_primary}</span>
-                  </a>
+                  <ContactRevealCard phone={coaching.phone_primary} />
                 )}
                 {coaching.whatsapp_number && (
                   <a href={`https://wa.me/${coaching.whatsapp_number}`} target="_blank" className="flex items-center gap-3 text-gray-700 hover:text-green-600 p-3 rounded-lg bg-gray-50 hover:bg-green-50 transition">

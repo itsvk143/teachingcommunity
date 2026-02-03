@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, DollarSign, Loader2, AlertCircle, School, Layers
+  Upload, Calendar, MapPin, IndianRupee, Loader2, AlertCircle, School, Layers
 } from 'lucide-react';
 import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
 import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
@@ -797,7 +797,7 @@ export default function EditTeacher() {
                     <FormField label="Specific Workplace" name="otherWorkPlace" value={formData.otherWorkPlace} onChange={handleChange} required />
                   )}
 
-                  <FormField label="Current CTC" name="ctc" value={formData.ctc} onChange={handleChange} icon={DollarSign} />
+                  <FormField label="Current CTC" name="ctc" value={formData.ctc} onChange={handleChange} icon={IndianRupee} />
                   <FormField label="Preferred State" name="preferedState" value={formData.preferedState} onChange={handleChange} required options={PREFERED_STATE_OPTIONS} icon={MapPin} />
                 </div>
 
@@ -845,7 +845,7 @@ export default function EditTeacher() {
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Final Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} required icon={FileText} />
+                  <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} icon={FileText} placeholder="Google Drive / Dropbox link (Optional)" />
                   <FormField label="Demo Video Link" name="teachingVideoLink" value={formData.teachingVideoLink} onChange={handleChange} icon={Upload} />
                 </div>
 

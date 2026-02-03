@@ -7,11 +7,21 @@ import { authOptions } from '@/lib/auth';
 /* =====================
    GET: All vacancies
 ===================== */
-export async function GET() {
+export async function GET(req: Request) {
   try {
     await dbConnect();
 
-    const vacancies = await Vacancy.find({ isApproved: true })
+    const { searchParams } = new URL(req.url);
+    const postedBy = searchParams.get('postedBy');
+
+    const query: any = { isApproved: true };
+    if (postedBy) {
+      query.postedBy = postedBy;
+      // If fetching own vacancies, show even if not approved (optional, but good for dashboard)
+      delete query.isApproved;
+    }
+
+    const vacancies = await Vacancy.find(query)
       .sort({ createdAt: -1 })
       .lean();
 

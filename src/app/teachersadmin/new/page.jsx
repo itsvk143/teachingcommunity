@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, DollarSign, School, Layers
+  Upload, Calendar, MapPin, IndianRupee, School, Layers
 } from 'lucide-react';
 import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
 import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
@@ -759,7 +759,7 @@ export default function NewTeacher() {
                     <FormField label="Specific Workplace" name="otherWorkPlace" value={formData.otherWorkPlace} onChange={handleChange} required placeholder="Freelance / Private" />
                   )}
 
-                  <FormField label="Current CTC" name="ctc" value={formData.ctc} onChange={handleChange} placeholder="e.g. 12 LPA" icon={DollarSign} />
+                  <FormField label="Current CTC" name="ctc" value={formData.ctc} onChange={handleChange} placeholder="e.g. 12 LPA" icon={IndianRupee} />
                   <FormField label="Preferred State" name="preferedState" value={formData.preferedState} onChange={handleChange} required options={PREFERED_STATE_OPTIONS} icon={MapPin} />
                 </div>
 
@@ -809,7 +809,7 @@ export default function NewTeacher() {
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Final Details</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} required icon={FileText} placeholder="Google Drive / Dropbox link" />
+                  <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} icon={FileText} placeholder="Google Drive / Dropbox link (Optional)" />
                   <FormField label="Demo Video Link" name="teachingVideoLink" value={formData.teachingVideoLink} onChange={handleChange} icon={Upload} placeholder="YouTube / Drive link (Optional)" />
                 </div>
 

@@ -62,6 +62,11 @@ const VacancySchema = new mongoose.Schema(
       trim: true,
     },
 
+    googleFormLink: {
+      type: String,
+      trim: true,
+    },
+
     // ⭐ Future-ready (admin approval)
     isApproved: {
       type: Boolean,
@@ -99,6 +104,16 @@ const VacancySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// ⚠️ Accessing the existing model to checks for paths might be needed for hot-reload support
+if (mongoose.models.Vacancy && !mongoose.models.Vacancy.schema.paths['googleFormLink']) {
+  mongoose.models.Vacancy.schema.add({
+    googleFormLink: {
+      type: String,
+      trim: true,
+    }
+  });
+}
 
 export default mongoose.models.Vacancy ||
   mongoose.model('Vacancy', VacancySchema);

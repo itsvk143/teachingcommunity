@@ -3,16 +3,22 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, MapPin, Building2, Clock, DollarSign, Mail, Phone, Calendar } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { ArrowLeft, Briefcase, MapPin, Building2, Clock, IndianRupee, Mail, Phone, Calendar, CheckCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export default function VacancyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
+  const { data: session } = useSession();
 
   const [vacancy, setVacancy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     async function fetchVacancy() {
@@ -35,6 +41,41 @@ export default function VacancyDetailPage() {
       fetchVacancy();
     }
   }, [id]);
+
+  const handleApply = async () => {
+    if (!session) {
+      toast.error('Please login to apply');
+      router.push('/login');
+      return;
+    }
+
+    setApplying(true);
+    try {
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ vacancyId: id }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 201) {
+        setHasApplied(true);
+        toast.success('Applied successfully!');
+      } else if (res.status === 409) {
+        setHasApplied(true);
+        toast('You have already applied for this job.', { icon: 'ℹ️' });
+      } else {
+        toast.error(data.message || 'Something went wrong');
+      }
+    } catch (error) {
+      toast.error('Failed to apply. Please try again.');
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -105,7 +146,7 @@ export default function VacancyDetailPage() {
 
               <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                 <div className="flex items-center text-green-800 mb-2 font-semibold">
-                  <DollarSign className="w-5 h-5 mr-2" />
+                  <IndianRupee className="w-5 h-5 mr-2" />
                   Salary
                 </div>
                 <p className="text-gray-700">{vacancy.salary || 'Competitive / Negotiable'}</p>
@@ -151,12 +192,56 @@ export default function VacancyDetailPage() {
                 )}
               </div>
 
-              <div className="mt-8">
+
+              <div className="mt-8 space-y-4">
+                {hasApplied ? (
+                  <button
+                    disabled
+                    className="w-full flex items-center justify-center gap-2 bg-green-50 text-green-700 font-bold py-3.5 rounded-lg border border-green-200 cursor-not-allowed"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    Application Submitted
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleApply}
+                    disabled={applying}
+                    className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transform transition active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-md text-lg"
+                  >
+                    {applying ? 'Submitting...' : 'Easy Apply Now'}
+                  </button>
+                )}
+
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                {vacancy.googleFormLink && (
+                  <>
+                    <a
+                      href={vacancy.googleFormLink}
+                      target="_blank"
+                      className="block w-full text-center bg-purple-600 text-white font-bold py-3.5 rounded-lg hover:bg-purple-700 transform transition active:scale-95 shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Briefcase className="w-5 h-5" />
+                      Apply via Google Form
+                    </a>
+
+                    <div className="relative flex items-center py-2">
+                      <div className="flex-grow border-t border-gray-200"></div>
+                      <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                      <div className="flex-grow border-t border-gray-200"></div>
+                    </div>
+                  </>
+                )}
+
                 <a
                   href={`mailto:${vacancy.contactEmail}?subject=Application for ${vacancy.jobTitle}`}
-                  className="block w-full text-center bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transform transition hover:-translate-y-1 shadow-md"
+                  className="block w-full text-center bg-white text-gray-700 font-medium py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition"
                 >
-                  Apply Now Via Email
+                  Apply via Email
                 </a>
               </div>
             </div>
