@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const postedBy = searchParams.get('postedBy');
 
-    const query: any = { isApproved: true };
+    const query: { isApproved?: boolean; postedBy?: string | null } = { isApproved: true };
     if (postedBy) {
       query.postedBy = postedBy;
       // If fetching own vacancies, show even if not approved (optional, but good for dashboard)

@@ -401,7 +401,7 @@ export default function Dashboard() {
                                   body: JSON.stringify({ id: job._id })
                                 });
                                 setUserVacancies(prev => prev.filter(v => v._id !== job._id));
-                              } catch (err) { alert("Failed to delete"); }
+                              } catch { alert("Failed to delete"); }
                             }}
                             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition border border-red-50"
                           >

@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type AuthOptions } from 'next-auth';
 import dbConnect from '@/lib/dbConnect';
 import Application from '@/model/Application';
-import User from '@/model/User'; // Ensure User model is registered
+// User model import removed
 import Teacher from '@/model/Teacher'; // Ensure Teacher model is registered
 import { authOptions } from '@/lib/auth';
 
-export async function GET(req, props) {
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions as AuthOptions);
 
-        if (!session || (session.user.role !== 'admin' && session.user.role !== 'hr')) {
+        const user = session?.user as { role: string; email: string } | undefined;
+
+        if (!user || (user.role !== 'admin' && user.role !== 'hr')) {
             return NextResponse.json(
                 { message: 'Unauthorized' },
                 { status: 403 }
