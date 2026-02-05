@@ -41,9 +41,22 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
     return age;
   };
 
-  const displayAge = (teacher.dobVisibility === 'hr_only' && !canViewSalary)
+  const displayAge = (teacher.dobVisibility === 'hr_only' && !canViewSalary) || teacher.dobVisibility === 'mask_year'
     ? null
     : (calculateAge(teacher.dob) || teacher.age);
+
+  const formatDob = (dob, visibility) => {
+    if (!dob) return null;
+    const d = new Date(dob);
+    if (visibility === 'mask_year') {
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      return `${day}/${month}/XXXX`;
+    }
+    return d.toLocaleDateString('en-GB');
+  };
+
+  const showDob = teacher.dobVisibility === 'everyone' || teacher.dobVisibility === 'mask_year' || (teacher.dobVisibility === 'hr_only' && canViewSalary);
 
   return (
     <div className="bg-gray-50/50 min-h-full font-sans">
@@ -325,6 +338,12 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                       ? teacher.categories.map(c => TEACHING_CATEGORIES[c]?.label || c).join(', ')
                       : (teacher.category ? (TEACHING_CATEGORIES[teacher.category]?.label || teacher.category) : "-")
                     }
+                  </span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-gray-50">
+                  <span className="text-gray-500">Date of Birth</span>
+                  <span className="font-medium text-gray-900 text-right">
+                    {showDob ? formatDob(teacher.dob, teacher.dobVisibility) : "Confidential"}
                   </span>
                 </li>
                 <li className="flex justify-between py-2 border-b border-gray-50">

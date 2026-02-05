@@ -89,7 +89,7 @@ const NonTeacherSchema = new mongoose.Schema(
     dob: { type: Date },
     dobVisibility: {
       type: String,
-      enum: ['everyone', 'hr_only'],
+      enum: ['everyone', 'hr_only', 'mask_year'],
       default: 'everyone',
     },
     address: { type: String, trim: true },
