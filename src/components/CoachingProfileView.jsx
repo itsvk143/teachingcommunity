@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import ContactRevealCard from '@/components/ContactRevealCard';
 import ReviewSection from '@/components/ReviewSection';
 import {
   MapPin, Phone, Globe, User, CheckCircle, Mail, Award, BookOpen, Users,
@@ -346,15 +347,11 @@ export default function CoachingProfileView({ coaching, canEdit }) {
 
               <div className="space-y-4">
                 {coaching.phone_primary && (
-                  <a href={`tel:${coaching.phone_primary}`} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-blue-50 group transition-colors">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors">
-                      <Phone className="w-5 h-5 text-gray-500 group-hover:text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Phone</p>
-                      <p className="font-semibold text-gray-800 group-hover:text-blue-700">{coaching.phone_primary}</p>
-                    </div>
-                  </a>
+                  <ContactRevealCard
+                    phone={coaching.phone_primary}
+                    visibility={coaching.contact_visibility}
+                    canView={canEdit}
+                  />
                 )}
                 {coaching.email && (
                   <a href={`mailto:${coaching.email}`} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-blue-50 group transition-colors">

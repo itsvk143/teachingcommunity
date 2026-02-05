@@ -134,6 +134,11 @@ const CoachingSchema = new mongoose.Schema(
     website_url: { type: String, trim: true },
     contact_person_name: { type: String, trim: true },
     enquiry_link: { type: String, trim: true },
+    contact_visibility: {
+      type: String,
+      enum: ['visible', 'masked', 'hidden'],
+      default: 'masked',
+    },
 
     /* -------------------------------------------------------------------------- */
     /*                         5) Google Business Existing                        */

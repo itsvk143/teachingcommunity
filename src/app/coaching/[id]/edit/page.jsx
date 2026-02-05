@@ -113,6 +113,7 @@ export default function EditCoaching({ params }) {
 
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone_primary: '', website_url: '',
+    contact_visibility: 'masked',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
     exam_types: '', courses_offered: '', streams: '',
     exam_types: '', courses_offered: '', streams: '',
@@ -194,6 +195,7 @@ export default function EditCoaching({ params }) {
         contact_person_name: data.contact_person_name || '',
         email: data.email || '',
         phone_primary: data.phone_primary || '',
+        contact_visibility: data.contact_visibility || 'masked',
         website_url: data.website_url || '',
         address_line1: data.address_line1 || '',
         city: data.city || '',
@@ -424,6 +426,20 @@ export default function EditCoaching({ params }) {
 
                   <FormField label="Email Address" name="email" type="email" value={form.email} onChange={handleChange} required icon={Mail} disabled />
                   <FormField label="Phone Number" name="phone_primary" type="tel" value={form.phone_primary} onChange={handleChange} required icon={Phone} maxLength={10} />
+
+                  <FormField
+                    label="Contact Number Visibility"
+                    name="contact_visibility"
+                    value={form.contact_visibility}
+                    onChange={handleChange}
+                    required
+                    icon={Phone}
+                    options={[
+                      { value: 'visible', label: 'Visible to Public' },
+                      { value: 'masked', label: 'Masked (Click to View)' },
+                      { value: 'hidden', label: 'Hidden (Private)' }
+                    ]}
+                  />
 
                   <div className="md:col-span-2">
                     <FormField label="Website URL" name="website_url" type="url" value={form.website_url} onChange={handleChange} icon={Globe} placeholder="https://" />

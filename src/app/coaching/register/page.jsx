@@ -84,6 +84,7 @@ export default function RegisterCoaching() {
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone: '', phone_primary: '', website_url: '',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
+    contact_visibility: 'masked', // Default to masked
     mode: [],
 
     // Explicitly removed duplicate keys provided in instruction context, keeping clean state
@@ -272,6 +273,20 @@ export default function RegisterCoaching() {
 
                   <FormField label="Email Address" name="email" type="email" value={form.email} onChange={handleChange} required icon={Mail} />
                   <FormField label="Phone Number" name="phone_primary" type="tel" value={form.phone_primary} onChange={handleChange} required icon={Phone} maxLength={10} />
+
+                  <FormField
+                    label="Contact Number Visibility"
+                    name="contact_visibility"
+                    value={form.contact_visibility}
+                    onChange={handleChange}
+                    required
+                    icon={Phone}
+                    options={[
+                      { value: 'visible', label: 'Visible to Public' },
+                      { value: 'masked', label: 'Masked (Click to View)' },
+                      { value: 'hidden', label: 'Hidden (Private)' }
+                    ]}
+                  />
 
                   <div className="md:col-span-2">
                     <FormField label="Website URL" name="website_url" type="url" value={form.website_url} onChange={handleChange} icon={Globe} placeholder="https://" />
