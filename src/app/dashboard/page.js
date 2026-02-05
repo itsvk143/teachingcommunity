@@ -36,7 +36,7 @@ export default function Dashboard() {
           const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes] = await Promise.all([
             fetch(`/api/teachers?email=${email}`),
             fetch(`/api/non-teachers?email=${email}`),
-            fetch(`/api/coaching?email=${email}`),
+            fetch(`/api/coaching?email=${email}&ownerId=${session.user.id}`),
             fetch(`/api/schools?email=${email}`),
             fetch(`/api/students?email=${email}`),
             fetch(`/api/hometuition?email=${email}`),

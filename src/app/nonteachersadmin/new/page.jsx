@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -117,6 +117,16 @@ export default function NewNonTeacher() {
     resumeLink: '',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
+
+  useEffect(() => {
+    if (session?.user) {
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || session.user.name || '',
+        email: prev.email || session.user.email || ''
+      }));
+    }
+  }, [session]);
 
   // Handlers
   const handleChange = (e) => {

@@ -212,14 +212,14 @@ export default function VacancyDetailPage() {
                   </button>
                 )}
 
-                <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-
                 {vacancy.googleFormLink && (
                   <>
+                    <div className="relative flex items-center py-2">
+                      <div className="flex-grow border-t border-gray-200"></div>
+                      <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                      <div className="flex-grow border-t border-gray-200"></div>
+                    </div>
+
                     <a
                       href={vacancy.googleFormLink}
                       target="_blank"
@@ -228,21 +228,8 @@ export default function VacancyDetailPage() {
                       <Briefcase className="w-5 h-5" />
                       Apply via Google Form
                     </a>
-
-                    <div className="relative flex items-center py-2">
-                      <div className="flex-grow border-t border-gray-200"></div>
-                      <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
-                      <div className="flex-grow border-t border-gray-200"></div>
-                    </div>
                   </>
                 )}
-
-                <a
-                  href={`mailto:${vacancy.contactEmail}?subject=Application for ${vacancy.jobTitle}`}
-                  className="block w-full text-center bg-white text-gray-700 font-medium py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition"
-                >
-                  Apply via Email
-                </a>
               </div>
             </div>
 

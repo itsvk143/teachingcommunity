@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   CheckCircle, MapPin, BookOpen, AlertCircle, ArrowRight, ArrowLeft,
   Building, User, Phone, Mail, Globe, Trophy, Users, Star,
@@ -75,6 +76,7 @@ const FormField = ({ label, name, type = "text", value, onChange, required = fal
 
 export default function RegisterCoaching() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
@@ -84,8 +86,9 @@ export default function RegisterCoaching() {
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
     mode: [],
 
-    exam_types: '', courses_offered: '', streams: '',
+    // Explicitly removed duplicate keys provided in instruction context, keeping clean state
     exam_types: [], courses_offered: [], streams: [],
+
     categories: [], // Structured data
 
     batch_timing: [], course_fees: [], temp_course_name: '', temp_course_fee: '',
@@ -98,6 +101,16 @@ export default function RegisterCoaching() {
 
     ac_classrooms: false, smart_classes: false, library: false, wifi: false, study_room: false, hostel_support: false,
   });
+
+  useEffect(() => {
+    if (session?.user) {
+      setForm(prev => ({
+        ...prev,
+        contact_person_name: prev.contact_person_name || session.user.name || '',
+        email: prev.email || session.user.email || ''
+      }));
+    }
+  }, [session]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

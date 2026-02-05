@@ -225,7 +225,7 @@ export default async function CoachingDetailPage(props) {
             )}
 
             {/* Courses & Programs */}
-            {coaching.courses_offered?.length > 0 && (
+            {(coaching.categories?.length > 0 || coaching.courses_offered?.length > 0 || coaching.exam_types?.length > 0 || coaching.course_categories) && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <Award className="w-5 h-5 text-blue-600" /> Courses Offered

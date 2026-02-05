@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -191,6 +191,16 @@ export default function NewTeacher() {
     resumeLink: '', teachingVideoLink: '', about: '',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
+
+  useEffect(() => {
+    if (session?.user) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || session.user.name || '',
+        email: prev.email || session.user.email || ''
+      }));
+    }
+  }, [session]);
 
   const calculateAge = (dobString) => {
     if (!dobString) return '';
