@@ -16,9 +16,7 @@ export async function GET(req: Request) {
     if (email) criteria.push({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
     if (ownerId) criteria.push({ owner_user_id: ownerId });
 
-    if (criteria.length === 0) return NextResponse.json([]);
-
-    const query = { $or: criteria };
+    const query = criteria.length > 0 ? { $or: criteria } : {};
     const coachings = await Coaching.find(query).sort({ createdAt: -1 });
     return NextResponse.json(coachings);
   } catch (error) {
