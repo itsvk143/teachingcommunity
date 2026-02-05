@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
     const body = await req.json();
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as AuthOptions);
 
     // Basic Validation
     if (!body.name || !body.email || !body.phone) {
@@ -45,8 +45,10 @@ export async function POST(req: Request) {
     }
 
     // Attach User ID if available
-    if (session?.user?.id) {
-      body.owner_user_id = session.user.id;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((session?.user as any)?.id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body.owner_user_id = (session?.user as any)?.id;
     }
 
     const newCoaching = await Coaching.create(body);
