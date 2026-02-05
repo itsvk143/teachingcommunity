@@ -131,6 +131,18 @@ export default function AdminDashboard() {
               href="/hometuition"
               buttonText="View List"
             />
+            <ActionCard
+              title="Manage Coaching"
+              description="Approve or edit coaching institutes."
+              href="/admin/coaching"
+              buttonText="Go to Coaching"
+            />
+            <ActionCard
+              title="Manage Non Teachers"
+              description="Profiles of non-teaching staff."
+              href="/nonteachersadmin"
+              buttonText="Go to Non-Teachers"
+            />
           </div>
         </div>
       </main>

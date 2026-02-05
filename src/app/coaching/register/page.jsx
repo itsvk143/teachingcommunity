@@ -486,7 +486,52 @@ export default function RegisterCoaching() {
                                       {/* Courses Grid (Only show if Exam Selected) */}
                                       {isExamSelected && (
                                         <div className="ml-6 mt-2">
-                                          <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Select Courses (Optional)</p>
+                                          <div className="flex justify-between items-center mb-1">
+                                            <p className="text-[10px] uppercase font-bold text-gray-400">Select Courses (Optional)</p>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const nonOtherCourses = availableCourses.filter(c => c !== 'Other');
+                                                const currentSelectedNames = selectedExamObj.courses.map(c => typeof c === 'string' ? c : c.name);
+                                                const areAllSelected = nonOtherCourses.every(c => currentSelectedNames.includes(c));
+
+                                                setForm(prev => ({
+                                                  ...prev,
+                                                  categories: prev.categories.map(c => {
+                                                    if (c.key === catKey) {
+                                                      const newExams = c.exams.map(ex => {
+                                                        if (ex.name === examName) {
+                                                          let newCourses;
+                                                          if (areAllSelected) {
+                                                            // Deselect all non-Other courses, keep 'Other' if selected
+                                                            newCourses = ex.courses.filter(c => {
+                                                              const cName = typeof c === 'string' ? c : c.name;
+                                                              return cName === 'Other';
+                                                            });
+                                                          } else {
+                                                            // Select all non-Other courses
+                                                            // Keep existing 'Other' selection if present
+                                                            const existingOther = ex.courses.find(c => (typeof c === 'string' ? c : c.name) === 'Other');
+                                                            newCourses = nonOtherCourses.map(cName => ({ name: cName, custom_name: '' }));
+                                                            if (existingOther) newCourses.push(existingOther);
+                                                          }
+                                                          return { ...ex, courses: newCourses };
+                                                        }
+                                                        return ex;
+                                                      });
+                                                      return { ...c, exams: newExams };
+                                                    }
+                                                    return c;
+                                                  })
+                                                }));
+                                              }}
+                                              className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-100 transition font-semibold"
+                                            >
+                                              Select All
+                                            </button>
+                                          </div>
                                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1">
                                             {[...availableCourses, 'Other'].map(courseName => {
                                               // Check if selected (handle both string and object for robustness, primarily object now)
