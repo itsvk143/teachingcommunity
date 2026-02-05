@@ -33,14 +33,16 @@ export default function Dashboard() {
       const fetchAllProfiles = async () => {
         try {
           // Parallel Fetching for speed
-          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes] = await Promise.all([
+          // Parallel Fetching for speed
+          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes, vacRes] = await Promise.all([
             fetch(`/api/teachers?email=${email}`),
             fetch(`/api/non-teachers?email=${email}`),
             fetch(`/api/coaching?email=${email}&ownerId=${session.user.id}`),
             fetch(`/api/schools?email=${email}`),
+            fetch(`/api/parents?email=${email}`),
             fetch(`/api/students?email=${email}`),
             fetch(`/api/hometuition?email=${email}`),
-            fetch(`/api/vacancies?postedBy=${session.user.id}`) // Fetch user's vacancies
+            fetch(`/api/vacancies?postedBy=${session.user.id}`)
           ]);
 
           const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData, vacData] = await Promise.all([
