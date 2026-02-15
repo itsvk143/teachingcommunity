@@ -71,15 +71,9 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
 
             {/* Avatar */}
             <div className="shrink-0 relative">
-              {validPhotoUrl ? (
-                <div className="w-32 h-32 md:w-40 md:h-40 relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white">
-                  <img src={validPhotoUrl} alt={teacher.name} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-5xl font-bold shadow-xl ring-4 ring-white">
-                  {teacher.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div className="w-32 h-32 md:w-40 md:h-40 relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white bg-white flex items-center justify-center">
+                <img src="/logo.png" alt="Teaching Community" className="w-full h-full object-contain p-2" />
+              </div>
               {teacher.isVerified && (
                 <div className="absolute -bottom-3 -right-3 bg-blue-600 text-white p-1.5 rounded-full border-4 border-white shadow-sm" title="Verified Educator">
                   <CheckCircle2 className="w-5 h-5" />

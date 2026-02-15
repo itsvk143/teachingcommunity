@@ -277,8 +277,8 @@ export default function NonTeachersList() {
                         {/* Name & Avatar */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
-                              {getInitials(staff.name)}
+                            <div className="h-12 w-12 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-1.5" />
                             </div>
                             <div>
                               <div className="font-bold text-gray-900 text-base">{staff.name}</div>

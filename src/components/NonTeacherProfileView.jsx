@@ -12,11 +12,21 @@ const ensureAbsoluteUrl = (url) => {
   return `https://${url}`;
 };
 
+const getDirectImageUrl = (url) => {
+  if (!url) return null;
+  if (url.includes('drive.google.com') && url.includes('/d/')) {
+    const id = url.split('/d/')[1].split('/')[0];
+    return `https://drive.google.com/uc?export=view&id=${id}`;
+  }
+  return url;
+};
+
 const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
   if (!profile) return null;
 
   const social = profile.socialLinks || {};
   const showDob = profile.dobVisibility !== 'hr_only' || isAdmin;
+  const validPhotoUrl = getDirectImageUrl(profile.photoUrl);
 
   return (
     <div className="bg-gray-50/50 pb-12 font-sans w-full">
@@ -28,19 +38,14 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
 
             {/* AVATAR */}
             <div className="flex-shrink-0 relative group">
-              {profile.photoUrl ? (
-                <div className="w-32 h-32 md:w-36 md:h-36 relative ring-4 ring-white shadow-lg rounded-full overflow-hidden">
-                  <img
-                    src={profile.photoUrl}
-                    alt={profile.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-32 h-32 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-green-600 to-teal-700 flex items-center justify-center text-white text-5xl font-bold shadow-lg ring-4 ring-white">
-                  {profile.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div className="w-32 h-32 md:w-36 md:h-36 relative ring-4 ring-white shadow-lg rounded-full overflow-hidden bg-white flex items-center justify-center">
+                <img
+                  src={validPhotoUrl || "/logo.png"}
+                  alt={profile.name}
+                  className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-2'}`}
+                  onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-2"; }}
+                />
+              </div>
             </div>
 
             {/* INFO */}

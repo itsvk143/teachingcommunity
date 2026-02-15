@@ -104,7 +104,7 @@ export default function NewNonTeacher() {
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
-    maritalStatus: '', nationality: 'Indian', religion: '',
+    maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '',
 
     // Arrays & CSVs
     jobRole: '', otherJobRole: '', languages: '',
@@ -282,6 +282,11 @@ export default function NewNonTeacher() {
                   <FormField label="Full Name" name="name" value={form.name} onChange={handleChange} required icon={User} placeholder="e.g. John Doe" />
                   <FormField label="Mobile Number" name="phone" type="tel" value={form.phone} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit mobile" />
                   <FormField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required icon={User} placeholder="john@example.com" />
+
+                  <div className="md:col-span-2">
+                    <FormField label="Photo URL (Optional)" name="photoUrl" value={form.photoUrl} onChange={handleChange} icon={User} placeholder="Paste Google Drive Link here..." />
+                    <p className="text-xs text-gray-400 mt-1 ml-1">You can paste a Google Drive link (Anyone with link)</p>
+                  </div>
 
                   <FormField label="City" name="city" value={form.city} onChange={handleChange} icon={MapPin} />
                   <FormField label="State" name="state" value={form.state} onChange={handleChange} options={STATE_OPTIONS} icon={MapPin} />

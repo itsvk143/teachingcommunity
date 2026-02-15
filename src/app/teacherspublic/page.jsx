@@ -314,8 +314,8 @@ export default function TeachersList() {
                         {/* Name & Avatar */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                              {getInitials(teacher.name)}
+                            <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
+                              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
                             </div>
                             <div>
                               <div className="font-semibold text-gray-900">{teacher.name}</div>

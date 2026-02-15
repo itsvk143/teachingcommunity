@@ -108,7 +108,7 @@ export default function EditNonTeacher() {
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
-    maritalStatus: '', nationality: '', religion: '',
+    maritalStatus: '', nationality: '', religion: '', photoUrl: '',
 
     // Arrays & CSVs
     jobRole: '', otherJobRole: '', languages: '',
@@ -141,6 +141,7 @@ export default function EditNonTeacher() {
           state: data.state || '',
           dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
           dobVisibility: data.dobVisibility || 'everyone',
+          photoUrl: data.photoUrl || '',
           gender: data.gender || '',
           maritalStatus: data.maritalStatus || '',
           nationality: data.nationality || 'Indian',
@@ -357,6 +358,11 @@ export default function EditNonTeacher() {
                   <FormField label="Full Name" name="name" value={form.name} onChange={handleChange} required icon={User} />
                   <FormField label="Mobile Number" name="phone" type="tel" value={form.phone} onChange={handleChange} required maxLength={10} icon={User} />
                   <FormField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required icon={User} />
+
+                  <div className="md:col-span-2">
+                    <FormField label="Photo URL (Optional)" name="photoUrl" value={form.photoUrl} onChange={handleChange} icon={User} placeholder="Paste Google Drive Link here..." />
+                    <p className="text-xs text-gray-400 mt-1 ml-1">You can paste a Google Drive link (Anyone with link)</p>
+                  </div>
 
                   <FormField label="City" name="city" value={form.city} onChange={handleChange} icon={MapPin} />
                   <FormField label="State" name="state" value={form.state} onChange={handleChange} options={STATE_OPTIONS} icon={MapPin} />

@@ -29,9 +29,9 @@ export default function TeacherCard({ teacher }) {
       {/* Right section: Image */}
       <div className="w-32 h-64 flex-shrink-0">
         <img
-          src={`/images/teachers/${teacher.slug}.JPG`}
-          alt={`${teacher.name}'s photo`}
-          className="w-full h-full object-cover rounded-md"
+          src="/logo.png"
+          alt="Teaching Community Logo"
+          className="w-full h-full object-contain rounded-md"
         />
       </div>
     </div>

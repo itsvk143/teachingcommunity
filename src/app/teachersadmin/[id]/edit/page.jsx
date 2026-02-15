@@ -491,7 +491,7 @@ export default function EditTeacher() {
                   <FormField label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required icon={Calendar} />
                   <FormField label="DOB Visibility" name="dobVisibility" value={formData.dobVisibility} onChange={handleChange} required options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
                   <div className="md:col-span-2">
-                    <FormField label="Photo URL" name="photoUrl" value={formData.photoUrl} onChange={handleChange} required icon={Upload} />
+                    <FormField label="Photo URL" name="photoUrl" value={formData.photoUrl} onChange={handleChange} icon={Upload} />
                   </div>
                 </div>
               </div>
