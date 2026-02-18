@@ -36,6 +36,14 @@ const JOB_ROLE_OPTIONS = [
   'OTHER'
 ];
 
+const AVATAR_OPTIONS = [
+  '/logo.png',
+  '/avatars/avatar_1.svg',
+  '/avatars/avatar_2.svg',
+  '/avatars/avatar_3.svg',
+  '/avatars/avatar_4.svg',
+];
+
 // Helper Components
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon }) => {
   const baseInputClasses = "w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400";
@@ -101,10 +109,11 @@ export default function NewNonTeacher() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
-    maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '',
+    maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '/logo.png',
 
     // Arrays & CSVs
     jobRole: '', otherJobRole: '', languages: '',
@@ -284,8 +293,53 @@ export default function NewNonTeacher() {
                   <FormField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required icon={User} placeholder="john@example.com" />
 
                   <div className="md:col-span-2">
-                    <FormField label="Photo URL (Optional)" name="photoUrl" value={form.photoUrl} onChange={handleChange} icon={User} placeholder="Paste Google Drive Link here..." />
-                    <p className="text-xs text-gray-400 mt-1 ml-1">You can paste a Google Drive link (Anyone with link)</p>
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="block text-sm font-medium text-gray-700 ml-1">
+                        Profile Photo <span className="text-red-400">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowCustomUrl(!showCustomUrl)}
+                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      >
+                        {showCustomUrl ? 'Choose from Default Avatars' : 'Use Custom URL'}
+                      </button>
+                    </div>
+
+                    {showCustomUrl ? (
+                      <FormField
+                        label="Photo URL"
+                        name="photoUrl"
+                        value={form.photoUrl}
+                        onChange={handleChange}
+                        placeholder="https://example.com/photo.jpg"
+                        icon={User} // Using User icon since Upload not imported in this file, or I can check imports
+                      />
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                        {AVATAR_OPTIONS.map((avatar, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => setForm(prev => ({ ...prev, photoUrl: avatar }))}
+                            className={`relative cursor-pointer rounded-xl overflow-hidden aspect-square border-2 transition-all ${form.photoUrl === avatar
+                              ? 'border-blue-600 ring-4 ring-blue-100 scale-105'
+                              : 'border-gray-200 hover:border-gray-300 hover:scale-105'
+                              }`}
+                          >
+                            <img
+                              src={avatar}
+                              alt={`Avatar ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {form.photoUrl === avatar && (
+                              <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full p-0.5 shadow-sm">
+                                <CheckCircle className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <FormField label="City" name="city" value={form.city} onChange={handleChange} icon={MapPin} />
