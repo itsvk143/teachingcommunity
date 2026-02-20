@@ -19,6 +19,7 @@ const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const WORK_PLACE_OPTIONS = ['School', 'Coaching', 'SIP', 'Online Coaching', 'Offline Coaching', 'Other'];
+const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
 // STATE_OPTIONS removed from here as it is imported
 const PREFERED_STATE_OPTIONS = [
   'PAN India', ...STATE_OPTIONS
@@ -183,7 +184,7 @@ export default function NewTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '/logo.png',
+    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', designation: 'LECTURER', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '/logo.png',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -346,11 +347,11 @@ export default function NewTeacher() {
     }
   };
 
+  /* Refactored for Simplified 'New' Flow - Only Mandatory Fields */
   const steps = [
     { title: "Personal Details", icon: User },
     { title: "Education", icon: BookOpen },
-    { title: "Professional", icon: Briefcase },
-    { title: "Additional", icon: FileText }
+    { title: "Professional", icon: Briefcase }
   ];
 
   const totalSteps = steps.length;
@@ -460,7 +461,7 @@ export default function NewTeacher() {
               </div>
             )}
 
-            {/* Step 2: Education */}
+            {/* Step 2: Education (Restricted to UG) */}
             {step === 2 && (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 {/* UG (Compulsory) */}
@@ -514,226 +515,14 @@ export default function NewTeacher() {
                   </div>
                 </div>
 
-                {/* PG (Optional) */}
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
-                    <span className="flex items-center"><span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">PG</span> Post Graduation</span>
-                    <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded border">Optional</span>
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Degree</label>
-                      <select
-                        value={formData.qualifications.pg.degree}
-                        onChange={(e) => handleQualificationChange('pg', 'degree', e.target.value)}
-                        className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-                      >
-                        <option value="">Select Degree</option>
-                        {EDUCATION_CONFIG.PG.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
-                      </select>
-                    </div>
-
-                    {formData.qualifications.pg.degree && (
-                      <>
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
-                          {(() => {
-                            const selectedDegree = EDUCATION_CONFIG.PG.degrees.find(d => d.degree === formData.qualifications.pg.degree);
-                            if (selectedDegree && selectedDegree.specializations && selectedDegree.specializations.length > 0) {
-                              return (
-                                <select
-                                  value={formData.qualifications.pg.specialization}
-                                  onChange={(e) => handleQualificationChange('pg', 'specialization', e.target.value)}
-                                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-                                >
-                                  <option value="">Select Specialization</option>
-                                  {selectedDegree.specializations.map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                              );
-                            } else {
-                              return <input type="text" value={formData.qualifications.pg.specialization} onChange={(e) => handleQualificationChange('pg', 'specialization', e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg" />;
-                            }
-                          })()}
-                        </div>
-                        <FormField label="College / University" name="pg_college" value={formData.qualifications.pg.college} onChange={(e) => handleQualificationChange('pg', 'college', e.target.value)} placeholder="University Name" icon={School} />
-                        <FormField label="Year of Passing" name="pg_year" value={formData.qualifications.pg.year} onChange={(e) => handleQualificationChange('pg', 'year', e.target.value)} placeholder="YYYY" />
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Doctorate (Optional) */}
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center justify-between">
-                    <span className="flex items-center"><span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">Dr</span> Doctorate (PhD)</span>
-                    <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded border">Optional</span>
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Degree</label>
-                      <select
-                        value={formData.qualifications.doctorate.degree}
-                        onChange={(e) => handleQualificationChange('doctorate', 'degree', e.target.value)}
-                        className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-                      >
-                        <option value="">Select Degree</option>
-                        {EDUCATION_CONFIG.Doctorate.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
-                      </select>
-                    </div>
-                    {formData.qualifications.doctorate.degree && (
-                      <>
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Specialization</label>
-                          <select
-                            value={formData.qualifications.doctorate.specialization}
-                            onChange={(e) => handleQualificationChange('doctorate', 'specialization', e.target.value)}
-                            className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-                          >
-                            <option value="">Select Specialization</option>
-                            {EDUCATION_CONFIG.Doctorate.degrees[0].specializations.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                        </div>
-                        <FormField label="University" name="doc_college" value={formData.qualifications.doctorate.college} onChange={(e) => handleQualificationChange('doctorate', 'college', e.target.value)} placeholder="University Name" icon={School} />
-                        <FormField label="Year" name="doc_year" value={formData.qualifications.doctorate.year} onChange={(e) => handleQualificationChange('doctorate', 'year', e.target.value)} placeholder="YYYY" />
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Professional Qualifications */}
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-gray-700 flex items-center">
-                      <span className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">Pro</span>
-                      Professional Qualifications
-                    </h3>
-                    <button type="button" onClick={addProfessionalQualification} className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">+ Add</button>
-                  </div>
-
-                  {formData.qualifications.professional.map((qual, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-white rounded border border-gray-200 relative">
-                      <button type="button" onClick={() => removeProfessionalQualification(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-600">×</button>
-                      <div className="col-span-1">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Degree/Exam</label>
-                        <select
-                          value={qual.degree}
-                          onChange={(e) => handleProfessionalChange(index, 'degree', e.target.value)}
-                          className="w-full p-2 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                        >
-                          <option value="">Select Qualification</option>
-                          {EDUCATION_CONFIG.Professional.degrees.map(d => <option key={d.degree} value={d.degree}>{d.label}</option>)}
-                        </select>
-                      </div>
-                      <div className="col-span-1">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Year/Details</label>
-                        <input type="text" value={qual.year} onChange={(e) => handleProfessionalChange(index, 'year', e.target.value)} placeholder="Year or Score" className="w-full p-2 text-sm border border-gray-200 rounded" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Optional Schooling */}
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Schooling (Optional)</h3>
-
-                  {/* Class 10th */}
-                  <div className="mb-6 border-b border-gray-100 pb-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">Class 10th</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                      <div className="col-span-2 md:col-span-4">
-                        <FormField label="School Name" name="class10.schoolName" value={formData.class10.schoolName} onChange={handleChange} placeholder="School Name" icon={School} />
-                      </div>
-                      <FormField label="Board" name="class10.boardUniv" value={formData.class10.boardUniv} onChange={handleChange} placeholder="CBSE" />
-                      <FormField label="Year" name="class10.year" value={formData.class10.year} onChange={handleChange} placeholder="2016" />
-                      <FormField label="%" name="class10.percentage" value={formData.class10.percentage} onChange={handleChange} placeholder="CGPA/Percent" />
-                      <FormField label="Medium" name="class10.medium" value={formData.class10.medium} onChange={handleChange} placeholder="Eng" />
-                    </div>
-                  </div>
-
-                  {/* Class 12th */}
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">Class 12th</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="col-span-2 md:col-span-4">
-                        <FormField label="School Name" name="class12.schoolName" value={formData.class12.schoolName} onChange={handleChange} placeholder="School Name" icon={School} />
-                      </div>
-                      <FormField label="Board" name="class12.boardUniv" value={formData.class12.boardUniv} onChange={handleChange} placeholder="CBSE" />
-                      <FormField label="Year" name="class12.year" value={formData.class12.year} onChange={handleChange} placeholder="2018" />
-                      <FormField label="%" name="class12.percentage" value={formData.class12.percentage} onChange={handleChange} placeholder="92%" />
-                      <FormField label="Medium" name="class12.medium" value={formData.class12.medium} onChange={handleChange} placeholder="Eng" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Competitive Exams Cleared */}
-                <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-100 mt-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Competitive Exams Cleared (Optional)</h3>
-                    <button
-                      type="button"
-                      onClick={addExamAchievement}
-                      className="text-xs flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 transition-colors"
-                    >
-                      <CheckCircle className="w-3 h-3 mr-1" /> Add Exam
-                    </button>
-                  </div>
-
-                  {formData.examAchievements.length === 0 && (
-                    <p className="text-sm text-gray-400 italic">No exams added yet. Add exams like JEE, NEET, GATE if qualified.</p>
-                  )}
-
-                  <div className="space-y-3">
-                    {formData.examAchievements.map((item, index) => (
-                      <div key={index} className="grid grid-cols-1 md:grid-cols-7 gap-3 items-end bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                        <div className="md:col-span-3">
-                          <label className="text-xs font-medium text-gray-500 mb-1 block">Exam Name</label>
-                          <select
-                            value={item.exam}
-                            onChange={(e) => handleExamAchievementChange(index, 'exam', e.target.value)}
-                            className="w-full p-2 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                          >
-                            <option value="">Select Exam</option>
-                            {ALL_EXAMS.map(ex => <option key={ex} value={ex}>{ex}</option>)}
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="text-xs font-medium text-gray-500 mb-1 block">Year</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. 2018"
-                            value={item.year}
-                            onChange={(e) => handleExamAchievementChange(index, 'year', e.target.value)}
-                            className="w-full p-2 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                          />
-                        </div>
-                        <div className="md:col-span-2 relative">
-                          <label className="text-xs font-medium text-gray-500 mb-1 block">Result / Rank</label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              placeholder="e.g. AIR 450"
-                              value={item.result}
-                              onChange={(e) => handleExamAchievementChange(index, 'result', e.target.value)}
-                              className="w-full p-2 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeExamAchievement(index)}
-                              className="text-red-400 hover:text-red-600 p-1"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                {/* PG, Doctorate, Professional, Schooling hidden for "New" flow */}
+                <div className="text-center text-sm text-gray-500 mt-4 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                  <p>Additional qualifications (PG, PhD, Professional, Schooling) can be added from the <strong>Edit Profile</strong> page after registration.</p>
                 </div>
               </div>
             )}
 
-            {/* Step 3: Professional */}
+            {/* Step 3: Professional (Simplified) */}
             {step === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Professional Details</h2>
@@ -749,6 +538,17 @@ export default function NewTeacher() {
                     options={Object.entries(TEACHING_CATEGORIES).map(([key, val]) => ({ label: val.label, value: key }))}
                     icon={Layers}
                   />
+
+                  <FormField
+                    label="Designation"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    required
+                    options={DESIGNATION_OPTIONS}
+                    icon={Briefcase}
+                  />
+
                   {formData.category && (
                     <p className="text-sm text-gray-500 mt-2 ml-1">
                       {TEACHING_CATEGORIES[formData.category]?.description}
@@ -818,35 +618,14 @@ export default function NewTeacher() {
                     })()}
                   </div>
 
-                  <FormField label="Experience (Yrs)" name="experience" value={formData.experience} onChange={handleChange} required placeholder="e.g. 5" icon={Briefcase} />
-                  <FormField label="Currently Working In" name="currentlyWorkingIn" value={formData.currentlyWorkingIn} onChange={handleChange} required options={WORK_PLACE_OPTIONS} icon={Briefcase} />
-
-                  {formData.currentlyWorkingIn === 'Other' && (
-                    <FormField label="Specific Workplace" name="otherWorkPlace" value={formData.otherWorkPlace} onChange={handleChange} required placeholder="Freelance / Private" />
-                  )}
-
-                  <FormField label="Current CTC" name="ctc" value={formData.ctc} onChange={handleChange} placeholder="e.g. 12 LPA" icon={IndianRupee} />
+                  <FormField label="Experience (Yrs)" name="experience" type="number" value={formData.experience} onChange={handleChange} required placeholder="e.g. 5" icon={Briefcase} />
                   <FormField label="Preferred State" name="preferedState" value={formData.preferedState} onChange={handleChange} required options={PREFERED_STATE_OPTIONS} icon={MapPin} />
-                </div>
 
-                <div className="space-y-4 pt-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField label="Current Institute Name" name="currentInstitute" value={formData.currentInstitute} onChange={handleChange} required icon={Briefcase} />
-                    <FormField label="Employee Code (Optional)" name="currentEmployeeCode" value={formData.currentEmployeeCode} onChange={handleChange} placeholder="e.g. EMP123" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField label="Previous Institutes" name="previousInstitutes" value={formData.previousInstitutes} onChange={handleChange} required icon={Briefcase} />
-                    <FormField label="Prev. Employee Codes (Optional)" name="previousEmployeeCodes" value={formData.previousEmployeeCodes} onChange={handleChange} placeholder="e.g. EMP456, EMP789" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                   <FormField
                     label="Current State"
                     name="state"
                     value={formData.state}
                     onChange={(e) => {
-                      // Custom handler to clear city when state changes
                       const newState = e.target.value;
                       setFormData(prev => ({ ...prev, state: newState, city: '' }));
                     }}
@@ -864,31 +643,14 @@ export default function NewTeacher() {
                     options={formData.state ? CITIES_BY_STATE[formData.state] || [] : []}
                     icon={MapPin}
                   />
+
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
-                </div>
-              </div>
-            )}
 
-            {/* Step 4: Additional */}
-            {step === 4 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Final Details</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} icon={FileText} placeholder="Google Drive / Dropbox link (Optional)" />
-                  <FormField label="Demo Video Link" name="teachingVideoLink" value={formData.teachingVideoLink} onChange={handleChange} icon={Upload} placeholder="YouTube / Drive link (Optional)" />
                 </div>
 
-                <FormField label="About You" name="about" value={formData.about} onChange={handleChange} required rows={4} placeholder="Your teaching philosophy, approach, and background..." />
-
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Social Links (Optional)</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField label="LinkedIn" name="socialLinks.linkedin" value={formData.socialLinks.linkedin} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Facebook" name="socialLinks.facebook" value={formData.socialLinks.facebook} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Twitter" name="socialLinks.twitter" value={formData.socialLinks.twitter} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Instagram" name="socialLinks.instagram" value={formData.socialLinks.instagram} onChange={handleChange} placeholder="Profile URL" />
-                  </div>
+                <div className="text-center text-sm text-gray-500 mt-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                  <p>Additional details (Employment History, Social Links, etc.) can be added from the <strong>Edit Profile</strong> page after registration.</p>
                 </div>
               </div>
             )}

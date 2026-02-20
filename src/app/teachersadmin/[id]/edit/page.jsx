@@ -19,6 +19,7 @@ const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const UNDERGRADUATE_DEGREES = ['B.Tech', 'BSc', 'MBBS', 'Other'];
 const POSTGRADUATE_DEGREES = ['M.Tech', 'MSc', 'Masters', 'Other', 'NA'];
 const WORK_PLACE_OPTIONS = ['School', 'Coaching', 'SIP', 'Online Coaching', 'Offline Coaching', 'Other'];
+const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
 // STATE_OPTIONS removed from here as it is imported
 const PREFERED_STATE_OPTIONS = ['PAN India', ...STATE_OPTIONS];
 
@@ -187,7 +188,7 @@ export default function EditTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
+    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', designation: 'LECTURER', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -226,6 +227,7 @@ export default function EditTeacher() {
           whatsapp: data.whatsapp || '',
           categories: Array.isArray(data.categories) ? data.categories : (data.category ? [data.category] : []),
           category: Array.isArray(data.categories) && data.categories.length > 0 ? data.categories[0] : (data.category || ''), // UI State
+          designation: data.designation || 'LECTURER',
           qualifications: data.qualifications || {
             ug: { degree: '', specialization: '', college: '', year: '' },
             pg: { degree: '', specialization: '', college: '', year: '' },
@@ -787,6 +789,17 @@ export default function EditTeacher() {
                       {TEACHING_CATEGORIES[formData.category]?.description}
                     </p>
                   )}
+
+                  <FormField
+                    label="Designation"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    required
+                    options={DESIGNATION_OPTIONS}
+                    icon={Briefcase}
+                    className="mt-6"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -852,7 +865,7 @@ export default function EditTeacher() {
                     })()}
                   </div>
 
-                  <FormField label="Experience (Yrs)" name="experience" value={formData.experience} onChange={handleChange} required icon={Briefcase} />
+                  <FormField label="Experience (Yrs)" name="experience" type="number" value={formData.experience} onChange={handleChange} required icon={Briefcase} />
                   <FormField label="Currently Working In" name="currentlyWorkingIn" value={formData.currentlyWorkingIn} onChange={handleChange} required options={WORK_PLACE_OPTIONS} icon={Briefcase} />
 
                   {formData.currentlyWorkingIn === 'Other' && (
@@ -869,7 +882,7 @@ export default function EditTeacher() {
                     <FormField label="Employee Code (Optional)" name="currentEmployeeCode" value={formData.currentEmployeeCode} onChange={handleChange} placeholder="e.g. EMP123" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField label="Previous Institutes" name="previousInstitutes" value={formData.previousInstitutes} onChange={handleChange} required icon={Briefcase} />
+                    <FormField label="Previous Institutes" name="previousInstitutes" value={formData.previousInstitutes} onChange={handleChange} icon={Briefcase} />
                     <FormField label="Prev. Employee Codes (Optional)" name="previousEmployeeCodes" value={formData.previousEmployeeCodes} onChange={handleChange} placeholder="e.g. EMP456, EMP789" />
                   </div>
                 </div>

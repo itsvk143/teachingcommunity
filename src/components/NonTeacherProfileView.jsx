@@ -51,6 +51,11 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
             {/* INFO */}
             <div className="flex-1 text-center md:text-left space-y-2">
               <div>
+                <div className="mb-2 flex justify-center md:justify-start">
+                  <span className="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-200">
+                    {profile.designation || "LECTURER"}
+                  </span>
+                </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight capitalize">{profile.name}</h1>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-3 items-center text-gray-600">
                   <span className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-green-100">

@@ -45,10 +45,8 @@ const NonTeacherSchema = new mongoose.Schema(
       trim: true,
     },
 
-    currentlyWorkingIn: { type: String, trim: true },
     age: { type: String, trim: true },
     photoUrl: { type: String, trim: true },
-    about: { type: String, trim: true },
 
     maxQualification: { type: String, trim: true },
     graduationQualification: { type: String, trim: true },
@@ -89,7 +87,7 @@ const NonTeacherSchema = new mongoose.Schema(
     dob: { type: Date },
     dobVisibility: {
       type: String,
-      enum: ['everyone', 'hr_only', 'mask_year'],
+      enum: ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'],
       default: 'everyone',
     },
     address: { type: String, trim: true },

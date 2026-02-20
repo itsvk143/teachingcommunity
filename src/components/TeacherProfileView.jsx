@@ -84,6 +84,11 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
             {/* Info */}
             <div className="flex-1 space-y-4 pt-2">
               <div>
+                <div className="mb-2">
+                  <span className="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-200">
+                    {teacher.designation || "LECTURER"}
+                  </span>
+                </div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">{teacher.name}</h1>
                 <p className="text-lg text-gray-600 font-medium mt-1">{teacher.currentInstitute || "Educator"} {teacher.city && `• ${teacher.city}`}</p>
               </div>

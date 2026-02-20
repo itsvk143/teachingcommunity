@@ -28,6 +28,14 @@ const TeacherSchema = new mongoose.Schema(
 
     categories: { type: [String], default: [] },
     category: { type: String, trim: true }, // Legacy/Fallback field
+
+    designation: {
+      type: String,
+      enum: ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'],
+      default: 'LECTURER',
+      trim: true
+    },
+
     gender: { type: String, trim: true },
     maritalStatus: { type: String, trim: true },
 

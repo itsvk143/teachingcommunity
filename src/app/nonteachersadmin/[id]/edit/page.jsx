@@ -35,6 +35,7 @@ const JOB_ROLE_OPTIONS = [
   'LEGAL SUPPORT',
   'OTHER'
 ];
+const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
 
 const AVATAR_OPTIONS = [
   '/logo.png',
@@ -116,7 +117,7 @@ export default function EditNonTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
+    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
     maritalStatus: '', nationality: '', religion: '', photoUrl: '',
 
     // Arrays & CSVs
@@ -155,6 +156,7 @@ export default function EditNonTeacher() {
           maritalStatus: data.maritalStatus || '',
           nationality: data.nationality || 'Indian',
           religion: data.religion || '',
+          designation: data.designation || 'LECTURER',
 
 
           // Job Role Logic
@@ -448,6 +450,9 @@ export default function EditNonTeacher() {
                       <FormField label="Specific Job Role" name="otherJobRole" value={form.otherJobRole} onChange={handleChange} required placeholder="e.g. Accountant" />
                     )}
                   </div>
+
+                  <FormField label="Designation" name="designation" value={form.designation} onChange={handleChange} required options={DESIGNATION_OPTIONS} icon={Briefcase} />
+
                   <FormField label="Career Objective" name="careerObjective" value={form.careerObjective} onChange={handleChange} rows={4} />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -36,6 +36,8 @@ const JOB_ROLE_OPTIONS = [
   'OTHER'
 ];
 
+const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
+
 const AVATAR_OPTIONS = [
   '/logo.png',
   '/avatars/avatar_1.svg',
@@ -112,7 +114,7 @@ export default function NewNonTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '',
+    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
     maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '/logo.png',
 
     // Arrays & CSVs
@@ -233,12 +235,10 @@ export default function NewNonTeacher() {
     }
   };
 
+  /* Refactored for Simplified 'New' Flow - Only Mandatory Fields */
   const steps = [
     { title: "Personal Details", icon: User },
-    { title: "Job Profile", icon: Briefcase },
-    { title: "Experience", icon: List },
-    { title: "Education", icon: GraduationCap },
-    { title: "Skills & Extras", icon: Award }
+    { title: "Job Profile", icon: Briefcase }
   ];
 
   const totalSteps = steps.length;
@@ -313,7 +313,7 @@ export default function NewNonTeacher() {
                         value={form.photoUrl}
                         onChange={handleChange}
                         placeholder="https://example.com/photo.jpg"
-                        icon={User} // Using User icon since Upload not imported in this file, or I can check imports
+                        icon={User}
                       />
                     ) : (
                       <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
@@ -341,22 +341,11 @@ export default function NewNonTeacher() {
                       </div>
                     )}
                   </div>
-
-                  <FormField label="City" name="city" value={form.city} onChange={handleChange} icon={MapPin} />
-                  <FormField label="State" name="state" value={form.state} onChange={handleChange} options={STATE_OPTIONS} icon={MapPin} />
-
-                  <FormField label="Date of Birth" name="dob" type="date" value={form.dob} onChange={handleChange} icon={Calendar} />
-                  <FormField label="DOB Visibility" name="dobVisibility" value={form.dobVisibility} onChange={handleChange} options={DOB_VISIBILITY_OPTIONS} icon={Calendar} />
-                  <FormField label="Gender" name="gender" value={form.gender} onChange={handleChange} options={GENDER_OPTIONS} icon={User} />
-
-                  <FormField label="Marital Status" name="maritalStatus" value={form.maritalStatus} onChange={handleChange} options={MARITAL_STATUS_OPTIONS} icon={User} />
-                  <FormField label="Nationality" name="nationality" value={form.nationality} onChange={handleChange} icon={Globe} />
-                  <FormField label="Religion" name="religion" value={form.religion} onChange={handleChange} placeholder="e.g. Hindu" icon={Globe} />
                 </div>
               </div>
             )}
 
-            {/* Step 2: Job Profile */}
+            {/* Step 2: Job Profile & Resume */}
             {step === 2 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Job Profile</h2>
@@ -367,110 +356,28 @@ export default function NewNonTeacher() {
                       <FormField label="Specific Job Role" name="otherJobRole" value={form.otherJobRole} onChange={handleChange} required placeholder="e.g. Accountant" />
                     )}
                   </div>
-                  <FormField label="Career Objective" name="careerObjective" value={form.careerObjective} onChange={handleChange} rows={4} placeholder="Summarize your career goals..." />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Total Experience (Years)" name="experience" value={form.experience} onChange={handleChange} icon={Briefcase} placeholder="e.g. 5" />
-                    <FormField label="Current CTC" name="ctc" value={form.ctc} onChange={handleChange} placeholder="e.g. 4 LPA" />
+
+
+                  <div className="md:col-span-2">
+                    <FormField label="Designation" name="designation" value={form.designation} onChange={handleChange} required options={DESIGNATION_OPTIONS} icon={Briefcase} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Current Institute" name="currentInstitute" value={form.currentInstitute} onChange={handleChange} icon={Briefcase} />
-                    <FormField label="Employee Code (Current)" name="currentEmployeeCode" value={form.currentEmployeeCode} onChange={handleChange} />
+
+                  {/* Moved Resume Link Here - Optional */}
+                  <div className="md:col-span-2">
+                    <FormField
+                      label="Resume Link (Optional)"
+                      name="resumeLink"
+                      value={form.resumeLink}
+                      onChange={handleChange}
+                      icon={FileText}
+                      placeholder="Google Drive Link etc."
+                    />
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Step 3: Work Experience */}
-            {step === 3 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="flex justify-between items-center border-b pb-3 mb-6">
-                  <h2 className="text-xl font-bold text-gray-800">Work Experience</h2>
-                  <button type="button" onClick={addExperience} className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-medium">
-                    + Add Experience
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {form.workExperience.map((exp, idx) => (
-                    <div key={idx} className="bg-gray-50 p-6 rounded-xl border border-gray-200 relative group">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                        <FormField label="Organization" value={exp.organization} onChange={(e) => updateExperience(idx, 'organization', e.target.value)} placeholder="Company Name" className="bg-white" />
-                        <FormField label="Designation" value={exp.designation} onChange={(e) => updateExperience(idx, 'designation', e.target.value)} placeholder="Title" className="bg-white" />
-                        <FormField label="Duration" value={exp.duration} onChange={(e) => updateExperience(idx, 'duration', e.target.value)} placeholder="e.g. 2020-2022" className="bg-white" />
-                        <FormField label="Responsibilities" value={exp.responsibilities} onChange={(e) => updateExperience(idx, 'responsibilities', e.target.value)} placeholder="Key roles" className="bg-white" />
-                        <FormField label="Employee Code (Optional)" value={exp.employeeCode} onChange={(e) => updateExperience(idx, 'employeeCode', e.target.value)} placeholder="EMP..." className="bg-white" />
-                      </div>
-                      <button type="button" onClick={() => removeExperience(idx)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition">
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  {form.workExperience.length === 0 && (
-                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500">
-                      No work experience added yet.
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Education */}
-            {step === 4 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="flex justify-between items-center border-b pb-3 mb-6">
-                  <h2 className="text-xl font-bold text-gray-800">Education Details</h2>
-                  <button type="button" onClick={addEducation} className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-medium">
-                    + Add Education
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {form.educationalQualification.map((edu, idx) => (
-                    <div key={idx} className="bg-gray-50 p-6 rounded-xl border border-gray-200 relative group">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <FormField label="Qualification" value={edu.qualification} onChange={(e) => updateEducation(idx, 'qualification', e.target.value)} placeholder="e.g. B.Com" className="bg-white" />
-                        <FormField label="Board/Univ" value={edu.boardUniv} onChange={(e) => updateEducation(idx, 'boardUniv', e.target.value)} placeholder="University" className="bg-white" />
-                        <FormField label="Year" value={edu.year} onChange={(e) => updateEducation(idx, 'year', e.target.value)} placeholder="YYYY" className="bg-white" />
-                        <FormField label="Percentage/CGPA" value={edu.percentage} onChange={(e) => updateEducation(idx, 'percentage', e.target.value)} placeholder="Score" className="bg-white" />
-                      </div>
-                      <button type="button" onClick={() => removeEducation(idx)} className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition">
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  {form.educationalQualification.length === 0 && (
-                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500">
-                      No education details added yet.
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Step 5: Skills & Additional */}
-            {step === 5 && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-6">Skills & Additional Details</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="Key Soft Skills" name="keySkills" value={form.keySkills} onChange={handleChange} rows={3} placeholder="Leadership, Communication..." />
-                  <FormField label="Technical Skills" name="technicalSkills" value={form.technicalSkills} onChange={handleChange} rows={3} placeholder="MS Office, Tally..." />
-                  <FormField label="Certifications" name="certifications" value={form.certifications} onChange={handleChange} rows={2} placeholder="Any courses..." />
-                  <FormField label="Languages Known" name="languages" value={form.languages} onChange={handleChange} rows={2} placeholder="English, Hindi..." />
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <h3 className="font-semibold text-gray-800 mb-4">Resume & Social Profile</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
-                      <FormField label="Resume Link" name="resumeLink" value={form.resumeLink} onChange={handleChange} required icon={FileText} placeholder="Google Drive Link" />
-                    </div>
-                    <FormField label="LinkedIn" name="socialLinks.linkedin" value={form.socialLinks.linkedin} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Facebook" name="socialLinks.facebook" value={form.socialLinks.facebook} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Twitter" name="socialLinks.twitter" value={form.socialLinks.twitter} onChange={handleChange} placeholder="Profile URL" />
-                    <FormField label="Instagram" name="socialLinks.instagram" value={form.socialLinks.instagram} onChange={handleChange} placeholder="Profile URL" />
-                  </div>
+                <div className="text-center text-sm text-gray-500 mt-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                  <p>Aditional details (Experience, Education, Skills, Address, etc.) can be added from the <strong>Edit Profile</strong> page after registration.</p>
                 </div>
               </div>
             )}
@@ -516,7 +423,7 @@ export default function NewNonTeacher() {
             </div>
           </form>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
