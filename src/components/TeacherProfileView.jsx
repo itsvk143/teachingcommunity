@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import {
   Mail, Phone, MapPin, Briefcase, GraduationCap,
@@ -72,7 +74,12 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
             {/* Avatar */}
             <div className="shrink-0 relative">
               <div className="w-32 h-32 md:w-40 md:h-40 relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white bg-white flex items-center justify-center">
-                <img src="/logo.png" alt="Teaching Community" className="w-full h-full object-contain p-2" />
+                <img
+                  src={validPhotoUrl || "/logo.png"}
+                  alt={teacher.name || "Teaching Community"}
+                  className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-2'}`}
+                  onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-2"; }}
+                />
               </div>
               {teacher.isVerified && (
                 <div className="absolute -bottom-3 -right-3 bg-blue-600 text-white p-1.5 rounded-full border-4 border-white shadow-sm" title="Verified Educator">

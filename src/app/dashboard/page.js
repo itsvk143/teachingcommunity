@@ -11,6 +11,35 @@ import SchoolProfileView from "@/components/SchoolProfileView";
 import ParentProfileView from "@/components/ParentProfileView";
 import StudentProfileView from "@/components/StudentProfileView";
 
+// Helper to calculate completion percentage dynamically
+const calculateCompletion = (profile) => {
+  if (!profile) return 0;
+
+  const excludeKeys = ['_id', '__v', 'createdAt', 'updatedAt', 'slug', 'unique_id', 'isVerified', 'sequence', 'user'];
+  let total = 0;
+  let filled = 0;
+
+  Object.keys(profile).forEach(key => {
+    if (!excludeKeys.includes(key)) {
+      total++;
+      const val = profile[key];
+      if (val !== null && val !== undefined && val !== '') {
+        if (Array.isArray(val)) {
+          if (val.length > 0) filled++;
+        } else if (typeof val === 'object') {
+          // For objects like socialLinks, check if at least one property is filled
+          const hasValue = Object.values(val).some(v => v !== null && v !== undefined && v !== '');
+          if (hasValue) filled++;
+        } else {
+          filled++;
+        }
+      }
+    }
+  });
+
+  return total > 0 ? Math.round((filled / total) * 100) : 0;
+};
+
 export default function Dashboard() {
   const { data: session, status } = useSession(); // Get the user session status
   const router = useRouter();
@@ -190,6 +219,7 @@ export default function Dashboard() {
                 title="Teaching Profile"
                 color="blue"
                 icon={GraduationCap}
+                completionPercentage={calculateCompletion(teacherProfile)}
                 onEdit={() => router.push(`/teachersadmin/${teacherProfile._id}/edit`)}
                 onViewPublic={() => router.push(`/teacherspublic/${teacherProfile._id}`)}
               >
@@ -203,6 +233,7 @@ export default function Dashboard() {
                 title="Staff Profile"
                 color="green"
                 icon={Briefcase}
+                completionPercentage={calculateCompletion(nonTeacherProfile)}
                 onEdit={() => router.push(`/nonteachersadmin/${nonTeacherProfile._id}/edit`)}
                 onViewPublic={() => router.push(`/nonteacherspublic`)}
               >
@@ -216,6 +247,7 @@ export default function Dashboard() {
                 title="Institute Profile"
                 color="purple"
                 icon={Building2}
+                completionPercentage={calculateCompletion(coachingProfile)}
                 onEdit={null} // Coaching view handles edit internal link if needed, or pass explicit
                 onViewPublic={() => router.push(`/coaching/${coachingProfile._id}`)}
               >
@@ -231,6 +263,7 @@ export default function Dashboard() {
                 title="School Profile"
                 color="red"
                 icon={School}
+                completionPercentage={calculateCompletion(schoolProfile)}
                 onEdit={() => router.push(`/schools/${schoolProfile._id}/edit`)}
                 onViewPublic={() => router.push(`/schools/${schoolProfile._id}`)}
               >
@@ -246,6 +279,7 @@ export default function Dashboard() {
                 title="Parent Profile"
                 color="orange"
                 icon={Users}
+                completionPercentage={calculateCompletion(parentProfile)}
                 onEdit={() => router.push(`/parents/${parentProfile._id}/edit`)}
               >
                 <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
@@ -260,6 +294,7 @@ export default function Dashboard() {
                 title="Student Profile"
                 color="teal"
                 icon={Users}
+                completionPercentage={calculateCompletion(studentProfile)}
                 onEdit={() => router.push(`/students/${studentProfile._id}/edit`)}
               >
                 <StudentProfileView student={studentProfile} />
@@ -446,7 +481,7 @@ function RoleCard({ icon: Icon, color, title, desc, onClick }) {
   );
 }
 
-function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onViewPublic }) {
+function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onViewPublic, completionPercentage }) {
   const colors = {
     blue: "text-blue-600 border-blue-100 bg-blue-50",
     green: "text-green-600 border-green-100 bg-green-50",
@@ -455,6 +490,14 @@ function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onV
     orange: "text-orange-600 border-orange-100 bg-orange-50",
     teal: "text-teal-600 border-teal-100 bg-teal-50",
   };
+
+  const getProgressColor = (percent) => {
+    if (percent > 90) return { bg: "bg-green-500", text: "text-green-600" };
+    if (percent >= 70) return { bg: "bg-orange-500", text: "text-orange-600" };
+    return { bg: "bg-red-500", text: "text-red-600" };
+  };
+
+  const progressColor = completionPercentage !== undefined ? getProgressColor(completionPercentage) : null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -465,6 +508,23 @@ function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onV
           </div>
           <h3 className="font-bold text-gray-800">{title}</h3>
         </div>
+
+        {/* Completion Percentage Middle Section */}
+        {completionPercentage !== undefined && (
+          <div className="flex flex-col items-center justify-center px-4 hidden sm:flex">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profile Completion</span>
+              <span className={`text-sm font-bold ${progressColor.text}`}>{completionPercentage}%</span>
+            </div>
+            <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ease-out ${progressColor.bg}`}
+                style={{ width: `${completionPercentage}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2">
           {onViewPublic && (
             <button onClick={onViewPublic} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition">
@@ -478,6 +538,23 @@ function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onV
           )}
         </div>
       </div>
+
+      {/* Mobile visible completion */}
+      {completionPercentage !== undefined && (
+        <div className="px-6 py-3 border-b border-gray-50 sm:hidden flex flex-col items-center justify-center bg-gray-50/20">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profile Completion</span>
+            <span className={`text-sm font-bold ${progressColor.text}`}>{completionPercentage}%</span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ease-out ${progressColor.bg}`}
+              style={{ width: `${completionPercentage}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
       <div className="p-6">
         {children}
       </div>
