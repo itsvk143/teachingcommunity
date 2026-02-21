@@ -48,13 +48,15 @@ export async function POST(req: Request) {
     let posterRole = null;
 
     if (session?.user) {
-      // Auto-approve for registered users
-      const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher'];
       const user = session.user as { role: string; id: string };
+
+      postedBy = user.id;
+      posterRole = user.role;
+
+      // Auto-approve for registered roles
+      const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher'];
       if (allowedRoles.includes(user.role)) {
         isApproved = true;
-        postedBy = user.id;
-        posterRole = user.role;
       }
     }
 

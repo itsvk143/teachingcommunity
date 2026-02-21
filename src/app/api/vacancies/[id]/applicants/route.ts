@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import dbConnect from '@/lib/dbConnect';
 import Application from '@/model/Application';
@@ -11,18 +12,29 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     try {
         const session = await getServerSession(authOptions as AuthOptions);
 
-        const user = session?.user as { role: string; email: string } | undefined;
+        const user = session?.user as { role: string; email: string; id: string } | undefined;
 
-        if (!user || (user.role !== 'admin' && user.role !== 'hr')) {
+        const { id: vacancyId } = params;
+
+        await dbConnect();
+
+        // Need the vacancy to check ownership
+        const Vacancy = mongoose.models.Vacancy || (await import('@/model/Vacancy')).default;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const vacancy = (await Vacancy.findById(vacancyId).lean()) as any;
+        if (!vacancy) {
+            return NextResponse.json({ message: 'Vacancy not found' }, { status: 404 });
+        }
+
+        const isOwner = user && vacancy.postedBy === user.id;
+        const isAdminOrHr = user && (user.role === 'admin' || user.role === 'hr');
+
+        if (!isOwner && !isAdminOrHr) {
             return NextResponse.json(
                 { message: 'Unauthorized' },
                 { status: 403 }
             );
         }
-
-        const { id: vacancyId } = params;
-
-        await dbConnect();
 
         // Fetch applications and populate User details
         const applications = await Application.find({ vacancyId })

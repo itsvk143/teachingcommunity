@@ -24,7 +24,7 @@ export default function CoachingProfileView({ coaching, canEdit }) {
     { label: 'Students', value: coaching.student_count ? `${coaching.student_count}+` : null, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Faculty', value: coaching.faculty_count ? `${coaching.faculty_count}+` : null, icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-50' },
     { label: 'Selections', value: (coaching.selection_count_neet || coaching.selection_count_jee) ? `${(coaching.selection_count_neet || 0) + (coaching.selection_count_jee || 0)}+` : null, icon: Trophy, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    { label: 'Rating', value: '4.8', icon: Star, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Rating', value: coaching.platform_rating > 0 ? coaching.platform_rating.toFixed(1) : 'New', icon: Star, color: 'text-green-600', bg: 'bg-green-50' },
   ].filter(s => s.value);
 
   return (

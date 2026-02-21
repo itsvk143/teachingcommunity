@@ -5,6 +5,35 @@ import Application from '@/model/Application';
 import Vacancy from '@/model/Vacancy';
 import { authOptions } from '@/lib/auth';
 
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions as AuthOptions);
+        const user = session?.user as { id: string; email: string; role: string } | undefined;
+
+        if (!user || !user.id) {
+            return NextResponse.json(
+                { message: 'Unauthorized. Please log in.' },
+                { status: 401 }
+            );
+        }
+
+        await dbConnect();
+
+        const applications = await Application.find({ userId: user.id })
+            .populate('vacancyId')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return NextResponse.json(applications);
+    } catch (error) {
+        console.error('Error fetching applications:', error);
+        return NextResponse.json(
+            { message: 'Internal Server Error' },
+            { status: 500 }
+        );
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions as AuthOptions);

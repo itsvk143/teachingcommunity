@@ -3,7 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, BookOpen } from "lucide-react";
+import { Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, BookOpen, Clock, MapPin } from "lucide-react";
 import TeacherProfileView from "@/components/TeacherProfileView";
 import NonTeacherProfileView from "@/components/NonTeacherProfileView";
 import CoachingProfileView from "@/components/CoachingProfileView";
@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [studentProfile, setStudentProfile] = useState(null);
   const [homeTuitions, setHomeTuitions] = useState([]);
   const [userVacancies, setUserVacancies] = useState([]);
+  const [userApplications, setUserApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch profiles if user is logged in
@@ -63,7 +64,7 @@ export default function Dashboard() {
         try {
           // Parallel Fetching for speed
           // Parallel Fetching for speed
-          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes, vacRes] = await Promise.all([
+          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes, vacRes, appRes] = await Promise.all([
             fetch(`/api/teachers?email=${email}`),
             fetch(`/api/non-teachers?email=${email}`),
             fetch(`/api/coaching?email=${email}&ownerId=${session.user.id}`),
@@ -71,10 +72,11 @@ export default function Dashboard() {
             fetch(`/api/parents?email=${email}`),
             fetch(`/api/students?email=${email}`),
             fetch(`/api/hometuition?email=${email}`),
-            fetch(`/api/vacancies?postedBy=${session.user.id}`)
+            fetch(`/api/vacancies?postedBy=${session.user.id}`),
+            fetch(`/api/applications`)
           ]);
 
-          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData, vacData] = await Promise.all([
+          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData, vacData, appData] = await Promise.all([
             teacherRes.json(),
             nonTeacherRes.json(),
             coachingRes.json(),
@@ -82,7 +84,8 @@ export default function Dashboard() {
             parentRes.json(),
             studentRes.json(),
             htRes.json(),
-            vacRes.json()
+            vacRes.json(),
+            appRes.json()
           ]);
 
           if (teacherData?.teachers?.length > 0) setTeacherProfile(teacherData.teachers[0]);
@@ -93,6 +96,7 @@ export default function Dashboard() {
           if (studentData && !studentData.error) setStudentProfile(studentData);
           if (Array.isArray(htData)) setHomeTuitions(htData);
           if (Array.isArray(vacData)) setUserVacancies(vacData);
+          if (Array.isArray(appData)) setUserApplications(appData);
 
         } catch (err) {
           console.error("Failed to fetch profiles", err);
@@ -381,7 +385,7 @@ export default function Dashboard() {
           )}
 
           {/* RIGHT COLUMN 2: My Vacancies (Show if has vacancies or is coaching/school/admin) */}
-          {(userVacancies.length > 0 || session.user.role === 'coaching' || session.user.role === 'school' || session.user.role === 'hr') && (
+          {(userVacancies.length > 0 || session.user.role === 'coaching' || session.user.role === 'school' || session.user.role === 'hr' || coachingProfile || schoolProfile) && (
             <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-3' : ''} mt-8 lg:mt-0`}>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
                 <div className="p-6 border-b flex justify-between items-center">
@@ -411,39 +415,147 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     userVacancies.map((job) => (
-                      <div key={job._id} className="group bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition p-4">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-gray-800 text-sm truncate w-full pr-2">{job.jobTitle}</h4>
-                          <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wide shrink-0 ${job.isApproved ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                      <div key={job._id} className="group flex flex-col bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all p-5 relative overflow-hidden">
+                        <div className={`absolute top-0 left-0 w-full h-1 ${job.isApproved ? 'bg-green-500' : 'bg-yellow-400'}`}></div>
+
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-bold text-gray-900 text-base leading-tight pr-4 line-clamp-2">{job.jobTitle}</h4>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 shadow-sm ${job.isApproved ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
                             {job.isApproved ? 'Live' : 'Pending'}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 mb-2 truncate">{job.companyName}</p>
-                        <p className="text-xs text-gray-400 mb-3 truncate">{job.location}</p>
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                          <button
-                            onClick={() => router.push(`/jobs/${job._id}/edit`)}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition border border-gray-100"
-                          >
-                            <Pencil className="w-3 h-3" /> Edit
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (!confirm("Delete this vacancy?")) return;
-                              try {
-                                await fetch('/api/vacancies/admin', { // Reusing admin delete logic but might need safer endpoint or check ownership in backend
-                                  method: 'DELETE',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ id: job._id })
-                                });
-                                setUserVacancies(prev => prev.filter(v => v._id !== job._id));
-                              } catch { alert("Failed to delete"); }
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition border border-red-50"
-                          >
-                            <Trash2 className="w-3 h-3" /> Delete
-                          </button>
+                        <div className="space-y-2 mb-5 flex-1">
+                          <p className="text-sm text-gray-600 flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
+                            <span className="truncate font-medium">{job.companyName}</span>
+                          </p>
+                          {job.location && (
+                            <p className="text-sm text-gray-500 flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                              <span className="truncate">{job.location}</span>
+                            </p>
+                          )}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {job.subject && (
+                              <span className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded flex items-center gap-1">
+                                <BookOpen className="w-3 h-3" /> {job.subject}
+                              </span>
+                            )}
+                            {job.jobType && (
+                              <span className="px-2 py-1 bg-purple-50 text-purple-700 text-[10px] font-semibold rounded flex items-center gap-1">
+                                <Briefcase className="w-3 h-3" /> {job.jobType}
+                              </span>
+                            )}
+                            {job.experience && (
+                              <span className="px-2 py-1 bg-orange-50 text-orange-700 text-[10px] font-semibold rounded flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {job.experience} Exp
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 mt-auto">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => router.push(`/jobs/${job._id}/applicants`)}
+                              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 transition-colors border border-indigo-100 shadow-sm"
+                            >
+                              <Users className="w-4 h-4" /> Applicants
+                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => router.push(`/jobs/${job._id}/edit`)}
+                                className="p-2 rounded-lg text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
+                                title="Edit Job"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm("Are you sure you want to delete this job posting?")) return;
+                                  try {
+                                    await fetch('/api/vacancies/admin', {
+                                      method: 'DELETE',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ id: job._id })
+                                    });
+                                    setUserVacancies(prev => prev.filter(v => v._id !== job._id));
+                                  } catch { alert("Failed to delete"); }
+                                }}
+                                className="p-2 rounded-lg text-red-600 bg-white border border-gray-200 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
+                                title="Delete Job"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* RIGHT COLUMN 3: My Applications (Show if has applications or is teacher/staff) */}
+          {(userApplications.length > 0 || teacherProfile || nonTeacherProfile) && (
+            <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-4' : ''} mt-8 lg:mt-0`}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div className="p-6 border-b flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-indigo-600" />
+                    <h3 className="font-bold text-gray-800">My Applications</h3>
+                  </div>
+                  <button
+                    onClick={() => router.push('/vacancies')}
+                    className="p-2 rounded-full transition shadow-sm bg-indigo-600 text-white hover:bg-indigo-700"
+                    title="Find Jobs"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
+                  {userApplications.length === 0 ? (
+                    <div className="text-center py-8 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
+                      <p className="text-gray-500 text-sm">You haven't applied to any jobs yet.</p>
+                      <button
+                        onClick={() => router.push('/vacancies')}
+                        className="font-semibold text-sm mt-2 text-indigo-600 hover:text-indigo-800"
+                      >
+                        Browse Vacancies
+                      </button>
+                    </div>
+                  ) : (
+                    userApplications.map((app) => (
+                      <div key={app._id} className="group bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition p-4">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-bold text-gray-800 text-sm truncate w-full pr-2">
+                            {app.vacancyId ? app.vacancyId.jobTitle : 'Deleted Job'}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wide shrink-0 bg-blue-50 text-blue-700">
+                            Applied
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2 truncate">
+                          {app.vacancyId ? app.vacancyId.companyName : 'Unknown Company'}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                          <p className="text-xs text-gray-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(app.createdAt).toLocaleDateString()}
+                          </p>
+                          {app.vacancyId && (
+                            <button
+                              onClick={() => router.push(`/vacancies/${app.vacancyId._id}`)}
+                              className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition"
+                            >
+                              View &rarr;
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))
