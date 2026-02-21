@@ -199,7 +199,7 @@ export default function NewTeacher() {
     currentEmployeeCode: '', previousEmployeeCodes: '', // Optional
     ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
     examAchievements: [],
-    resumeLink: '', teachingVideoLink: '', about: '',
+    resumeLink: '', teachingVideoLink: '', about: 'I am a dedicated, student-centered educator focused on creating an engaging, inclusive, and fun classroom environment. As a patient mentor, I blend passion with modern, creative, and active learning strategies to help students reach their full potential.',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
 
@@ -645,8 +645,11 @@ export default function NewTeacher() {
                   />
 
                   <FormField label="Native State" name="nativeState" value={formData.nativeState} onChange={handleChange} required options={STATE_OPTIONS} icon={MapPin} />
-
                   <FormField label="Resume Link" name="resumeLink" value={formData.resumeLink} onChange={handleChange} icon={FileText} placeholder="Google Drive / Dropbox link (Optional)" />
+
+                  <div className="md:col-span-2">
+                    <FormField label="About You" name="about" value={formData.about} onChange={handleChange} rows={4} placeholder="Tell us about yourself..." />
+                  </div>
                 </div>
 
                 <div className="text-center text-sm text-gray-500 mt-6 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">

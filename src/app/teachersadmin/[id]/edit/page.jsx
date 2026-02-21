@@ -201,7 +201,7 @@ export default function EditTeacher() {
     categories: [], subject: [], experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
     currentEmployeeCode: '', previousEmployeeCodes: '', examAchievements: [],
     ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
-    resumeLink: '', teachingVideoLink: '', about: '',
+    resumeLink: '', teachingVideoLink: '', about: 'I am a dedicated, student-centered educator focused on creating an engaging, inclusive, and fun classroom environment. As a patient mentor, I blend passion with modern, creative, and active learning strategies to help students reach their full potential.',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
 
@@ -247,7 +247,7 @@ export default function EditTeacher() {
           dobVisibility: data.dobVisibility || 'everyone',
           age: data.age || '',
           photoUrl: data.photoUrl || '',
-          about: data.about || '',
+          about: data.about ?? 'I am a dedicated, student-centered educator focused on creating an engaging, inclusive, and fun classroom environment. As a patient mentor, I blend passion with modern, creative, and active learning strategies to help students reach their full potential.',
           maxQualification: data.maxQualification || '',
           maxQualificationCollege: data.maxQualificationCollege || '',
           maxQualificationCollegeSpecific: data.maxQualificationCollegeSpecific || '',
