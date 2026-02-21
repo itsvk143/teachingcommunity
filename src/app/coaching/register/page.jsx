@@ -96,7 +96,9 @@ export default function RegisterCoaching() {
 
     top_results: [], temp_res_year: '', temp_res_name: '', temp_res_rank: '', temp_res_exam: '', temp_res_enrollment: '',
 
-    description_short: '', description_long: '', fee_range_min: '', fee_range_max: '',
+    description_short: 'A premier coaching institute fostering academic excellence through personalized mentorship, expert faculty, innovative teaching, and result-oriented strategies to unlock student potential.',
+    description_long: 'Our expert faculty provides structured, top-tier mentorship for competitive exams and academic studies. We offer a personalized learning approach, ensuring low student-teacher ratios for focused, individual attention. Our comprehensive, research-backed curriculum includes regular practice tests, detailed study materials, and doubt-solving sessions to boost confidence. Beyond academics, we foster a supportive, disciplined environment that nurtures holistic growth and critical thinking. At our core, we are committed to excellence, aiming to empower every student to achieve their highest educational aspirations.',
+    fee_range_min: '', fee_range_max: '',
     faculty_count: '',
     student_count: '', non_academic_staff_count: '', subject_wise_faculty_input: '',
 
