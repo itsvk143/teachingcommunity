@@ -5,7 +5,7 @@ import Application from '@/model/Application';
 import Vacancy from '@/model/Vacancy';
 import { authOptions } from '@/lib/auth';
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         const user = session?.user as { id: string; email: string; role: string } | undefined;

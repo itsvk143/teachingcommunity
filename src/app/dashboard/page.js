@@ -520,7 +520,7 @@ export default function Dashboard() {
                 <div className="p-6 flex-1 overflow-y-auto max-h-[800px] space-y-4">
                   {userApplications.length === 0 ? (
                     <div className="text-center py-8 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
-                      <p className="text-gray-500 text-sm">You haven't applied to any jobs yet.</p>
+                      <p className="text-gray-500 text-sm">You haven&apos;t applied to any jobs yet.</p>
                       <button
                         onClick={() => router.push('/vacancies')}
                         className="font-semibold text-sm mt-2 text-indigo-600 hover:text-indigo-800"

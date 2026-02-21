@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
-import Nav from "./Nav";
 import MobileNav from "./MobileNav";
 import { LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
 
