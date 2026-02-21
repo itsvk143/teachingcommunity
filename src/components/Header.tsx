@@ -32,7 +32,7 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center px-4 md:px-6">
 
         {/* LOGO SECTION */}
-        <Link href="/contact" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <div className="relative w-10 h-10 mr-2">
             <Image src="/logo.png" alt="TC" fill className="object-contain" />
           </div>
@@ -41,76 +41,73 @@ const Header = () => {
           </h1>
         </Link>
 
-        {/* DESKTOP NAVIGATION */}
-        <div className="hidden xl:flex items-center gap-8">
-          <Nav />
-        </div>
+        {/* RIGHT SIDE: User Actions & Hamburger */}
+        <div className="flex items-center gap-4 xl:gap-6">
 
-        {/* USER ACTIONS (Desktop) */}
-        <div className="hidden xl:flex items-center gap-4">
-          {session ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition focus:outline-none"
-              >
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                  {session.user?.name?.[0]?.toUpperCase() || "U"}
-                </div>
-                <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
-                  {session.user?.name}
-                </span>
-                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* DROPDOWN MENU */}
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+          {/* USER ACTIONS (Desktop) */}
+          <div className="hidden sm:flex items-center gap-4">
+            {session ? (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition focus:outline-none"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
+                    {session.user?.name?.[0]?.toUpperCase() || "U"}
                   </div>
+                  <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate hidden md:inline">
+                    {session.user?.name}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-                  <div className="py-1">
-                    {(session.user as { role?: string })?.role === 'admin' && (
-                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
-                        <Shield className="w-4 h-4" /> Admin Panel
+                {/* DROPDOWN MENU */}
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                    </div>
+
+                    <div className="py-1">
+                      {(session.user as { role?: string })?.role === 'admin' && (
+                        <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                          <Shield className="w-4 h-4" /> Admin Panel
+                        </Link>
+                      )}
+                      <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                        <LayoutDashboard className="w-4 h-4" /> Dashboard
                       </Link>
-                    )}
-                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </Link>
-                  </div>
+                    </div>
 
-                  <div className="border-t border-gray-100 py-1">
-                    <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
-                    >
-                      <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
+                    <div className="border-t border-gray-100 py-1">
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
+                      >
+                        <LogOut className="w-4 h-4" /> Sign Out
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" className="font-semibold text-gray-600 hover:text-blue-600">
-                  Log In
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md rounded-full px-6">
-                  Sign Up
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="font-semibold text-gray-600 hover:text-blue-600">
+                    Log In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md rounded-full px-6">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
 
-        {/* MOBILE NAVIGATION */}
-        <div className="xl:hidden">
+          {/* HAMBURGER MENU */}
           <MobileNav />
         </div>
       </div>

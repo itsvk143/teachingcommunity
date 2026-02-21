@@ -22,7 +22,7 @@ const MobileNav = () => {
 
         {/* Header / Logo */}
         <div className="mt-8 mb-8 text-center">
-          <Link href="/contact">
+          <Link href="/">
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
               Teaching<span className="text-blue-600">Community</span>
             </h1>
