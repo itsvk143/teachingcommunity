@@ -92,7 +92,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
-        token.id = user._id;
+        token.id = user.id || user._id;
       }
 
       // Fix for OAuth: Fetch role from DB if missing
