@@ -40,6 +40,7 @@ import React from 'react';
 import { COACHING_CATEGORIES } from '@/utils/coachingCategories';
 import { INDIAN_LOCATIONS, STATES } from '@/utils/locations';
 import TagInput from '@/components/TagInput';
+import CoachingLogoSelect from '@/components/CoachingLogoSelect';
 
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon, disabled = false }) => {
   const baseInputClasses = "w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-500";
@@ -114,6 +115,7 @@ export default function EditCoaching({ params }) {
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone_primary: '', website_url: '',
     contact_visibility: 'masked',
+    logo_url: '/coachinglogo/logo.png',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
     exam_types: '', courses_offered: '', streams: '',
     exam_types: '', courses_offered: '', streams: '',
@@ -196,6 +198,7 @@ export default function EditCoaching({ params }) {
         brand_name: data.brand_name || '',
         contact_person_name: data.contact_person_name || '',
         email: data.email || '',
+        logo_url: data.logo_url || '/coachinglogo/logo.png',
         phone_primary: data.phone_primary || '',
         contact_visibility: data.contact_visibility || 'masked',
         website_url: data.website_url || '',
@@ -292,6 +295,7 @@ export default function EditCoaching({ params }) {
 
     const payload = {
       ...form,
+      logo_url: form.logo_url,
       exam_types: form.exam_types,
       courses_offered: form.courses_offered,
       streams: form.streams,
@@ -428,6 +432,13 @@ export default function EditCoaching({ params }) {
 
                   <FormField label="Email Address" name="email" type="email" value={form.email} onChange={handleChange} required icon={Mail} disabled />
                   <FormField label="Phone Number" name="phone_primary" type="tel" value={form.phone_primary} onChange={handleChange} required icon={Phone} maxLength={10} />
+
+                  <div className="md:col-span-2">
+                    <CoachingLogoSelect
+                      selectedLogoUrl={form.logo_url}
+                      onChange={(url) => setForm({ ...form, logo_url: url })}
+                    />
+                  </div>
 
                   <FormField
                     label="Contact Number Visibility"

@@ -12,6 +12,7 @@ import {
 import { COACHING_CATEGORIES } from '@/utils/coachingCategories';
 import { INDIAN_LOCATIONS, STATES } from '@/utils/locations';
 import TagInput from '@/components/TagInput';
+import CoachingLogoSelect from '@/components/CoachingLogoSelect';
 
 const FormField = ({ label, name, type = "text", value, onChange, required = false, placeholder = "", options = null, rows = null, maxLength = null, className = "", icon: Icon, disabled = false }) => {
   const baseInputClasses = "w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-500";
@@ -101,6 +102,7 @@ export default function RegisterCoaching() {
     fee_range_min: '', fee_range_max: '',
     faculty_count: '',
     student_count: '', non_academic_staff_count: '', subject_wise_faculty_input: '',
+    logo_url: '/coachinglogo/logo.png', // Add default logo
 
     ac_classrooms: false, smart_classes: false, library: false, wifi: false, study_room: false, hostel_support: false,
   });
@@ -168,6 +170,7 @@ export default function RegisterCoaching() {
       instituteName: form.name,
       ownerName: form.contact_person_name,
       phone: form.phone_primary || form.phone,
+      logo_url: form.logo_url,
       exam_types: form.exam_types,
       courses_offered: form.courses_offered,
       streams: form.streams,
@@ -275,6 +278,13 @@ export default function RegisterCoaching() {
 
                   <FormField label="Email Address" name="email" type="email" value={form.email} onChange={handleChange} required icon={Mail} />
                   <FormField label="Phone Number" name="phone_primary" type="tel" value={form.phone_primary} onChange={handleChange} required icon={Phone} maxLength={10} />
+
+                  <div className="md:col-span-2">
+                    <CoachingLogoSelect
+                      selectedLogoUrl={form.logo_url}
+                      onChange={(url) => setForm({ ...form, logo_url: url })}
+                    />
+                  </div>
 
                   <FormField
                     label="Contact Number Visibility"
