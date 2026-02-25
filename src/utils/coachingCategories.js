@@ -1,6 +1,6 @@
 export const COACHING_CATEGORIES = {
-  "SCHOOL_TUTION": {
-    "label": "School Tuitions (Class 1-10 & Olympiads)",
+  "FOUNDATION": {
+    "label": "Foundation (Class 1-10 & Olympiads)",
     "description": "Strictly for K-10 School Curriculum and Scholarship Exams.",
     "exams": [
       {

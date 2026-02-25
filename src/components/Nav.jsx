@@ -32,6 +32,10 @@ export const navLinks = [
     name: "NON TEACHER",
     path: "/nonteacherspublic",
   },
+  {
+    name: "LIBRARY",
+    path: "/library",
+  },
   // {
   //   name: "ABOUT",
   //   path: "/contact",

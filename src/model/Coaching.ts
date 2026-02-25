@@ -64,7 +64,7 @@ const CoachingSchema = new mongoose.Schema(
     },
     categories: [
       {
-        key: String, // e.g. "SCHOOL_TUTION"
+        key: String, // e.g. "FOUNDATION"
         exams: [
           {
             name: String, // e.g. "Class 1-5"

@@ -256,7 +256,7 @@ export default function CoachingDirectory() {
                     <div className="flex items-start gap-4 mb-4">
                       <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                         {logo ? (
-                          <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+                          <img src={logo} alt="Logo" className="w-full h-full object-contain p-1" />
                         ) : (
                           <span className="text-2xl">🏛️</span>
                         )}
