@@ -4,14 +4,22 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import NonTeacherProfileView from '@/components/NonTeacherProfileView';
 
 export default function NonTeacherPublicDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const userRole = session?.user?.role;
+  const userEmail = session?.user?.email;
+  const isOwner = userEmail && profile?.email && userEmail === profile.email;
+  const isAdminOrHR = userRole === 'admin' || userRole === 'hr' || userRole === 'coaching' || userRole === 'school';
+  const canViewDetail = isAdminOrHR || isOwner;
 
   useEffect(() => {
     if (id) {
@@ -87,7 +95,7 @@ export default function NonTeacherPublicDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {profile && <NonTeacherProfileView profile={profile} />}
+        {profile && <NonTeacherProfileView profile={profile} isAdmin={canViewDetail} />}
       </div>
     </div>
   );

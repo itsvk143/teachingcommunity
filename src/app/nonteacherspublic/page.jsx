@@ -258,7 +258,7 @@ export default function NonTeachersList() {
                   <thead>
                     <tr className="bg-gray-50/80 border-b border-gray-200">
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Name & ID</th>
-                      <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Mail</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Job Role</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Experience</th>
                       <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Location</th>

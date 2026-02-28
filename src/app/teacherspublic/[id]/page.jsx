@@ -61,13 +61,14 @@ export default async function TeacherProfilePage(props) {
   const isAdmin = userRole === 'admin';
   const isHR = userRole === 'hr';
   const isCoachingOwner = userRole === 'coaching'; // Assuming 'coaching' is the role for owners
+  const isSchoolOwner = userRole === 'school';
 
-  const canViewSalary = isAdmin || isOwner || isHR || isCoachingOwner;
+  const canViewSalary = isAdmin || isOwner || isHR || isCoachingOwner || isSchoolOwner;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
       <div className="w-full max-w-7xl mx-auto px-4">
-        <TeacherProfileView teacher={teacher} canViewSalary={false} />
+        <TeacherProfileView teacher={teacher} canViewSalary={canViewSalary} />
       </div>
     </div>
   );

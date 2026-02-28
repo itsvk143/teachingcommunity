@@ -23,7 +23,7 @@ const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 const MARITAL_STATUS_OPTIONS = ['Single', 'Married', 'Divorced', 'Widowed'];
 const DOB_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
-  { label: 'Show to HR Only', value: 'hr_only' },
+  { label: 'Show to HR, Coaching & School Owners', value: 'hr_only' },
   { label: 'Mask Year of Birth (dd/mm/XXXX)', value: 'mask_year' }
 ];
 const JOB_ROLE_OPTIONS = [
@@ -37,7 +37,7 @@ const JOB_ROLE_OPTIONS = [
 ];
 const CONTACT_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
-  { label: 'Show to HR Only', value: 'hr_only' }
+  { label: 'Show to HR, Coaching & School Owners', value: 'hr_only' }
 ];
 const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
 

@@ -449,7 +449,7 @@ export default function EditCoaching({ params }) {
                     icon={Phone}
                     options={[
                       { value: 'everyone', label: 'Visible to Everyone' },
-                      { value: 'hr_only', label: 'Show to HR Only' }
+                      { value: 'hr_only', label: 'Show to HR, Coaching & School Owners' }
                     ]}
                   />
 

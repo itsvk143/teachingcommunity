@@ -25,13 +25,13 @@ const PREFERED_STATE_OPTIONS = ['PAN India', ...STATE_OPTIONS];
 
 const DOB_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
-  { label: 'Show to HR Only', value: 'hr_only' },
+  { label: 'Show to HR, Coaching & School Owners', value: 'hr_only' },
   { label: 'Mask Year of Birth (dd/mm/XXXX)', value: 'mask_year' }
 ];
 
 const CONTACT_VISIBILITY_OPTIONS = [
   { label: 'Visible to Everyone', value: 'everyone' },
-  { label: 'Show to HR Only', value: 'hr_only' }
+  { label: 'Show to HR, Coaching & School Owners', value: 'hr_only' }
 ];
 
 const AVATAR_OPTIONS = [

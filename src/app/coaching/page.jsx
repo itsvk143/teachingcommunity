@@ -240,6 +240,10 @@ export default function CoachingDirectory() {
             currentPage * ITEMS_PER_PAGE
           );
 
+          const userRole = session?.user?.role;
+          const userEmail = session?.user?.email;
+          const canViewPrivate = userRole === 'admin' || userRole === 'hr' || userRole === 'coaching' || userRole === 'school';
+
           return (
             <div className="flex flex-col space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -252,6 +256,8 @@ export default function CoachingDirectory() {
                     const phone = coaching.phone_primary || coaching.phone;
                     const description = coaching.description_short || coaching.description;
                     const website = coaching.website_url || coaching.website;
+                    const isOwner = userEmail && coaching.email && (userEmail === coaching.email);
+                    const canViewContact = canViewPrivate || isOwner;
 
                     return (
                       <div
@@ -303,7 +309,7 @@ export default function CoachingDirectory() {
                           {/* Quick Contact Info (Obfuscated if not needed, or shown) */}
                           <div className="text-xs text-gray-500 flex items-center justify-between">
                             <span>Contact:</span>
-                            {coaching.contact_visibility === 'hr_only' ? (
+                            {coaching.contact_visibility === 'hr_only' && !canViewContact ? (
                               <span className="text-gray-400 italic">Private</span>
                             ) : (
                               <ContactReveal phone={phone} />
