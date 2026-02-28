@@ -335,7 +335,7 @@ export default function TeachersList() {
                       <thead>
                         <tr className="bg-gray-50/50 border-b border-gray-200">
                           <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Teacher</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Mail</th>
                           <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Expertise</th>
                           <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Experience</th>
                           <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
@@ -370,14 +370,8 @@ export default function TeachersList() {
                               {/* Contact */}
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                  {(!teacher.contactVisibility || teacher.contactVisibility === 'everyone') ? (
-                                    <>
-                                      <Mail className="w-3.5 h-3.5" />
-                                      {teacher.email}
-                                    </>
-                                  ) : (
-                                    <span className="text-gray-400 italic">Private</span>
-                                  )}
+                                  <Mail className="w-3.5 h-3.5" />
+                                  {teacher.email}
                                 </div>
                               </td>
 
