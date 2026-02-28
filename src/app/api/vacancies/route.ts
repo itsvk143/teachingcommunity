@@ -3,6 +3,9 @@ import dbConnect from '@/lib/dbConnect';
 import Vacancy from '@/model/Vacancy';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { sendVacancyNotificationEmail } from '@/lib/email';
+import Teacher from '@/model/Teacher';
+import NonTeacher from '@/model/NonTeacher';
 
 /* =====================
    GET: All vacancies
@@ -60,13 +63,34 @@ export async function POST(req: Request) {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _vacancy = await Vacancy.create({
       ...body,
       isApproved,
       postedBy,
       posterRole
     });
+
+    if (isApproved) {
+      // Fire and forget email notifications
+      (async () => {
+        try {
+          const [teachers, nonTeachers] = await Promise.all([
+            Teacher.find({ email: { $exists: true, $ne: null } }, 'email').lean(),
+            NonTeacher.find({ email: { $exists: true, $ne: null } }, 'email').lean()
+          ]);
+
+          const emails = [
+            ...teachers.map(t => (t as { email?: string }).email),
+            ...nonTeachers.map(nt => (nt as { email?: string }).email)
+          ].filter(Boolean) as string[];
+
+          const uniqueEmails = Array.from(new Set(emails));
+          await sendVacancyNotificationEmail(_vacancy, uniqueEmails);
+        } catch (error) {
+          console.error("Failed to send vacancy notification emails:", error);
+        }
+      })();
+    }
 
     return NextResponse.json(
       { message: isApproved ? 'Vacancy posted successfully!' : 'Vacancy submitted for approval' },
