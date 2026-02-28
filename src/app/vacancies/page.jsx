@@ -62,7 +62,11 @@ const VacancyCard = ({ job }) => (
             {job.state ? `, ${job.state}` : ''}
           </span>
         </div>
-        {job.salary && (
+        {job.salaryMin && job.salaryMax ? (
+          <div className="flex items-center text-gray-700 font-medium">
+            ₹ {job.salaryMin} - {job.salaryMax}
+          </div>
+        ) : job.salary && (
           <div className="flex items-center text-gray-700 font-medium">
             ₹ {job.salary}
           </div>
@@ -101,13 +105,23 @@ export default function VacanciesPage() {
     state: '',
     jobType: 'Full Time',
     experience: 'Fresher',
-    salary: 'Not Disclosed',
+    stream: '',
+    exam: '',
+    salaryMin: '',
+    salaryMax: '',
     description: '',
     contactEmail: '',
     contactPhone: '',
     numberOfOpenings: 1,
     requirements: [{ subject: '', count: 1 }]
   });
+
+  const STREAMS = Object.keys(TEACHING_CATEGORIES);
+
+  // Derived EXAMS list based on selected Stream
+  const availableExams = form.stream && TEACHING_CATEGORIES[form.stream]
+    ? TEACHING_CATEGORIES[form.stream].exams || []
+    : [];
 
   const fetchVacancies = async () => {
     try {
@@ -128,7 +142,13 @@ export default function VacanciesPage() {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Reset exam if stream changes
+    if (name === 'stream') {
+      setForm({ ...form, stream: value, exam: '' });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   // Requirement Rows Logic
@@ -191,7 +211,10 @@ export default function VacanciesPage() {
         state: '',
         jobType: 'Full Time',
         experience: 'Fresher',
-        salary: 'Not Disclosed',
+        stream: '',
+        exam: '',
+        salaryMin: '',
+        salaryMax: '',
         description: '',
         contactEmail: '',
         contactPhone: '',
@@ -284,8 +307,8 @@ export default function VacanciesPage() {
 
 
 
-  // Generate options
-  const salaryOptions = ['Not Disclosed', ...Array.from({ length: 49 }, (_, i) => `${i + 1}-${i + 2} LPA`), '50+ LPA'];
+  // Generate format options
+  const salaryOptions = Array.from({ length: 50 }, (_, i) => `${i + 1} LPA`);
   const experienceOptions = ['Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
 
 
@@ -585,11 +608,46 @@ export default function VacanciesPage() {
                 </select>
               </div>
 
+              {form.vacancyCategory === 'Teaching' && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Stream / Category</label>
+                    <select name="stream" onChange={handleChange} value={form.stream} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                      <option value="">Select Stream</option>
+                      {STREAMS.map(streamKey => (
+                        <option key={streamKey} value={streamKey}>{TEACHING_CATEGORIES[streamKey].label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Exam</label>
+                    <select name="exam" onChange={handleChange} value={form.exam} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white" disabled={!form.stream}>
+                      <option value="">Select Exam</option>
+                      {availableExams.map(exam => (
+                        <option key={exam} value={exam}>{exam}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
 
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Salary Range</label>
-                <select name="salary" onChange={handleChange} value={form.salary} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
+                <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                  <option value="">Select Min Salary</option>
+                  <option value="Not Disclosed">Not Disclosed</option>
+                  {salaryOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
+                <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                  <option value="">Select Max Salary</option>
+                  <option value="Not Disclosed">Not Disclosed</option>
                   {salaryOptions.map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
 
 export default function PostJob() {
   const router = useRouter();
@@ -13,15 +14,31 @@ export default function PostJob() {
     location: '',
     jobType: 'Full Time',
     experience: '',
-    salary: '',
+    stream: '',
+    exam: '',
+    salaryMin: '',
+    salaryMax: '',
     description: '',
     contactEmail: '',
     contactPhone: '',
     googleFormLink: '',
   });
 
+  const STREAMS = Object.keys(TEACHING_CATEGORIES);
+
+  const availableExams = form.stream && TEACHING_CATEGORIES[form.stream]
+    ? TEACHING_CATEGORIES[form.stream].exams || []
+    : [];
+
+  const salaryOptions = Array.from({ length: 50 }, (_, i) => `${i + 1} LPA`);
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'stream') {
+      setForm({ ...form, stream: value, exam: '' });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -121,14 +138,45 @@ export default function PostJob() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Salary Range</label>
-                <input
-                  name="salary"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="e.g. 8-12 LPA"
-                  value={form.salary}
-                  onChange={handleChange}
-                />
+                <label className="text-sm font-medium text-gray-700">Stream / Category</label>
+                <select name="stream" onChange={handleChange} value={form.stream} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <option value="">Select Stream</option>
+                  {STREAMS.map(streamKey => (
+                    <option key={streamKey} value={streamKey}>{TEACHING_CATEGORIES[streamKey].label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Exam</label>
+                <select name="exam" onChange={handleChange} value={form.exam} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" disabled={!form.stream}>
+                  <option value="">Select Exam</option>
+                  {availableExams.map(exam => (
+                    <option key={exam} value={exam}>{exam}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
+                <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <option value="">Select Min Salary</option>
+                  <option value="Not Disclosed">Not Disclosed</option>
+                  {salaryOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
+                <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                  <option value="">Select Max Salary</option>
+                  <option value="Not Disclosed">Not Disclosed</option>
+                  {salaryOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

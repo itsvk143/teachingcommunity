@@ -135,7 +135,7 @@ export default function VacancyDetailPage() {
 
           <div className="p-8">
             {/* Key Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <div className="flex items-center text-blue-800 mb-2 font-semibold">
                   <Briefcase className="w-5 h-5 mr-2" />
@@ -149,8 +149,32 @@ export default function VacancyDetailPage() {
                   <IndianRupee className="w-5 h-5 mr-2" />
                   Salary
                 </div>
-                <p className="text-gray-700">{vacancy.salary || 'Competitive / Negotiable'}</p>
+                {vacancy.salaryMin && vacancy.salaryMax ? (
+                  <p className="text-gray-700">₹ {vacancy.salaryMin} - {vacancy.salaryMax}</p>
+                ) : (
+                  <p className="text-gray-700">{vacancy.salary ? `₹ ${vacancy.salary}` : 'Competitive / Negotiable'}</p>
+                )}
               </div>
+
+              {vacancy.stream && (
+                <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                  <div className="flex items-center text-purple-800 mb-2 font-semibold">
+                    <Briefcase className="w-5 h-5 mr-2" />
+                    Stream
+                  </div>
+                  <p className="text-gray-700">{vacancy.stream}</p>
+                </div>
+              )}
+
+              {vacancy.exam && (
+                <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                  <div className="flex items-center text-orange-800 mb-2 font-semibold">
+                    <Briefcase className="w-5 h-5 mr-2" />
+                    Exam
+                  </div>
+                  <p className="text-gray-700">{vacancy.exam}</p>
+                </div>
+              )}
             </div>
 
             {/* Description */}

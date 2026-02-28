@@ -41,9 +41,31 @@ const VacancySchema = new mongoose.Schema(
       trim: true,
     },
 
+    stream: {
+      type: String,
+      trim: true,
+    },
+
+    exam: {
+      type: String,
+      trim: true,
+    },
+
+    salaryMin: {
+      type: String,
+      trim: true,
+    },
+
+    salaryMax: {
+      type: String,
+      trim: true,
+    },
+
     salary: {
       type: String,
       trim: true,
+      // Keeping this column for backward compatibility with old records,
+      // but new/updated code should rely on salaryMin & salaryMax.
     },
 
     description: {
