@@ -85,7 +85,7 @@ export default function RegisterCoaching() {
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone: '', phone_primary: '', website_url: '',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
-    contact_visibility: 'masked', // Default to masked
+    contact_visibility: 'everyone', // Default to everyone
     mode: [],
 
     // Explicitly removed duplicate keys provided in instruction context, keeping clean state
@@ -294,9 +294,8 @@ export default function RegisterCoaching() {
                     required
                     icon={Phone}
                     options={[
-                      { value: 'visible', label: 'Visible to Public' },
-                      { value: 'masked', label: 'Masked (Click to View)' },
-                      { value: 'hidden', label: 'Hidden (Private)' }
+                      { value: 'everyone', label: 'Visible to Everyone' },
+                      { value: 'hr_only', label: 'Show to HR Only' }
                     ]}
                   />
 

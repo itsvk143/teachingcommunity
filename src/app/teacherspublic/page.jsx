@@ -37,6 +37,8 @@ export default function TeachersList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   /* ================= FILTER STATES ================= */
   const [filters, setFilters] = useState({
@@ -127,6 +129,7 @@ export default function TeachersList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
   };
 
   /* ================= HELPER: INITIALS AVATAR ================= */
@@ -269,6 +272,7 @@ export default function TeachersList() {
                   value={filters.state}
                   onChange={(e) => {
                     setFilters(prev => ({ ...prev, state: e.target.value, city: '' }));
+                    setCurrentPage(1);
                   }}
                   className="pl-9 w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition text-sm text-gray-700"
                 >
@@ -315,107 +319,149 @@ export default function TeachersList() {
         )}
 
         {/* TABLE SECTION */}
-        {!isLoading && !error && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {filteredTeachers.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50/50 border-b border-gray-200">
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Teacher</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Expertise</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Experience</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Action</th>
-                    </tr>
-                  </thead>
+        {!isLoading && !error && (() => {
+          const totalPages = Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE);
+          const paginatedTeachers = filteredTeachers.slice(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE
+          );
 
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredTeachers.map((teacher) => {
-                      const validPhotoUrl = getDirectImageUrl(teacher.photoUrl);
-                      return (
-                        <tr key={teacher._id} className="hover:bg-gray-50/80 transition-colors group">
-
-                          {/* Name & Avatar */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-                                <img
-                                  src={validPhotoUrl || "/logo.png"}
-                                  alt={teacher.name || "Teacher Photo"}
-                                  className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-1'}`}
-                                  onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-1"; }}
-                                />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-gray-900">{teacher.name}</div>
-                                <div className="text-xs text-gray-500">ID: {teacher._id.slice(-6)}</div>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Contact */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2 text-gray-600 text-sm">
-                              <Mail className="w-3.5 h-3.5" />
-                              {teacher.email}
-                            </div>
-                          </td>
-
-                          {/* Subject (Badge Style) */}
-                          <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                              {Array.isArray(teacher.subject) ? teacher.subject.join(', ') : teacher.subject}
-                            </span>
-                          </td>
-
-                          {/* Experience */}
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {teacher.experience ? `${teacher.experience} Years` : <span className="text-gray-400">-</span>}
-                          </td>
-
-                          {/* State */}
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {teacher.state || <span className="text-gray-400">-</span>}
-                          </td>
-
-                          {/* Action */}
-                          <td className="px-6 py-4 text-right">
-                            <Link
-                              href={`/teacherspublic/${teacher._id}`}
-                              className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              View
-                            </Link>
-                          </td>
-
+          return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {filteredTeachers.length > 0 ? (
+                <div className="flex flex-col h-full">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50/50 border-b border-gray-200">
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Teacher</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Expertise</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Experience</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Action</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              /* EMPTY STATE */
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="bg-gray-100 p-4 rounded-full mb-3">
-                  <Filter className="w-6 h-6 text-gray-400" />
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-100">
+                        {paginatedTeachers.map((teacher) => {
+                          const validPhotoUrl = getDirectImageUrl(teacher.photoUrl);
+                          return (
+                            <tr key={teacher._id} className="hover:bg-gray-50/80 transition-colors group">
+
+                              {/* Name & Avatar */}
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                                    <img
+                                      src={validPhotoUrl || "/logo.png"}
+                                      alt={teacher.name || "Teacher Photo"}
+                                      className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-1'}`}
+                                      onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-1"; }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-gray-900">{teacher.name}</div>
+                                    <div className="text-xs text-gray-500">ID: {teacher._id.slice(-6)}</div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Contact */}
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                                  {(!teacher.contactVisibility || teacher.contactVisibility === 'everyone') ? (
+                                    <>
+                                      <Mail className="w-3.5 h-3.5" />
+                                      {teacher.email}
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400 italic">Private</span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Subject (Badge Style) */}
+                              <td className="px-6 py-4">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                  {Array.isArray(teacher.subject) ? teacher.subject.join(', ') : teacher.subject}
+                                </span>
+                              </td>
+
+                              {/* Experience */}
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                                {teacher.experience ? `${teacher.experience} Years` : <span className="text-gray-400">-</span>}
+                              </td>
+
+                              {/* State */}
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                                {teacher.state || <span className="text-gray-400">-</span>}
+                              </td>
+
+                              {/* Action */}
+                              <td className="px-6 py-4 text-right">
+                                <Link
+                                  href={`/teacherspublic/${teacher._id}`}
+                                  className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                                >
+                                  View
+                                </Link>
+                              </td>
+
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 bg-gray-50/50">
+                      <div className="text-sm text-gray-500">
+                        Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-medium">{Math.min(currentPage * ITEMS_PER_PAGE, filteredTeachers.length)}</span> of <span className="font-medium">{filteredTeachers.length}</span> results
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">No teachers found</h3>
-                <p className="text-gray-500 max-w-sm mt-1">
-                  We couldn't find any teachers matching your current filters. Try adjusting your search criteria.
-                </p>
-                <button
-                  onClick={() => setFilters({ search: '', subject: '', experience: '', state: '', city: '', exam: '' })}
-                  className="mt-4 text-blue-600 font-medium hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                /* EMPTY STATE */
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="bg-gray-100 p-4 rounded-full mb-3">
+                    <Filter className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">No teachers found</h3>
+                  <p className="text-gray-500 max-w-sm mt-1">
+                    We couldn't find any teachers matching your current filters. Try adjusting your search criteria.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFilters({ search: '', subject: '', experience: '', state: '', city: '', exam: '' });
+                      setCurrentPage(1);
+                    }}
+                    className="mt-4 text-blue-600 font-medium hover:underline"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

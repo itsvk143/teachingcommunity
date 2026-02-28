@@ -114,7 +114,7 @@ export default function EditCoaching({ params }) {
 
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone_primary: '', website_url: '',
-    contact_visibility: 'masked',
+    contact_visibility: 'everyone',
     logo_url: '/coachinglogo/logo.png',
     address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
     exam_types: '', courses_offered: '', streams: '',
@@ -200,7 +200,7 @@ export default function EditCoaching({ params }) {
         email: data.email || '',
         logo_url: data.logo_url || '/coachinglogo/logo.png',
         phone_primary: data.phone_primary || '',
-        contact_visibility: data.contact_visibility || 'masked',
+        contact_visibility: data.contact_visibility || 'everyone',
         website_url: data.website_url || '',
         address_line1: data.address_line1 || '',
         city: data.city || '',
@@ -448,9 +448,8 @@ export default function EditCoaching({ params }) {
                     required
                     icon={Phone}
                     options={[
-                      { value: 'visible', label: 'Visible to Public' },
-                      { value: 'masked', label: 'Masked (Click to View)' },
-                      { value: 'hidden', label: 'Hidden (Private)' }
+                      { value: 'everyone', label: 'Visible to Everyone' },
+                      { value: 'hr_only', label: 'Show to HR Only' }
                     ]}
                   />
 

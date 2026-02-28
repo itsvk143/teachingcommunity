@@ -24,6 +24,8 @@ export default function CoachingDirectory() {
   const [coachings, setCoachings] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   // Filter States
   const [filters, setFilters] = useState({
@@ -102,10 +104,12 @@ export default function CoachingDirectory() {
       if (name === 'state') return { ...prev, state: value, city: '' };
       return { ...prev, [name]: value };
     });
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setFilters({ name: '', state: '', city: '', exam: '', course: '' });
+    setCurrentPage(1);
   };
 
   return (
@@ -229,98 +233,143 @@ export default function CoachingDirectory() {
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-500">Loading directory...</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.length > 0 ? (
-              filtered.map((coaching) => {
-                const name = coaching.name || coaching.instituteName;
-                const owner = coaching.contact_person_name || coaching.ownerName || "Access Restricted";
-                const location = coaching.city ? `${coaching.city}, ${coaching.state}` : (coaching.location || 'Location N/A');
-                const logo = coaching.logo_url || coaching.logoUrl;
-                const phone = coaching.phone_primary || coaching.phone;
-                const description = coaching.description_short || coaching.description;
-                const website = coaching.website_url || coaching.website;
+        ) : (() => {
+          const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+          const paginatedCoachings = filtered.slice(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE
+          );
 
-                return (
-                  <div
-                    key={coaching._id}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative group flex flex-col h-full"
-                  >
-                    {/* Brand Badge */}
-                    {coaching.brand_name && (
-                      <div className="absolute top-4 right-4 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide">
-                        {coaching.brand_name}
-                      </div>
-                    )}
+          return (
+            <div className="flex flex-col space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filtered.length > 0 ? (
+                  paginatedCoachings.map((coaching) => {
+                    const name = coaching.name || coaching.instituteName;
+                    const owner = coaching.contact_person_name || coaching.ownerName || "Access Restricted";
+                    const location = coaching.city ? `${coaching.city}, ${coaching.state}` : (coaching.location || 'Location N/A');
+                    const logo = coaching.logo_url || coaching.logoUrl;
+                    const phone = coaching.phone_primary || coaching.phone;
+                    const description = coaching.description_short || coaching.description;
+                    const website = coaching.website_url || coaching.website;
 
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
-                        {logo ? (
-                          <img src={logo} alt="Logo" className="w-full h-full object-contain p-1" />
-                        ) : (
-                          <span className="text-2xl">🏛️</span>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 pr-16">
-                          {name}
-                        </h3>
-                        <p className="text-xs font-medium text-gray-500 mt-1 flex items-center">
-                          <MapPin className="w-3 h-3 mr-1" /> {location}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-1">
-                      {description || 'No description provided.'}
-                    </p>
-
-                    {/* Stats / Tags row */}
-                    {(coaching.exam_types?.length > 0) && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {coaching.exam_types.slice(0, 3).map(ex => (
-                          <span key={ex} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-medium border border-gray-200">
-                            {ex}
-                          </span>
-                        ))}
-                        {coaching.exam_types.length > 3 && <span className="text-[10px] text-gray-400">+{coaching.exam_types.length - 3} more</span>}
-                      </div>
-                    )}
-
-                    <div className="pt-4 border-t border-gray-100 mt-auto space-y-2">
-                      {/* Quick Contact Info (Obfuscated if not needed, or shown) */}
-                      <div className="text-xs text-gray-500 flex items-center justify-between">
-                        <span>Contact:</span>
-                        <ContactReveal phone={phone} />
-                      </div>
-
-                      <Link
-                        href={`/coaching/${coaching._id}`}
-                        className="block w-full text-center mt-3 bg-gray-900 text-white py-2.5 rounded-xl font-semibold hover:bg-gray-800 transition active:scale-95"
+                    return (
+                      <div
+                        key={coaching._id}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative group flex flex-col h-full"
                       >
-                        View Profile
-                      </Link>
+                        {/* Brand Badge */}
+                        {coaching.brand_name && (
+                          <div className="absolute top-4 right-4 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide">
+                            {coaching.brand_name}
+                          </div>
+                        )}
+
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                            {logo ? (
+                              <img src={logo} alt="Logo" className="w-full h-full object-contain p-1" />
+                            ) : (
+                              <span className="text-2xl">🏛️</span>
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 pr-16">
+                              {name}
+                            </h3>
+                            <p className="text-xs font-medium text-gray-500 mt-1 flex items-center">
+                              <MapPin className="w-3 h-3 mr-1" /> {location}
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-1">
+                          {description || 'No description provided.'}
+                        </p>
+
+                        {/* Stats / Tags row */}
+                        {(coaching.exam_types?.length > 0) && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {coaching.exam_types.slice(0, 3).map(ex => (
+                              <span key={ex} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-medium border border-gray-200">
+                                {ex}
+                              </span>
+                            ))}
+                            {coaching.exam_types.length > 3 && <span className="text-[10px] text-gray-400">+{coaching.exam_types.length - 3} more</span>}
+                          </div>
+                        )}
+
+                        <div className="pt-4 border-t border-gray-100 mt-auto space-y-2">
+                          {/* Quick Contact Info (Obfuscated if not needed, or shown) */}
+                          <div className="text-xs text-gray-500 flex items-center justify-between">
+                            <span>Contact:</span>
+                            {coaching.contact_visibility === 'hr_only' ? (
+                              <span className="text-gray-400 italic">Private</span>
+                            ) : (
+                              <ContactReveal phone={phone} />
+                            )}
+                          </div>
+
+                          <Link
+                            href={`/coaching/${coaching._id}`}
+                            className="block w-full text-center mt-3 bg-gray-900 text-white py-2.5 rounded-xl font-semibold hover:bg-gray-800 transition active:scale-95"
+                          >
+                            View Profile
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="col-span-full py-20 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Search className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">No institutes found</h3>
+                    <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
+                    <button
+                      onClick={clearFilters}
+                      className="mt-4 text-blue-600 font-medium hover:underline"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination UI */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm sm:px-6">
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-medium">{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}</span> of <span className="font-medium">{filtered.length}</span> results
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm space-x-2" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Next
+                        </button>
+                      </nav>
                     </div>
                   </div>
-                )
-              })
-            ) : (
-              <div className="col-span-full py-20 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">No institutes found</h3>
-                <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 text-blue-600 font-medium hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

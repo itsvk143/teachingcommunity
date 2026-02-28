@@ -36,6 +36,11 @@ const JOB_ROLE_OPTIONS = [
   'OTHER'
 ];
 
+const CONTACT_VISIBILITY_OPTIONS = [
+  { label: 'Visible to Everyone', value: 'everyone' },
+  { label: 'Show to HR Only', value: 'hr_only' }
+];
+
 const DESIGNATION_OPTIONS = ['LECTURER', 'HOD', 'BRANCH HEAD', 'CITY HEAD', 'STATE HEAD', 'CLUSTER HEAD'];
 
 const AVATAR_OPTIONS = [
@@ -114,7 +119,7 @@ export default function NewNonTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
+    name: '', email: '', phone: '', contactVisibility: 'everyone', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
     maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '/logo.png',
 
     // Arrays & CSVs
@@ -291,6 +296,7 @@ export default function NewNonTeacher() {
                   <FormField label="Full Name" name="name" value={form.name} onChange={handleChange} required icon={User} placeholder="e.g. John Doe" />
                   <FormField label="Mobile Number" name="phone" type="tel" value={form.phone} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit mobile" />
                   <FormField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required icon={User} placeholder="john@example.com" />
+                  <FormField label="Contact Visibility" name="contactVisibility" value={form.contactVisibility} onChange={handleChange} required options={CONTACT_VISIBILITY_OPTIONS} icon={User} />
 
                   <div className="md:col-span-2">
                     <div className="flex justify-between items-center mb-3">

@@ -25,6 +25,11 @@ const NonTeacherSchema = new mongoose.Schema(
       trim: true,
       match: [/^[0-9]{10}$/, 'WhatsApp number must be exactly 10 digits'],
     },
+    contactVisibility: {
+      type: String,
+      enum: ['everyone', 'hr_only'],
+      default: 'everyone',
+    },
 
     gender: { type: String, trim: true },
 

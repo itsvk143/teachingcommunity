@@ -30,6 +30,11 @@ const DOB_VISIBILITY_OPTIONS = [
   { label: 'Mask Year of Birth (dd/mm/XXXX)', value: 'mask_year' }
 ];
 
+const CONTACT_VISIBILITY_OPTIONS = [
+  { label: 'Visible to Everyone', value: 'everyone' },
+  { label: 'Show to HR Only', value: 'hr_only' }
+];
+
 const AVATAR_OPTIONS = [
   '/logo.png',
   '/avatars/avatar_1.svg',
@@ -184,7 +189,7 @@ export default function NewTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', whatsapp: '', gender: '', maritalStatus: '', designation: 'LECTURER', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '/logo.png',
+    name: '', email: '', phone: '', whatsapp: '', contactVisibility: 'everyone', gender: '', maritalStatus: '', designation: 'LECTURER', dob: '', dobVisibility: 'everyone', age: '', photoUrl: '/logo.png',
     maxQualification: '', maxQualificationCollege: '', maxQualificationCollegeSpecific: '', graduationQualification: '', graduationCollege: '', education: '',
     class10: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
     class12: { boardUniv: '', year: '', percentage: '', medium: '', schoolName: '' },
@@ -404,6 +409,7 @@ export default function NewTeacher() {
                   <FormField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required icon={User} placeholder="john@example.com" />
                   <FormField label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit mobile" />
                   <FormField label="WhatsApp" name="whatsapp" type="tel" value={formData.whatsapp} onChange={handleChange} required maxLength={10} icon={User} placeholder="10-digit WhatsApp" />
+                  <FormField label="Contact Visibility" name="contactVisibility" value={formData.contactVisibility} onChange={handleChange} required options={CONTACT_VISIBILITY_OPTIONS} icon={User} />
                   <FormField label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={GENDER} icon={User} />
                   <FormField label="Marital Status" name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required options={MARITAL_STATUS_OPTIONS} icon={User} />
                   <FormField label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} required icon={Calendar} />

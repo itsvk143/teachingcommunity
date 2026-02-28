@@ -136,8 +136,8 @@ const CoachingSchema = new mongoose.Schema(
     enquiry_link: { type: String, trim: true },
     contact_visibility: {
       type: String,
-      enum: ['visible', 'masked', 'hidden'],
-      default: 'masked',
+      enum: ['everyone', 'hr_only'],
+      default: 'everyone',
     },
 
     /* -------------------------------------------------------------------------- */

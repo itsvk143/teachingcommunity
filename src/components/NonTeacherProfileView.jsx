@@ -28,6 +28,7 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
 
   const social = profile.socialLinks || {};
   const showDob = profile.dobVisibility !== 'hr_only' || isAdmin;
+  const showContact = !profile.contactVisibility || profile.contactVisibility === 'everyone' || (profile.contactVisibility === 'hr_only' && isAdmin);
   const validPhotoUrl = getDirectImageUrl(profile.photoUrl);
 
   return (
@@ -85,7 +86,7 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
                     <Mail className="w-4 h-4 text-gray-400" /> {profile.email}
                   </div>
                 )}
-                {profile.phone && (
+                {profile.phone && showContact && (
                   <div className="flex items-center gap-2 hover:text-gray-900 transition-colors">
                     <Phone className="w-4 h-4 text-gray-400" /> +91 {profile.phone}
                   </div>

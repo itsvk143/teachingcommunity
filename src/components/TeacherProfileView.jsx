@@ -59,6 +59,7 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
   };
 
   const showDob = teacher.dobVisibility === 'everyone' || teacher.dobVisibility === 'mask_year' || (teacher.dobVisibility === 'hr_only' && canViewSalary);
+  const showContact = !teacher.contactVisibility || teacher.contactVisibility === 'everyone' || (teacher.contactVisibility === 'hr_only' && canViewSalary);
 
   return (
     <div className="bg-gray-50/50 min-h-full font-sans">
@@ -121,7 +122,7 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                     <Mail className="w-4 h-4" /> {teacher.email}
                   </div>
                 )}
-                {teacher.phone && (
+                {teacher.phone && showContact && (
                   <div className="flex items-center gap-2 hover:text-blue-600 transition-colors">
                     <Phone className="w-4 h-4" /> +91 {teacher.phone}
                   </div>
@@ -383,7 +384,7 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
                 <LinkIcon className="w-4 h-4 text-indigo-500" /> Connect
               </h3>
 
-              {teacher.whatsapp && (
+              {teacher.whatsapp && showContact && (
                 <a href={`https://wa.me/${teacher.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 rounded-xl font-bold transition mb-6 shadow-sm hover:shadow-md">
                   <MessageCircle className="w-5 h-5" /> Chat on WhatsApp
