@@ -37,6 +37,14 @@ export const navLinks = [
     path: "/parents",
   },
   {
+    name: "VACANCY",
+    path: "/vacancies",
+  },
+  {
+    name: "HOME TUITION",
+    path: "/hometuition",
+  },
+  {
     name: "ABOUT US",
     path: "/contact",
   },
