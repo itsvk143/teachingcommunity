@@ -13,7 +13,7 @@ export async function GET() {
             return NextResponse.json({ canMessage: false });
         }
 
-        const { role, email } = session.user as any;
+        const { role, email } = session.user as { role: string; email: string };
         const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
 
         let canMessage = allowedSenderRoles.includes(role);
