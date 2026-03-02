@@ -73,14 +73,12 @@ export default function InboxPage() {
         );
     }
 
-    // Only allow relevant roles to see this inbox
-    const allowedRoles = ['teacher', 'non-teacher'];
-    if (!session?.user || !allowedRoles.includes(session.user.role)) {
+    if (!session?.user) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 max-w-md w-full text-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-                    <p className="text-gray-600 mb-6">Only Teachers and Staff have an individual Inbox for receiving offers.</p>
+                    <p className="text-gray-600 mb-6">Please log in to view your Inbox.</p>
                     <button onClick={() => router.push('/dashboard')} className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">Go to Dashboard</button>
                 </div>
             </div>

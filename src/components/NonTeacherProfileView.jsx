@@ -32,7 +32,9 @@ const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
 
   if (!profile) return null;
 
-  const isInstituteOrConsultant = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+  const isInstituteOrConsultant = session?.user &&
+    ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role) &&
+    session.user.email !== profile?.email;
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

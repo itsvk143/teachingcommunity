@@ -34,7 +34,9 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
 
   if (!teacher) return null;
 
-  const isInstituteOrConsultant = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+  const isInstituteOrConsultant = session?.user &&
+    ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role) &&
+    session.user.email !== teacher?.email;
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
