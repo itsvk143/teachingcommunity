@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth';
 /* =======================================
    PATCH: Mark a specific message as read
 ======================================= */
-export async function PATCH(_req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(_req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         if (!session?.user) {
@@ -15,9 +15,10 @@ export async function PATCH(_req: Request, { params }: { params: { id: string } 
         }
 
         await dbConnect();
+        const resolvedParams = await params;
 
         // Verify ownership before marking read
-        const msg = await Message.findById(params.id);
+        const msg = await Message.findById(resolvedParams.id);
         if (!msg || msg.receiverEmail !== session.user.email) {
             return NextResponse.json({ error: 'Message not found or unauthorized' }, { status: 404 });
         }
@@ -38,7 +39,7 @@ export async function PATCH(_req: Request, { params }: { params: { id: string } 
 /* =======================================
    DELETE: Delete a message from the inbox
 ======================================= */
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         if (!session?.user) {
@@ -46,14 +47,15 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
         }
 
         await dbConnect();
+        const resolvedParams = await params;
 
         // Verify ownership before deleting
-        const msg = await Message.findById(params.id);
+        const msg = await Message.findById(resolvedParams.id);
         if (!msg || msg.receiverEmail !== session.user.email) {
             return NextResponse.json({ error: 'Message not found or unauthorized' }, { status: 404 });
         }
 
-        await Message.findByIdAndDelete(params.id);
+        await Message.findByIdAndDelete(resolvedParams.id);
 
         return NextResponse.json({ message: 'Message deleted successfully' });
     } catch (error) {
