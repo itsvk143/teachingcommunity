@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         // Only non-individuals can send messages
         const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
         let isAuthorized = allowedSenderRoles.includes(role);
+        let actualSenderRole = role;
 
         // If their primary session role isn't authorized, check if they have registered an institute/consultant profile
         if (!isAuthorized && email) {
@@ -58,6 +59,11 @@ export async function POST(req: Request) {
                 School.exists({ email }),
                 Consultant.exists({ email })
             ]);
+
+            if (hasCoaching) actualSenderRole = 'coaching';
+            else if (hasSchool) actualSenderRole = 'school';
+            else if (hasConsultant) actualSenderRole = 'consultant';
+
             isAuthorized = !!(hasCoaching || hasSchool || hasConsultant);
         }
 
@@ -78,8 +84,8 @@ export async function POST(req: Request) {
 
         const newMessage = await Message.create({
             senderId: id,
-            senderRole: role,
-            senderName: name,
+            senderRole: actualSenderRole,
+            senderName: name || 'Institute/Consultant',
             receiverEmail,
             subject,
             content,
