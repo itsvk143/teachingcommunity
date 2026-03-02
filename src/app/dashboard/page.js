@@ -3,7 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, BookOpen, Clock, MapPin } from "lucide-react";
+import { Briefcase, GraduationCap, Building2, School, Users, LogOut, Plus, Pencil, Trash2, Home, BookOpen, Clock, MapPin, Mail } from "lucide-react";
 import TeacherProfileView from "@/components/TeacherProfileView";
 import NonTeacherProfileView from "@/components/NonTeacherProfileView";
 import CoachingProfileView from "@/components/CoachingProfileView";
@@ -235,6 +235,7 @@ export default function Dashboard() {
                 completionPercentage={calculateCompletion(teacherProfile)}
                 onEdit={() => router.push(`/teachersadmin/${teacherProfile._id}/edit`)}
                 onViewPublic={() => router.push(`/teacherspublic/${teacherProfile._id}`)}
+                onViewInbox={() => router.push('/inbox')}
               >
                 <TeacherProfileView teacher={teacherProfile} canViewSalary={true} />
               </ProfileContextWrapper>
@@ -249,6 +250,7 @@ export default function Dashboard() {
                 completionPercentage={calculateCompletion(nonTeacherProfile)}
                 onEdit={() => router.push(`/nonteachersadmin/${nonTeacherProfile._id}/edit`)}
                 onViewPublic={() => router.push(`/nonteacherspublic`)}
+                onViewInbox={() => router.push('/inbox')}
               >
                 <NonTeacherProfileView profile={nonTeacherProfile} />
               </ProfileContextWrapper>
@@ -619,7 +621,7 @@ function RoleCard({ icon: Icon, color, title, desc, onClick }) {
   );
 }
 
-function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onViewPublic, completionPercentage }) {
+function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onViewPublic, onViewInbox, completionPercentage }) {
   const colors = {
     blue: "text-blue-600 border-blue-100 bg-blue-50",
     green: "text-green-600 border-green-100 bg-green-50",
@@ -665,6 +667,11 @@ function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onV
         )}
 
         <div className="flex gap-2">
+          {onViewInbox && (
+            <button onClick={onViewInbox} className="px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" /> Inbox
+            </button>
+          )}
           {onViewPublic && (
             <button onClick={onViewPublic} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition">
               Public View

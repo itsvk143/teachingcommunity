@@ -1,11 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   Mail, Phone, MapPin, Briefcase, GraduationCap,
   User, FileText, Video, Linkedin,
   Facebook, Instagram, Twitter, MessageCircle, Link as LinkIcon,
-  Award, Calendar, CheckCircle2, Building2, Layers
+  Award, Calendar, CheckCircle2, Building2, Layers, Send, X
 } from 'lucide-react';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
 
@@ -26,7 +27,46 @@ const ensureAbsoluteUrl = (url) => {
 };
 
 const TeacherProfileView = ({ teacher, canViewSalary }) => {
+  const { data: session } = useSession();
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [messageForm, setMessageForm] = useState({ subject: '', content: '' });
+  const [isSending, setIsSending] = useState(false);
+
   if (!teacher) return null;
+
+  const isInstituteOrConsultant = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!teacher.email) {
+      alert("This profile does not have an associated email address.");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverEmail: teacher.email,
+          subject: messageForm.subject,
+          content: messageForm.content
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
+
+      alert('Message sent successfully!');
+      setIsMessageModalOpen(false);
+      setMessageForm({ subject: '', content: '' });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const social = teacher.socialLinks || {};
   const validPhotoUrl = getDirectImageUrl(teacher.photoUrl);
@@ -62,365 +102,443 @@ const TeacherProfileView = ({ teacher, canViewSalary }) => {
   const showContact = !teacher.contactVisibility || teacher.contactVisibility === 'everyone' || (teacher.contactVisibility === 'hr_only' && canViewSalary);
 
   return (
-    <div className="bg-gray-50/50 min-h-full font-sans">
+    <>
+      <div className="bg-gray-50/50 min-h-full font-sans">
 
-      {/* 1. PROFESSIONAL HEADER */}
-      <div className="relative bg-white border-b border-gray-100 overflow-hidden mb-8 shadow-sm">
-        {/* Abstract Background Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
+        {/* 1. PROFESSIONAL HEADER */}
+        <div className="relative bg-white border-b border-gray-100 overflow-hidden mb-8 shadow-sm">
+          {/* Abstract Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
 
-        <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
 
-            {/* Avatar */}
-            <div className="shrink-0 relative">
-              <div className="w-32 h-32 md:w-40 md:h-40 relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white bg-white flex items-center justify-center">
-                <img
-                  src={validPhotoUrl || "/logo.png"}
-                  alt={teacher.name || "Teaching Community"}
-                  className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-2'}`}
-                  onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-2"; }}
-                />
-              </div>
-              {teacher.isVerified && (
-                <div className="absolute -bottom-3 -right-3 bg-blue-600 text-white p-1.5 rounded-full border-4 border-white shadow-sm" title="Verified Educator">
-                  <CheckCircle2 className="w-5 h-5" />
+              {/* Avatar */}
+              <div className="shrink-0 relative">
+                <div className="w-32 h-32 md:w-40 md:h-40 relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white bg-white flex items-center justify-center">
+                  <img
+                    src={validPhotoUrl || "/logo.png"}
+                    alt={teacher.name || "Teaching Community"}
+                    className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-2'}`}
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-2"; }}
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 space-y-4 pt-2">
-              <div>
-                <div className="mb-2">
-                  <span className="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-200">
-                    {teacher.designation || "LECTURER"}
-                  </span>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">{teacher.name}</h1>
-                <p className="text-lg text-gray-600 font-medium mt-1">{teacher.currentInstitute || "Educator"} {teacher.city && `• ${teacher.city}`}</p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <span className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-slate-200">
-                  <Briefcase className="w-4 h-4" /> {teacher.subject?.[0] || "General"}
-                </span>
-                <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100">
-                  <Award className="w-4 h-4" /> {teacher.experience || "0"} Years Exp.
-                </span>
-                {teacher.state && (
-                  <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-emerald-100">
-                    <MapPin className="w-4 h-4" /> {teacher.state}
-                  </span>
-                )}
-              </div>
-
-              {/* Connections */}
-              <div className="flex flex-wrap gap-6 text-sm text-gray-500 font-medium pt-1">
-                {teacher.email && (
-                  <div className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                    <Mail className="w-4 h-4" /> {teacher.email}
-                  </div>
-                )}
-                {teacher.phone && showContact && (
-                  <div className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                    <Phone className="w-4 h-4" /> +91 {teacher.phone}
+                {teacher.isVerified && (
+                  <div className="absolute -bottom-3 -right-3 bg-blue-600 text-white p-1.5 rounded-full border-4 border-white shadow-sm" title="Verified Educator">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-3 w-full md:w-auto items-center md:items-stretch">
-              {teacher.resumeLink && (
-                <a href={teacher.resumeLink} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-lg shadow-slate-200 w-full">
-                  <FileText className="w-4 h-4" /> View Resume
-                </a>
-              )}
-              {teacher.teachingVideoLink && (
-                <a href={teacher.teachingVideoLink} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-semibold transition shadow-sm w-full">
-                  <Video className="w-4 h-4 text-red-500" /> Demo Video
-                </a>
-              )}
-              {teacher.unique_id && (
-                <div className="text-center mt-1">
-                  <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100">
-                    ID: {teacher.unique_id}
-                  </span>
+              {/* Info */}
+              <div className="flex-1 space-y-4 pt-2">
+                <div>
+                  <div className="mb-2">
+                    <span className="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-200">
+                      {teacher.designation || "LECTURER"}
+                    </span>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">{teacher.name}</h1>
+                  <p className="text-lg text-gray-600 font-medium mt-1">{teacher.currentInstitute || "Educator"} {teacher.city && `• ${teacher.city}`}</p>
                 </div>
-              )}
-            </div>
 
+                <div className="flex flex-wrap gap-3">
+                  <span className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-slate-200">
+                    <Briefcase className="w-4 h-4" /> {teacher.subject?.[0] || "General"}
+                  </span>
+                  <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100">
+                    <Award className="w-4 h-4" /> {teacher.experience || "0"} Years Exp.
+                  </span>
+                  {teacher.state && (
+                    <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-emerald-100">
+                      <MapPin className="w-4 h-4" /> {teacher.state}
+                    </span>
+                  )}
+                </div>
+
+                {/* Connections */}
+                <div className="flex flex-wrap gap-6 text-sm text-gray-500 font-medium pt-1">
+                  {teacher.email && (
+                    <div className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                      <Mail className="w-4 h-4" /> {teacher.email}
+                    </div>
+                  )}
+                  {teacher.phone && showContact && (
+                    <div className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                      <Phone className="w-4 h-4" /> +91 {teacher.phone}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-3 w-full md:w-auto items-center md:items-stretch">
+                {isInstituteOrConsultant && (
+                  <button
+                    onClick={() => setIsMessageModalOpen(true)}
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-lg shadow-blue-200 w-full"
+                  >
+                    <Send className="w-4 h-4" /> Message / Offer
+                  </button>
+                )}
+                {teacher.resumeLink && (
+                  <a href={teacher.resumeLink} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-lg shadow-slate-200 w-full">
+                    <FileText className="w-4 h-4" /> View Resume
+                  </a>
+                )}
+                {teacher.teachingVideoLink && (
+                  <a href={teacher.teachingVideoLink} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-semibold transition shadow-sm w-full">
+                    <Video className="w-4 h-4 text-red-500" /> Demo Video
+                  </a>
+                )}
+                {teacher.unique_id && (
+                  <div className="text-center mt-1">
+                    <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-purple-100">
+                      ID: {teacher.unique_id}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="max-w-7xl mx-auto px-6 pb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* 2. LEFT CONTENT (Experience, Education) - Spans 8 Cols */}
-          <div className="lg:col-span-8 space-y-8">
+            {/* 2. LEFT CONTENT (Experience, Education) - Spans 8 Cols */}
+            <div className="lg:col-span-8 space-y-8">
 
-            {/* ABOUT SECTION */}
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-indigo-500" /> Professional Summary
-              </h2>
-              <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed">
-                {teacher.about || "No professional summary provided."}
-              </div>
-            </section>
-
-            {/* EXPERIENCE TIMELINE */}
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-indigo-500" /> Work Experience
-              </h2>
-
-              <div className="relative pl-4 border-l-2 border-gray-100 space-y-10">
-                {/* Current Role */}
-                <div className="relative pl-6">
-                  <div className="absolute -left-[25px] top-1 w-10 h-10 bg-indigo-50 rounded-full border-4 border-white flex items-center justify-center text-indigo-600 shadow-sm">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mb-2">CURRENTLY WORKING</span>
-                    <h3 className="text-lg font-bold text-gray-900">{teacher.currentInstitute || teacher.currentlyWorkingIn || "Not specified"}</h3>
-                    <p className="text-gray-500 text-sm mt-1">Current Organization</p>
-                    {teacher.ctc && canViewSalary && (
-                      <div className="mt-3 inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-green-100">
-                        <span>CTC: {teacher.ctc}</span>
-                      </div>
-                    )}
-                  </div>
+              {/* ABOUT SECTION */}
+              <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5 text-indigo-500" /> Professional Summary
+                </h2>
+                <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                  {teacher.about || "No professional summary provided."}
                 </div>
+              </section>
 
-                {/* Previous Roles */}
-                {teacher.previousInstitutes && (
+              {/* EXPERIENCE TIMELINE */}
+              <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-indigo-500" /> Work Experience
+                </h2>
+
+                <div className="relative pl-4 border-l-2 border-gray-100 space-y-10">
+                  {/* Current Role */}
                   <div className="relative pl-6">
-                    <div className="absolute -left-[21px] top-2 w-8 h-8 bg-gray-100 rounded-full border-4 border-white flex items-center justify-center text-gray-500">
-                      <Calendar className="w-4 h-4" />
+                    <div className="absolute -left-[25px] top-1 w-10 h-10 bg-indigo-50 rounded-full border-4 border-white flex items-center justify-center text-indigo-600 shadow-sm">
+                      <Building2 className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">Previous Experience</h3>
-                      <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
-                        {teacher.previousInstitutes}
-                      </div>
+                      <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mb-2">CURRENTLY WORKING</span>
+                      <h3 className="text-lg font-bold text-gray-900">{teacher.currentInstitute || teacher.currentlyWorkingIn || "Not specified"}</h3>
+                      <p className="text-gray-500 text-sm mt-1">Current Organization</p>
+                      {teacher.ctc && canViewSalary && (
+                        <div className="mt-3 inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-green-100">
+                          <span>CTC: {teacher.ctc}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            </section>
 
-            {/* EDUCATION CARDS */}
-            {/* EDUCATION CARDS */}
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-indigo-500" /> Education
-              </h2>
-
-              <div className="space-y-4">
-
-                {/* UG (Mandatory) */}
-                {teacher.qualifications?.ug?.degree && (
-                  <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100">
-                    <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Graduation (UG)</h4>
-                    <div className="flex justify-between items-start">
+                  {/* Previous Roles */}
+                  {teacher.previousInstitutes && (
+                    <div className="relative pl-6">
+                      <div className="absolute -left-[21px] top-2 w-8 h-8 bg-gray-100 rounded-full border-4 border-white flex items-center justify-center text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                      </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.ug.degree}</h3>
-                        {teacher.qualifications.ug.specialization && <p className="text-indigo-600 font-medium text-sm">{teacher.qualifications.ug.specialization}</p>}
-                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.ug.college}</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Previous Experience</h3>
+                        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
+                          {teacher.previousInstitutes}
+                        </div>
                       </div>
-                      {teacher.qualifications.ug.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.ug.year}</span>}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              </section>
 
-                {/* PG (Optional) */}
-                {teacher.qualifications?.pg?.degree && (
-                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Post Graduation (PG)</h4>
-                    <div className="flex justify-between items-start">
+              {/* EDUCATION CARDS */}
+              {/* EDUCATION CARDS */}
+              <section className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-indigo-500" /> Education
+                </h2>
+
+                <div className="space-y-4">
+
+                  {/* UG (Mandatory) */}
+                  {teacher.qualifications?.ug?.degree && (
+                    <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-xl border border-indigo-100">
+                      <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Graduation (UG)</h4>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.ug.degree}</h3>
+                          {teacher.qualifications.ug.specialization && <p className="text-indigo-600 font-medium text-sm">{teacher.qualifications.ug.specialization}</p>}
+                          <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.ug.college}</p>
+                        </div>
+                        {teacher.qualifications.ug.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.ug.year}</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PG (Optional) */}
+                  {teacher.qualifications?.pg?.degree && (
+                    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Post Graduation (PG)</h4>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.pg.degree}</h3>
+                          {teacher.qualifications.pg.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.pg.specialization}</p>}
+                          <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.pg.college}</p>
+                        </div>
+                        {teacher.qualifications.pg.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.pg.year}</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Doctorate */}
+                  {teacher.qualifications?.doctorate?.degree && (
+                    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Doctorate</h4>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.doctorate.degree}</h3>
+                          {teacher.qualifications.doctorate.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.doctorate.specialization}</p>}
+                          <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.doctorate.college}</p>
+                        </div>
+                        {teacher.qualifications.doctorate.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.doctorate.year}</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Professional */}
+                  {teacher.qualifications?.professional?.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {teacher.qualifications.professional.map((qual, idx) => (
+                        <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Professional</h4>
+                          <h3 className="font-bold text-gray-800">{qual.degree}</h3>
+                          <p className="text-sm text-gray-600">{qual.year}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Fallback for Legacy Data (if no new qualifications exist) */}
+                  {(!teacher.qualifications?.ug && !teacher.qualifications?.pg) && (teacher.graduationQualification || teacher.maxQualification) && (
+                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-amber-800 text-sm">
+                      <p><strong>Note:</strong> Displaying legacy education data.</p>
+                      {teacher.graduationQualification && <div className="mt-1">UG: {teacher.graduationQualification} ({teacher.graduationCollege})</div>}
+                      {teacher.maxQualification && <div className="mt-1">PG: {teacher.maxQualification} ({teacher.maxQualificationCollege})</div>}
+                    </div>
+                  )}
+
+
+                  {/* Past Academics (Schooling) */}
+                  {teacher.educationalQualification?.map((edu, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.pg.degree}</h3>
-                        {teacher.qualifications.pg.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.pg.specialization}</p>}
-                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.pg.college}</p>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">{edu.qualification}</h4>
+                        <h3 className="font-bold text-gray-800">{edu.boardUniv}</h3>
+                        {edu.schoolName && <p className="text-sm text-gray-500">{edu.schoolName}</p>}
                       </div>
-                      {teacher.qualifications.pg.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.pg.year}</span>}
-                    </div>
-                  </div>
-                )}
-
-                {/* Doctorate */}
-                {teacher.qualifications?.doctorate?.degree && (
-                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Doctorate</h4>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900">{teacher.qualifications.doctorate.degree}</h3>
-                        {teacher.qualifications.doctorate.specialization && <p className="text-gray-700 font-medium text-sm">{teacher.qualifications.doctorate.specialization}</p>}
-                        <p className="font-bold text-gray-800 text-sm mt-1 flex items-center gap-1"><Building2 className="w-3 h-3 text-indigo-500" /> {teacher.qualifications.doctorate.college}</p>
+                      <div className="text-right text-xs text-gray-500 font-medium">
+                        {edu.year && <div className="bg-gray-100 px-2 py-1 rounded mb-1">{edu.year}</div>}
+                        {edu.percentage && <div>{edu.percentage}</div>}
                       </div>
-                      {teacher.qualifications.doctorate.year && <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 font-medium">{teacher.qualifications.doctorate.year}</span>}
                     </div>
-                  </div>
-                )}
-
-                {/* Professional */}
-                {teacher.qualifications?.professional?.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {teacher.qualifications.professional.map((qual, idx) => (
-                      <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Professional</h4>
-                        <h3 className="font-bold text-gray-800">{qual.degree}</h3>
-                        <p className="text-sm text-gray-600">{qual.year}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Fallback for Legacy Data (if no new qualifications exist) */}
-                {(!teacher.qualifications?.ug && !teacher.qualifications?.pg) && (teacher.graduationQualification || teacher.maxQualification) && (
-                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-amber-800 text-sm">
-                    <p><strong>Note:</strong> Displaying legacy education data.</p>
-                    {teacher.graduationQualification && <div className="mt-1">UG: {teacher.graduationQualification} ({teacher.graduationCollege})</div>}
-                    {teacher.maxQualification && <div className="mt-1">PG: {teacher.maxQualification} ({teacher.maxQualificationCollege})</div>}
-                  </div>
-                )}
-
-
-                {/* Past Academics (Schooling) */}
-                {teacher.educationalQualification?.map((edu, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">{edu.qualification}</h4>
-                      <h3 className="font-bold text-gray-800">{edu.boardUniv}</h3>
-                      {edu.schoolName && <p className="text-sm text-gray-500">{edu.schoolName}</p>}
-                    </div>
-                    <div className="text-right text-xs text-gray-500 font-medium">
-                      {edu.year && <div className="bg-gray-100 px-2 py-1 rounded mb-1">{edu.year}</div>}
-                      {edu.percentage && <div>{edu.percentage}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* 3. RIGHT SIDEBAR (Details, Social) - Spans 4 Cols */}
-          <div className="lg:col-span-4 space-y-6">
-
-            {/* Exams Taught Card - Now Above Personal Details */}
-            {teacher.exams && teacher.exams.length > 0 && (
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <User className="w-4 h-4 text-indigo-500" /> Exams Taught
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {teacher.exams.map((exam, index) => (
-                    <span key={index} className="inline-block bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100">
-                      {exam}
-                    </span>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Personal Details Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                <User className="w-4 h-4 text-indigo-500" /> Personal Details
-              </h3>
-              <ul className="space-y-4 text-sm">
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Subject</span>
-                  <span className="font-medium text-gray-900 text-right">{teacher.subject?.join(', ')}</span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Categories</span>
-                  <span className="font-medium text-gray-900 text-right">
-                    {teacher.categories?.length > 0
-                      ? teacher.categories.map(c => TEACHING_CATEGORIES[c]?.label || c).join(', ')
-                      : (teacher.category ? (TEACHING_CATEGORIES[teacher.category]?.label || teacher.category) : "-")
-                    }
-                  </span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Date of Birth</span>
-                  <span className="font-medium text-gray-900 text-right">
-                    {showDob ? formatDob(teacher.dob, teacher.dobVisibility) : "Confidential"}
-                  </span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Age</span>
-                  <span className="font-medium text-gray-900">{displayAge ? `${displayAge} Years` : "-"}</span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Gender</span>
-                  <span className="font-medium text-gray-900 capitalize">{teacher.gender || "-"}</span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Marital Status</span>
-                  <span className="font-medium text-gray-900">{teacher.maritalStatus || "-"}</span>
-                </li>
-                <li className="flex justify-between py-2 border-b border-gray-50">
-                  <span className="text-gray-500">Native State</span>
-                  <span className="font-medium text-gray-900">{teacher.nativeState || "-"}</span>
-                </li>
-                <li className="pt-2">
-                  <div className="text-gray-500 mb-1">Preferred Locations</div>
-                  <div className="bg-gray-50 p-2 rounded text-gray-700 text-xs font-medium border border-gray-200">
-                    {teacher.preferedState?.join(', ') || "No preference"}
-                  </div>
-                </li>
-              </ul>
+              </section>
             </div>
 
-            {/* Social & Connect */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                <LinkIcon className="w-4 h-4 text-indigo-500" /> Connect
-              </h3>
+            {/* 3. RIGHT SIDEBAR (Details, Social) - Spans 4 Cols */}
+            <div className="lg:col-span-4 space-y-6">
 
-              {teacher.whatsapp && showContact && (
-                <a href={`https://wa.me/${teacher.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 rounded-xl font-bold transition mb-6 shadow-sm hover:shadow-md">
-                  <MessageCircle className="w-5 h-5" /> Chat on WhatsApp
-                </a>
+              {/* Exams Taught Card - Now Above Personal Details */}
+              {teacher.exams && teacher.exams.length > 0 && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <User className="w-4 h-4 text-indigo-500" /> Exams Taught
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {teacher.exams.map((exam, index) => (
+                      <span key={index} className="inline-block bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100">
+                        {exam}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
 
-              <div className="grid grid-cols-4 gap-2">
-                {social.linkedin && (
-                  <a href={ensureAbsoluteUrl(social.linkedin)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#0077b5] hover:text-white transition-all">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                )}
-                {social.twitter && (
-                  <a href={ensureAbsoluteUrl(social.twitter)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#1DA1F2] hover:text-white transition-all">
-                    <Twitter className="w-5 h-5" />
-                  </a>
-                )}
-                {social.facebook && (
-                  <a href={ensureAbsoluteUrl(social.facebook)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#4267B2] hover:text-white transition-all">
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                )}
-                {social.instagram && (
-                  <a href={ensureAbsoluteUrl(social.instagram)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#E1306C] hover:text-white transition-all">
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                )}
+              {/* Personal Details Card */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
+                  <User className="w-4 h-4 text-indigo-500" /> Personal Details
+                </h3>
+                <ul className="space-y-4 text-sm">
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Subject</span>
+                    <span className="font-medium text-gray-900 text-right">{teacher.subject?.join(', ')}</span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Categories</span>
+                    <span className="font-medium text-gray-900 text-right">
+                      {teacher.categories?.length > 0
+                        ? teacher.categories.map(c => TEACHING_CATEGORIES[c]?.label || c).join(', ')
+                        : (teacher.category ? (TEACHING_CATEGORIES[teacher.category]?.label || teacher.category) : "-")
+                      }
+                    </span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Date of Birth</span>
+                    <span className="font-medium text-gray-900 text-right">
+                      {showDob ? formatDob(teacher.dob, teacher.dobVisibility) : "Confidential"}
+                    </span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Age</span>
+                    <span className="font-medium text-gray-900">{displayAge ? `${displayAge} Years` : "-"}</span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Gender</span>
+                    <span className="font-medium text-gray-900 capitalize">{teacher.gender || "-"}</span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Marital Status</span>
+                    <span className="font-medium text-gray-900">{teacher.maritalStatus || "-"}</span>
+                  </li>
+                  <li className="flex justify-between py-2 border-b border-gray-50">
+                    <span className="text-gray-500">Native State</span>
+                    <span className="font-medium text-gray-900">{teacher.nativeState || "-"}</span>
+                  </li>
+                  <li className="pt-2">
+                    <div className="text-gray-500 mb-1">Preferred Locations</div>
+                    <div className="bg-gray-50 p-2 rounded text-gray-700 text-xs font-medium border border-gray-200">
+                      {teacher.preferedState?.join(', ') || "No preference"}
+                    </div>
+                  </li>
+                </ul>
               </div>
+
+              {/* Social & Connect */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
+                  <LinkIcon className="w-4 h-4 text-indigo-500" /> Connect
+                </h3>
+
+                {teacher.whatsapp && showContact && (
+                  <a href={`https://wa.me/${teacher.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 rounded-xl font-bold transition mb-6 shadow-sm hover:shadow-md">
+                    <MessageCircle className="w-5 h-5" /> Chat on WhatsApp
+                  </a>
+                )}
+
+                <div className="grid grid-cols-4 gap-2">
+                  {social.linkedin && (
+                    <a href={ensureAbsoluteUrl(social.linkedin)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#0077b5] hover:text-white transition-all">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  )}
+                  {social.twitter && (
+                    <a href={ensureAbsoluteUrl(social.twitter)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#1DA1F2] hover:text-white transition-all">
+                      <Twitter className="w-5 h-5" />
+                    </a>
+                  )}
+                  {social.facebook && (
+                    <a href={ensureAbsoluteUrl(social.facebook)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#4267B2] hover:text-white transition-all">
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                  )}
+                  {social.instagram && (
+                    <a href={ensureAbsoluteUrl(social.instagram)} target="_blank" className="flex items-center justify-center h-12 rounded-xl bg-gray-50 text-gray-400 hover:bg-[#E1306C] hover:text-white transition-all">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
             </div>
 
           </div>
-
         </div>
-      </div>
 
-    </div >
+      </div >
+
+      {/* Message Modal */}
+      {
+        isMessageModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95">
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="text-xl font-bold text-gray-900">Message {teacher.name.split(' ')[0]}</h3>
+                <button
+                  onClick={() => setIsMessageModalOpen(false)}
+                  className="text-gray-400 hover:bg-gray-200 hover:text-gray-600 p-2 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSendMessage} className="p-6 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">Subject</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Interview Invitation"
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-gray-800"
+                    value={messageForm.subject}
+                    onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">Message</label>
+                  <textarea
+                    required
+                    rows={5}
+                    placeholder={`Hi ${teacher.name.split(' ')[0]},\n\nWe saw your profile and would like to discuss an opportunity...`}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-gray-800 resize-none"
+                    value={messageForm.content}
+                    onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
+                  />
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsMessageModalOpen(false)}
+                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSending}
+                    className="flex-[2] px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSending ? (
+                      'Sending...'
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" /> Send Message
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
+    </>
   );
 };
 
