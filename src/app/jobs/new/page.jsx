@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
+import MultiSelect from '@/components/ui/MultiSelect';
 
 export default function PostJob() {
   const router = useRouter();
@@ -14,8 +15,8 @@ export default function PostJob() {
     location: '',
     jobType: 'Full Time',
     experience: '',
-    stream: '',
-    exam: '',
+    stream: [],
+    exam: [],
     salaryMin: '',
     salaryMax: '',
     description: '',
@@ -26,19 +27,27 @@ export default function PostJob() {
 
   const STREAMS = Object.keys(TEACHING_CATEGORIES);
 
-  const availableExams = form.stream && TEACHING_CATEGORIES[form.stream]
-    ? TEACHING_CATEGORIES[form.stream].exams || []
+  // Derived EXAMS list based on selected Streams array
+  const availableExams = form.stream && Array.isArray(form.stream)
+    ? form.stream.flatMap(s => TEACHING_CATEGORIES[s]?.exams || [])
     : [];
 
-  const salaryOptions = Array.from({ length: 50 }, (_, i) => `${i + 1} LPA`);
+  const salaryOptions = Array.from({ length: 200 }, (_, i) => `${i + 1} LPA`);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'stream') {
-      setForm({ ...form, stream: value, exam: '' });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleStreamChange = (selectedStreams) => {
+    setForm(prev => ({
+      ...prev,
+      stream: selectedStreams
+    }));
+  };
+
+  const handleExamChange = (selectedExams) => {
+    setForm(prev => ({ ...prev, exam: selectedExams }));
   };
 
   const handleSubmit = async (e) => {
@@ -75,7 +84,7 @@ export default function PostJob() {
           <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1">
+              <div className="space-y-1 md:col-span-2">
                 <label className="text-sm font-medium text-gray-700">Job Title</label>
                 <input
                   name="jobTitle"
@@ -84,6 +93,27 @@ export default function PostJob() {
                   placeholder="e.g. Senior Physics Faculty"
                   value={form.jobTitle}
                   onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-1 relative" style={{ zIndex: 50 }}>
+                <label className="text-sm font-medium text-gray-700">Stream / Category</label>
+                <MultiSelect
+                  options={STREAMS.map(s => ({ value: s, label: TEACHING_CATEGORIES[s].label }))}
+                  selected={form.stream}
+                  onChange={handleStreamChange}
+                  placeholder="Select Stream(s)"
+                />
+              </div>
+
+              <div className="space-y-1 relative" style={{ zIndex: 40 }}>
+                <label className="text-sm font-medium text-gray-700">Exam</label>
+                <MultiSelect
+                  options={availableExams.map(e => ({ value: e, label: e }))}
+                  selected={form.exam}
+                  onChange={handleExamChange}
+                  placeholder="Select Exam(s)"
+                  disabled={form.stream.length === 0}
                 />
               </div>
 
@@ -137,46 +167,34 @@ export default function PostJob() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Stream / Category</label>
-                <select name="stream" onChange={handleChange} value={form.stream} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                  <option value="">Select Stream</option>
-                  {STREAMS.map(streamKey => (
-                    <option key={streamKey} value={streamKey}>{TEACHING_CATEGORIES[streamKey].label}</option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Exam</label>
-                <select name="exam" onChange={handleChange} value={form.exam} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" disabled={!form.stream}>
-                  <option value="">Select Exam</option>
-                  {availableExams.map(exam => (
-                    <option key={exam} value={exam}>{exam}</option>
-                  ))}
-                </select>
-              </div>
+              <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <label className="text-sm font-bold text-gray-700 mb-4 block">Salary Range</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
+                    <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Min Salary</option>
+                      <option value="Not Disclosed">Not Disclosed</option>
+                      <option value="No bar for deserving candidate">No bar for deserving candidate</option>
+                      {salaryOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
-                <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                  <option value="">Select Min Salary</option>
-                  <option value="Not Disclosed">Not Disclosed</option>
-                  {salaryOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
-                <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                  <option value="">Select Max Salary</option>
-                  <option value="Not Disclosed">Not Disclosed</option>
-                  {salaryOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
+                    <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Max Salary</option>
+                      <option value="Not Disclosed">Not Disclosed</option>
+                      <option value="No bar for deserving candidate">No bar for deserving candidate</option>
+                      {salaryOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 

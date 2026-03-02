@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Vacancy from '@/model/Vacancy';
 import { isValidObjectId } from 'mongoose';
+import User from '@/model/User';
 
 export async function GET(
   req: Request,
@@ -19,7 +20,7 @@ export async function GET(
 
     await dbConnect();
 
-    const vacancy = await Vacancy.findById(id);
+    const vacancy = await Vacancy.findById(id).populate({ path: 'postedBy', model: User, select: 'name' });
 
     if (!vacancy) {
       return NextResponse.json(

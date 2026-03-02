@@ -10,6 +10,7 @@ import CoachingProfileView from "@/components/CoachingProfileView";
 import SchoolProfileView from "@/components/SchoolProfileView";
 import ParentProfileView from "@/components/ParentProfileView";
 import StudentProfileView from "@/components/StudentProfileView";
+import ConsultantProfileView from "@/components/ConsultantProfileView";
 
 // Helper to calculate completion percentage dynamically
 const calculateCompletion = (profile) => {
@@ -49,6 +50,7 @@ export default function Dashboard() {
   const [schoolProfile, setSchoolProfile] = useState(null);
   const [parentProfile, setParentProfile] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [consultantProfile, setConsultantProfile] = useState(null);
   const [homeTuitions, setHomeTuitions] = useState([]);
   const [userVacancies, setUserVacancies] = useState([]);
   const [userApplications, setUserApplications] = useState([]);
@@ -64,25 +66,27 @@ export default function Dashboard() {
         try {
           // Parallel Fetching for speed
           // Parallel Fetching for speed
-          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, htRes, vacRes, appRes] = await Promise.all([
+          const [teacherRes, nonTeacherRes, coachingRes, schoolRes, parentRes, studentRes, consultantRes, htRes, vacRes, appRes] = await Promise.all([
             fetch(`/api/teachers?email=${email}`),
             fetch(`/api/non-teachers?email=${email}`),
             fetch(`/api/coaching?email=${email}&ownerId=${session.user.id}`),
             fetch(`/api/schools?email=${email}`),
             fetch(`/api/parents?email=${email}`),
             fetch(`/api/students?email=${email}`),
+            fetch(`/api/consultants?ownerId=${session.user.id}`),
             fetch(`/api/hometuition?email=${email}`),
             fetch(`/api/vacancies?postedBy=${session.user.id}`),
             fetch(`/api/applications`)
           ]);
 
-          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, htData, vacData, appData] = await Promise.all([
+          const [teacherData, nonTeacherData, coachingData, schoolData, parentData, studentData, consultantData, htData, vacData, appData] = await Promise.all([
             teacherRes.json(),
             nonTeacherRes.json(),
             coachingRes.json(),
             schoolRes.json(),
             parentRes.json(),
             studentRes.json(),
+            consultantRes.json(),
             htRes.json(),
             vacRes.json(),
             appRes.json()
@@ -94,6 +98,7 @@ export default function Dashboard() {
           if (schoolData?.schools?.length > 0) setSchoolProfile(schoolData.schools[0]);
           if (parentData && !parentData.error) setParentProfile(parentData);
           if (studentData && !studentData.error) setStudentProfile(studentData);
+          if (consultantData?.length > 0) setConsultantProfile(consultantData[0]);
           if (Array.isArray(htData)) setHomeTuitions(htData);
           if (Array.isArray(vacData)) setUserVacancies(vacData);
           if (Array.isArray(appData)) setUserApplications(appData);
@@ -143,7 +148,7 @@ export default function Dashboard() {
     return null;
   }
 
-  const hasAnyProfile = teacherProfile || nonTeacherProfile || coachingProfile || schoolProfile || parentProfile || studentProfile;
+  const hasAnyProfile = teacherProfile || nonTeacherProfile || coachingProfile || schoolProfile || parentProfile || studentProfile || consultantProfile;
 
   const isParentOrStudent = !!parentProfile || !!studentProfile;
   const showHomeTuitions = isParentOrStudent || homeTuitions.length > 0;
@@ -198,6 +203,10 @@ export default function Dashboard() {
                   <RoleCard
                     icon={Building2} color="purple" title="Institute" desc="Coaching centers & institutes."
                     onClick={() => router.push('/coaching/register')}
+                  />
+                  <RoleCard
+                    icon={Briefcase} color="amber" title="Consultant" desc="Job consulting & recruitment."
+                    onClick={() => router.push('/consultants/register')}
                   />
                   <RoleCard
                     icon={School} color="red" title="School" desc="Register your school."
@@ -305,6 +314,22 @@ export default function Dashboard() {
               </ProfileContextWrapper>
             )}
 
+            {/* Consultant Profile View */}
+            {consultantProfile && (
+              <ProfileContextWrapper
+                title="Consultant Profile"
+                color="amber"
+                icon={Briefcase}
+                completionPercentage={calculateCompletion(consultantProfile)}
+                onEdit={null} // Consultant view internal link handles this
+                onViewPublic={() => router.push(`/consultants/${consultantProfile._id}`)}
+              >
+                <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                  <ConsultantProfileView consultant={consultantProfile} canEdit={true} />
+                </div>
+              </ProfileContextWrapper>
+            )}
+
           </div>
 
           {/* RIGHT COLUMN: Home Tuitions (1 Col wide on LG) */}
@@ -384,8 +409,8 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* RIGHT COLUMN 2: My Vacancies (Show if has vacancies or is coaching/school/admin) */}
-          {(userVacancies.length > 0 || session.user.role === 'coaching' || session.user.role === 'school' || session.user.role === 'hr' || coachingProfile || schoolProfile) && (
+          {/* RIGHT COLUMN 2: My Vacancies (Show if has vacancies or is coaching/school/admin/consultant) */}
+          {(userVacancies.length > 0 || session.user.role === 'coaching' || session.user.role === 'school' || session.user.role === 'hr' || session.user.role === 'consultant' || coachingProfile || schoolProfile || consultantProfile) && (
             <div className={`lg:col-span-1 ${isParentOrStudent ? 'order-3' : ''} mt-8 lg:mt-0`}>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
                 <div className="p-6 border-b flex justify-between items-center">
@@ -578,6 +603,7 @@ function RoleCard({ icon: Icon, color, title, desc, onClick }) {
     green: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
     purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
     red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
+    amber: "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
     orange: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
     teal: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
   };
@@ -599,6 +625,7 @@ function ProfileContextWrapper({ title, color, icon: Icon, children, onEdit, onV
     green: "text-green-600 border-green-100 bg-green-50",
     purple: "text-purple-600 border-purple-100 bg-purple-50",
     red: "text-red-600 border-red-100 bg-red-50",
+    amber: "text-amber-600 border-amber-100 bg-amber-50",
     orange: "text-orange-600 border-orange-100 bg-orange-50",
     teal: "text-teal-600 border-teal-100 bg-teal-50",
   };

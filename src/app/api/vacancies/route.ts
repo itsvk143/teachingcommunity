@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { sendVacancyNotificationEmail } from '@/lib/email';
 import Teacher from '@/model/Teacher';
 import NonTeacher from '@/model/NonTeacher';
+import User from '@/model/User';
 
 /* =====================
    GET: All vacancies
@@ -25,6 +26,7 @@ export async function GET(req: Request) {
     }
 
     const vacancies = await Vacancy.find(query)
+      .populate({ path: 'postedBy', model: User, select: 'name' })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -57,7 +59,7 @@ export async function POST(req: Request) {
       posterRole = user.role;
 
       // Auto-approve for registered roles
-      const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher'];
+      const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher', 'consultant'];
       if (allowedRoles.includes(user.role)) {
         isApproved = true;
       }

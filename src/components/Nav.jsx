@@ -5,24 +5,16 @@ import { usePathname } from "next/navigation";
 
 export const navLinks = [
   {
-    name: "ABOUT US",
-    path: "/contact",
-  },
-  {
-    name: "INSTITUTE",
-    path: "/coaching",
+    name: "LIBRARY",
+    path: "/library",
   },
   {
     name: "SCHOOL",
     path: "/schools",
   },
   {
-    name: "VACANCY",
-    path: "/vacancies",
-  },
-  {
-    name: "HOME TUITION",
-    path: "/hometuition",
+    name: "INSTITUTE",
+    path: "/coaching",
   },
   {
     name: "TEACHER",
@@ -33,13 +25,21 @@ export const navLinks = [
     path: "/nonteacherspublic",
   },
   {
-    name: "LIBRARY",
-    path: "/library",
+    name: "CONSULTANT",
+    path: "/consultants",
   },
-  // {
-  //   name: "ABOUT",
-  //   path: "/contact",
-  // },
+  {
+    name: "STUDENTS",
+    path: "/students",
+  },
+  {
+    name: "PARENTS",
+    path: "/parents",
+  },
+  {
+    name: "ABOUT US",
+    path: "/contact",
+  },
 ];
 
 const Nav = () => {

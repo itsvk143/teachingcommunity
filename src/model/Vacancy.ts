@@ -41,15 +41,15 @@ const VacancySchema = new mongoose.Schema(
       trim: true,
     },
 
-    stream: {
+    stream: [{
       type: String,
       trim: true,
-    },
+    }],
 
-    exam: {
+    exam: [{
       type: String,
       trim: true,
-    },
+    }],
 
     salaryMin: {
       type: String,

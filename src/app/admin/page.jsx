@@ -13,7 +13,8 @@ export default function AdminDashboard() {
     teachers: 0,
     vacancies: 0,
     coachings: 0,
-    hometuition: 0
+    hometuition: 0,
+    consultants: 0
   });
 
   useEffect(() => {
@@ -38,7 +39,8 @@ export default function AdminDashboard() {
             nonTeachers: data.nonTeachers || 0,
             vacancies: data.vacancies || 0,
             coachings: data.coachings || 0,
-            hometuition: data.hometuition || 0
+            hometuition: data.hometuition || 0,
+            consultants: data.consultants || 0
           });
         }
       } catch (e) {
@@ -79,6 +81,7 @@ export default function AdminDashboard() {
           <NavLink href="/nonteachersadmin" icon={<Users size={20} />}>Manage Non Teachers</NavLink>
           <NavLink href="/admin/vacancies" icon={<Briefcase size={20} />}>Manage Vacancies</NavLink>
           <NavLink href="/admin/coaching" icon={<Crown size={20} />}>Manage Coaching</NavLink>
+          <NavLink href="/admin/consultants" icon={<Briefcase size={20} />}>Manage Consultants</NavLink>
           <NavLink href="/admin/parents" icon={<Users size={20} />}>Manage Parents</NavLink>
           <NavLink href="/admin/students" icon={<GraduationCap size={20} />}>Manage Students</NavLink>
           <NavLink href="/admin/hometuition" icon={<BookOpen size={20} />}>Manage Home Tuition</NavLink>
@@ -107,6 +110,7 @@ export default function AdminDashboard() {
             <StatCard title="Non-Teaching Staff" value={stats.nonTeachers || 0} icon={<Users className="text-teal-600" />} color="bg-teal-50 border-teal-200" />
             <StatCard title="Active Vacancies" value={stats.vacancies} icon={<Briefcase className="text-green-600" />} color="bg-green-50 border-green-200" />
             <StatCard title="Coaching Institutes" value={stats.coachings} icon={<Crown className="text-purple-600" />} color="bg-purple-50 border-purple-200" />
+            <StatCard title="Job Consultants" value={stats.consultants} icon={<Briefcase className="text-indigo-600" />} color="bg-indigo-50 border-indigo-200" />
             <StatCard title="Home Tuitions" value={stats.hometuition} icon={<BookOpen className="text-orange-600" />} color="bg-orange-50 border-orange-200" />
           </div>
 
@@ -136,6 +140,12 @@ export default function AdminDashboard() {
               description="Approve or edit coaching institutes."
               href="/admin/coaching"
               buttonText="Go to Coaching"
+            />
+            <ActionCard
+              title="Manage Consultants"
+              description="Approve or edit job consultants."
+              href="/admin/consultants"
+              buttonText="Go to Consultants"
             />
             <ActionCard
               title="Manage Non Teachers"

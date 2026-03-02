@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter } from 'lucide-react';
 import { indianCities } from '@/lib/indianCities';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
+import MultiSelect from '@/components/ui/MultiSelect';
 
 const NON_TEACHING_ROLES = [
   "Principal", "Vice Principal", "Academic Coordinator", "Administrator",
@@ -62,6 +63,13 @@ const VacancyCard = ({ job }) => (
             {job.state ? `, ${job.state}` : ''}
           </span>
         </div>
+
+        {job.postedBy?.name && (
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <span className="truncate">Posted by: {job.postedBy.name}</span>
+          </div>
+        )}
         {job.salaryMin && job.salaryMax ? (
           <div className="flex items-center text-gray-700 font-medium">
             ₹ {job.salaryMin} - {job.salaryMax}
@@ -105,8 +113,8 @@ export default function VacanciesPage() {
     state: '',
     jobType: 'Full Time',
     experience: 'Fresher',
-    stream: '',
-    exam: '',
+    stream: [],
+    exam: [],
     salaryMin: '',
     salaryMax: '',
     description: '',
@@ -118,10 +126,30 @@ export default function VacanciesPage() {
 
   const STREAMS = Object.keys(TEACHING_CATEGORIES);
 
-  // Derived EXAMS list based on selected Stream
-  const availableExams = form.stream && TEACHING_CATEGORIES[form.stream]
-    ? TEACHING_CATEGORIES[form.stream].exams || []
+  // Derived EXAMS list based on selected Streams array
+  const availableExams = form.stream && Array.isArray(form.stream)
+    ? form.stream.flatMap(s => TEACHING_CATEGORIES[s]?.exams || [])
     : [];
+
+  // Derived SUBJECTS list based on selected Exams array (or stream if no exam selected)
+  const availableSubjects = (() => {
+    let subjects = [];
+    if (form.exam && form.exam.length > 0) {
+      form.exam.forEach(selectedExam => {
+        Object.values(TEACHING_CATEGORIES).forEach(category => {
+          const found = category.exam_subject_map?.find(e => e.exam_name === selectedExam);
+          if (found) subjects.push(...found.subjects);
+        });
+      });
+    } else if (form.stream && form.stream.length > 0) {
+      form.stream.forEach(s => {
+        if (TEACHING_CATEGORIES[s]?.subjects) {
+          subjects.push(...TEACHING_CATEGORIES[s].subjects);
+        }
+      });
+    }
+    return [...new Set(subjects)].sort();
+  })();
 
   const fetchVacancies = async () => {
     try {
@@ -143,12 +171,23 @@ export default function VacanciesPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Reset exam if stream changes
-    if (name === 'stream') {
-      setForm({ ...form, stream: value, exam: '' });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm({ ...form, [name]: value });
+  };
+
+  // Dedicated handlers for MultiSelect since it doesn't return a standard event object
+  const handleStreamChange = (selectedStreams) => {
+    // If a stream is unselected, we should ideally remove the exams from the exam array that belong to that stream.
+    // However, simplest is to just reset exams or let the user fix it. Let's just update stream for now.
+    setForm(prev => ({
+      ...prev,
+      stream: selectedStreams,
+      // Optionally reset exams when stream changes to ensure no orphan exams:
+      // exam: [] 
+    }));
+  };
+
+  const handleExamChange = (selectedExams) => {
+    setForm(prev => ({ ...prev, exam: selectedExams }));
   };
 
   // Requirement Rows Logic
@@ -211,8 +250,8 @@ export default function VacanciesPage() {
         state: '',
         jobType: 'Full Time',
         experience: 'Fresher',
-        stream: '',
-        exam: '',
+        stream: [],
+        exam: [],
         salaryMin: '',
         salaryMax: '',
         description: '',
@@ -280,17 +319,25 @@ export default function VacanciesPage() {
     const matchesState = filters.state === '' || (job.state && job.state === filters.state);
     const matchesCity = filters.city === '' || (job.city && job.city.toLowerCase().includes(filters.city.toLowerCase()));
     const matchesCompany = filters.company === '' || job.companyName.toLowerCase().includes(filters.company.toLowerCase());
+    // For array matches: if filter isn't empty, check if array contains exactly that string or matches partially
     const matchesSubject = filters.subject === '' || (job.subject && job.subject.toLowerCase().includes(filters.subject.toLowerCase()));
 
     const matchesExam = filters.exam === '' || (() => {
+      // In the filter panel, user selects ONE exam to filter by (filters.exam is a string)
+      // We check if the job.exam array contains this string (or if job.subject contains it, via the mapped allowed logic)
+
       let allowedSubjects = [];
       Object.values(TEACHING_CATEGORIES).forEach(category => {
         const found = category.exam_subject_map?.find(e => e.exam_name === filters.exam);
         if (found) allowedSubjects = [...allowedSubjects, ...found.subjects];
       });
-      return job.subject && allowedSubjects.some(sub =>
+
+      // Also check if the job explicitly lists this exam in its array
+      const directlyMatchesExam = Array.isArray(job.exam) ? job.exam.includes(filters.exam) : false;
+
+      return directlyMatchesExam || (job.subject && allowedSubjects.some(sub =>
         job.subject.toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes(job.subject.toLowerCase())
-      );
+      ));
     })();
 
 
@@ -308,7 +355,7 @@ export default function VacanciesPage() {
 
 
   // Generate format options
-  const salaryOptions = Array.from({ length: 50 }, (_, i) => `${i + 1} LPA`);
+  const salaryOptions = Array.from({ length: 200 }, (_, i) => `${i + 1} LPA`);
   const experienceOptions = ['Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
 
 
@@ -480,10 +527,35 @@ export default function VacanciesPage() {
                 </label>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 col-span-1 md:col-span-2">
                 <label className="text-sm font-medium text-gray-700">Job Title</label>
                 <input name="jobTitle" required onChange={handleChange} value={form.jobTitle} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
               </div>
+
+              {form.vacancyCategory === 'Teaching' && (
+                <>
+                  <div className="space-y-1 relative" style={{ zIndex: 50 }}>
+                    <label className="text-sm font-medium text-gray-700">Stream / Category</label>
+                    <MultiSelect
+                      options={STREAMS.map(s => ({ value: s, label: TEACHING_CATEGORIES[s].label }))}
+                      selected={form.stream}
+                      onChange={handleStreamChange}
+                      placeholder="Select Stream(s)"
+                    />
+                  </div>
+                  <div className="space-y-1 relative" style={{ zIndex: 40 }}>
+                    <label className="text-sm font-medium text-gray-700">Exam</label>
+                    <MultiSelect
+                      options={availableExams.map(e => ({ value: e, label: e }))}
+                      selected={form.exam}
+                      onChange={handleExamChange}
+                      placeholder="Select Exam(s)"
+                      disabled={form.stream.length === 0}
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Requirement Breakdown Section */}
               <div className="col-span-1 md:col-span-2 bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <label className="text-sm font-bold text-gray-700 mb-2 block">
@@ -533,12 +605,27 @@ export default function VacanciesPage() {
                             {/* So the select shows 'Other', and input shows... wait, input needs to be tied to value. */}
                           </div>
                         ) : (
-                          <input
-                            placeholder="Subject (e.g. Maths, Physics)"
-                            value={req.subject}
-                            onChange={(e) => handleRequirementChange(idx, 'subject', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                          />
+                          <div className="relative">
+                            <select
+                              value={availableSubjects.includes(req.subject) ? req.subject : (req.subject ? 'Other' : '')}
+                              onChange={(e) => handleRequirementChange(idx, 'subject', e.target.value)}
+                              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none"
+                            >
+                              <option value="">Select Subject</option>
+                              {availableSubjects.map(sub => (
+                                <option key={sub} value={sub}>{sub}</option>
+                              ))}
+                              <option value="Other">Other (Specify)</option>
+                            </select>
+                            {(req.subject === 'Other' || (!availableSubjects.includes(req.subject) && req.subject !== '')) && (
+                              <input
+                                placeholder="Specify Subject"
+                                value={req.subject === 'Other' ? '' : req.subject}
+                                onChange={(e) => handleRequirementChange(idx, 'subject', e.target.value)}
+                                className="mt-2 w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="w-24">
@@ -608,50 +695,36 @@ export default function VacanciesPage() {
                 </select>
               </div>
 
-              {form.vacancyCategory === 'Teaching' && (
-                <>
+
+
+
+              <div className="col-span-1 md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <label className="text-sm font-bold text-gray-700 mb-4 block">Salary Range</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Stream / Category</label>
-                    <select name="stream" onChange={handleChange} value={form.stream} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
-                      <option value="">Select Stream</option>
-                      {STREAMS.map(streamKey => (
-                        <option key={streamKey} value={streamKey}>{TEACHING_CATEGORIES[streamKey].label}</option>
+                    <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
+                    <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                      <option value="">Select Min Salary</option>
+                      <option value="Not Disclosed">Not Disclosed</option>
+                      <option value="No bar for deserving candidate">No bar for deserving candidate</option>
+                      {salaryOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
                   </div>
+
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Exam</label>
-                    <select name="exam" onChange={handleChange} value={form.exam} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white" disabled={!form.stream}>
-                      <option value="">Select Exam</option>
-                      {availableExams.map(exam => (
-                        <option key={exam} value={exam}>{exam}</option>
+                    <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
+                    <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                      <option value="">Select Max Salary</option>
+                      <option value="Not Disclosed">Not Disclosed</option>
+                      <option value="No bar for deserving candidate">No bar for deserving candidate</option>
+                      {salaryOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
                   </div>
-                </>
-              )}
-
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
-                <select name="salaryMin" required onChange={handleChange} value={form.salaryMin} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
-                  <option value="">Select Min Salary</option>
-                  <option value="Not Disclosed">Not Disclosed</option>
-                  {salaryOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
-                <select name="salaryMax" required onChange={handleChange} value={form.salaryMax} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
-                  <option value="">Select Max Salary</option>
-                  <option value="Not Disclosed">Not Disclosed</option>
-                  {salaryOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                </div>
               </div>
 
               <div className="space-y-1">

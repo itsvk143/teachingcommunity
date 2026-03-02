@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { GraduationCap, Briefcase, Building2, Users, School } from 'lucide-react';
+import { GraduationCap, Briefcase, Building2, Users, School, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Register() {
@@ -65,6 +65,14 @@ export default function Register() {
       path: '/parents/register',
       color: 'border-orange-200 hover:border-orange-500 hover:shadow-orange-100',
       bg: 'bg-orange-50',
+    },
+    {
+      title: 'Job Consultant',
+      description: 'Help institutions find the right candidates and manage placements.',
+      icon: <UserCheck className="h-12 w-12 text-indigo-600 mb-4" />,
+      path: '/consultants/register',
+      color: 'border-indigo-200 hover:border-indigo-500 hover:shadow-indigo-100',
+      bg: 'bg-indigo-50',
     },
   ];
 

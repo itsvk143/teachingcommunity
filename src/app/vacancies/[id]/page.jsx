@@ -130,6 +130,15 @@ export default function VacancyDetailPage() {
                 <Clock className="w-5 h-5 mr-2" />
                 <span>{vacancy.jobType}</span>
               </div>
+
+              {vacancy.postedBy?.name && (
+                <div className="flex items-center text-blue-100">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Posted by: {vacancy.postedBy.name}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -156,23 +165,31 @@ export default function VacancyDetailPage() {
                 )}
               </div>
 
-              {vacancy.stream && (
+              {(vacancy.stream && vacancy.stream.length > 0) && (
                 <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
                   <div className="flex items-center text-purple-800 mb-2 font-semibold">
                     <Briefcase className="w-5 h-5 mr-2" />
                     Stream
                   </div>
-                  <p className="text-gray-700">{vacancy.stream}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(vacancy.stream) ? vacancy.stream.map(s => (
+                      <span key={s} className="px-2 py-1 bg-purple-100 text-purple-800 text-sm rounded-md">{s}</span>
+                    )) : <p className="text-gray-700">{vacancy.stream}</p>}
+                  </div>
                 </div>
               )}
 
-              {vacancy.exam && (
+              {(vacancy.exam && vacancy.exam.length > 0) && (
                 <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                   <div className="flex items-center text-orange-800 mb-2 font-semibold">
                     <Briefcase className="w-5 h-5 mr-2" />
                     Exam
                   </div>
-                  <p className="text-gray-700">{vacancy.exam}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(vacancy.exam) ? vacancy.exam.map(e => (
+                      <span key={e} className="px-2 py-1 bg-orange-100 text-orange-800 text-sm rounded-md">{e}</span>
+                    )) : <p className="text-gray-700">{vacancy.exam}</p>}
+                  </div>
                 </div>
               )}
             </div>

@@ -5,18 +5,20 @@ import Vacancy from '@/model/Vacancy';
 import Coaching from '@/model/Coaching';
 import HomeTuition from '@/model/HomeTuition';
 import NonTeacher from '@/model/NonTeacher';
+import Consultant from '@/model/Consultant';
 
 export async function GET() {
   try {
     await dbConnect();
 
     // Run count queries in parallel for performance
-    const [teachersCount, vacanciesCount, coachingCount, homeTuitionCount, nonTeachersCount] = await Promise.all([
+    const [teachersCount, vacanciesCount, coachingCount, homeTuitionCount, nonTeachersCount, consultantsCount] = await Promise.all([
       Teacher.countDocuments({}),
       Vacancy.countDocuments({}),
       Coaching.countDocuments({}),
       HomeTuition.countDocuments({}),
-      NonTeacher.countDocuments({})
+      NonTeacher.countDocuments({}),
+      Consultant.countDocuments({})
     ]);
 
     return NextResponse.json({
@@ -24,7 +26,8 @@ export async function GET() {
       vacancies: vacanciesCount,
       coachings: coachingCount,
       hometuition: homeTuitionCount,
-      nonTeachers: nonTeachersCount
+      nonTeachers: nonTeachersCount,
+      consultants: consultantsCount
     });
 
   } catch (error) {
