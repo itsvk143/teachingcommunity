@@ -3,6 +3,9 @@ import Link from 'next/link';
 import TeacherProfileView from '@/components/TeacherProfileView';
 import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/model/Teacher';
+import Coaching from '@/model/Coaching';
+import School from '@/model/School';
+import Consultant from '@/model/Consultant';
 
 async function getTeacher(id) {
   await dbConnect();
@@ -65,10 +68,24 @@ export default async function TeacherProfilePage(props) {
 
   const canViewSalary = isAdmin || isOwner || isHR || isCoachingOwner || isSchoolOwner;
 
+  let canMessage = false;
+  if (userEmail && !isOwner) {
+    if (['coaching', 'school', 'consultant', 'admin', 'hr'].includes(userRole)) {
+      canMessage = true;
+    } else {
+      const [hasCoaching, hasSchool, hasConsultant] = await Promise.all([
+        Coaching.exists({ email: userEmail }),
+        School.exists({ email: userEmail }),
+        Consultant.exists({ email: userEmail })
+      ]);
+      canMessage = !!(hasCoaching || hasSchool || hasConsultant);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
       <div className="w-full max-w-7xl mx-auto px-4">
-        <TeacherProfileView teacher={teacher} canViewSalary={canViewSalary} />
+        <TeacherProfileView teacher={teacher} canViewSalary={canViewSalary} canMessage={canMessage} />
       </div>
     </div>
   );

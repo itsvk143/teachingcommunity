@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Mail, Phone, MapPin, Briefcase, GraduationCap,
@@ -24,17 +24,29 @@ const getDirectImageUrl = (url) => {
   return url;
 };
 
-const NonTeacherProfileView = ({ profile, isAdmin = false }) => {
+const NonTeacherProfileView = ({ profile, isAdmin = false, canMessage }) => {
   const { data: session } = useSession();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [messageForm, setMessageForm] = useState({ subject: '', content: '' });
   const [isSending, setIsSending] = useState(false);
+  const [canMessageOverride, setCanMessageOverride] = useState(null);
+
+  useEffect(() => {
+    if (session?.user?.email && session.user.email !== profile?.email) {
+      fetch('/api/user/can-message')
+        .then(res => res.json())
+        .then(data => setCanMessageOverride(data.canMessage))
+        .catch(() => setCanMessageOverride(false));
+    }
+  }, [session, profile?.email]);
 
   if (!profile) return null;
 
-  const isInstituteOrConsultant = session?.user &&
-    ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role) &&
-    session.user.email !== profile?.email;
+  const isInstituteOrConsultant = canMessage !== undefined ? canMessage : (
+    canMessageOverride !== null ? canMessageOverride : (session?.user &&
+      ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role) &&
+      session.user.email !== profile?.email)
+  );
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

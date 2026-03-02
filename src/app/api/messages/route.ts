@@ -3,6 +3,9 @@ import dbConnect from '@/lib/dbConnect';
 import Message from '@/model/Message';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import Coaching from '@/model/Coaching';
+import School from '@/model/School';
+import Consultant from '@/model/Consultant';
 
 /* =======================================
    GET: Fetch all messages for the recipient
@@ -41,11 +44,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { role, name, id } = session.user as { role: string; name: string; id: string };
+        const { role, name, id, email } = session.user as { role: string; name: string; id: string; email: string };
 
         // Only non-individuals can send messages
         const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
-        if (!allowedSenderRoles.includes(role)) {
+        let isAuthorized = allowedSenderRoles.includes(role);
+
+        // If their primary session role isn't authorized, check if they have registered an institute/consultant profile
+        if (!isAuthorized && email) {
+            await dbConnect();
+            const [hasCoaching, hasSchool, hasConsultant] = await Promise.all([
+                Coaching.exists({ email }),
+                School.exists({ email }),
+                Consultant.exists({ email })
+            ]);
+            isAuthorized = !!(hasCoaching || hasSchool || hasConsultant);
+        }
+
+        if (!isAuthorized) {
             return NextResponse.json(
                 { error: 'Unauthorized: Only Institutes and Consultants can send messages.' },
                 { status: 403 }
