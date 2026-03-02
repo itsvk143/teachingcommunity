@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { indianCities } from '@/lib/indianCities';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -102,6 +103,9 @@ export default function VacanciesPage() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewCategory, setViewCategory] = useState('Teaching'); // 'Teaching' | 'Non-Teaching'
+  const { data: session } = useSession();
+
+  const allowedToPost = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
 
   const [form, setForm] = useState({
     jobTitle: '',
@@ -486,13 +490,15 @@ export default function VacanciesPage() {
           <h2 className="text-2xl font-bold text-gray-800">
             Scanning {filteredVacancies.length} Opportunities
           </h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
-          >
-            {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-            {showForm ? 'Close Form' : 'Post a Job'}
-          </button>
+          {allowedToPost && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+            >
+              {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              {showForm ? 'Close Form' : 'Post a Job'}
+            </button>
+          )}
         </div>
 
         {/* ===== POST FORM (Collapsible) ===== */}

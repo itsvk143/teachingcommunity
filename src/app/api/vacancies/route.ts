@@ -48,21 +48,30 @@ export async function POST(req: Request) {
     const body = await req.json();
     const session = await getServerSession(authOptions as AuthOptions);
 
-    let isApproved = false;
+    // Auto-approve all vacancies by default per user request
+    let isApproved = true;
     let postedBy = null;
     let posterRole = null;
 
     if (session?.user) {
       const user = session.user as { role: string; id: string };
 
+      const allowedRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
+
+      if (!allowedRoles.includes(user.role)) {
+        return NextResponse.json(
+          { error: 'Unauthorized: Only Coaching Owners, School Owners, and Consultants can post jobs.' },
+          { status: 403 }
+        );
+      }
+
       postedBy = user.id;
       posterRole = user.role;
-
-      // Auto-approve for registered roles
-      const allowedRoles = ['admin', 'coaching', 'teacher', 'non-teacher', 'consultant'];
-      if (allowedRoles.includes(user.role)) {
-        isApproved = true;
-      }
+    } else {
+      return NextResponse.json(
+        { error: 'Unauthorized: Please log in to post jobs.' },
+        { status: 401 }
+      );
     }
 
     const _vacancy = await Vacancy.create({
