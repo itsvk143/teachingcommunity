@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions as AuthOptions);
 
     // Auto-approve all vacancies by default per user request
-    let isApproved = true;
+    const isApproved = true;
     let postedBy = null;
     let posterRole = null;
 

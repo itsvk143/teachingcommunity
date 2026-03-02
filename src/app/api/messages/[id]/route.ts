@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth';
 /* =======================================
    PATCH: Mark a specific message as read
 ======================================= */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(_req: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         if (!session?.user) {
@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 /* =======================================
    DELETE: Delete a message from the inbox
 ======================================= */
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         if (!session?.user) {

@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth';
 /* =======================================
    GET: Fetch all messages for the recipient
 ======================================= */
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions as AuthOptions);
         if (!session?.user) {
