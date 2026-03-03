@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         : 1;
 
     // 🔹 Update user role to teacher if session exists
-    const userId = (session?.user as any)?.id;
+    const userId = (session?.user as { id: string })?.id;
     if (userId) {
       await User.findByIdAndUpdate(userId, { role: 'teacher' });
     }

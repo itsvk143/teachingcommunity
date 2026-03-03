@@ -18,7 +18,7 @@ export async function POST() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const userId = (session.user as any).id;
+        const userId = (session.user as { id: string }).id;
         const userEmail = session.user.email;
 
         // Fetch existing user to check current role
