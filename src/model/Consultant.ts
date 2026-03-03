@@ -31,6 +31,10 @@ const ConsultantSchema = new mongoose.Schema(
             type: String, // Short bio or firm description
             trim: true,
         },
+        consultation_fee: {
+            type: String,
+            trim: true,
+        },
 
         /* -------------------------------------------------------------------------- */
         /*                         2) Location Fields                                 */
@@ -38,6 +42,7 @@ const ConsultantSchema = new mongoose.Schema(
         address_line1: { type: String, trim: true },
         address_line2: { type: String, trim: true },
         city: { type: String, trim: true },
+        country: { type: String, default: 'India', trim: true },
         state: { type: String, trim: true },
         pincode: { type: String, trim: true },
 

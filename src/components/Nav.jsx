@@ -5,8 +5,12 @@ import { usePathname } from "next/navigation";
 
 export const navLinks = [
   {
-    name: "LIBRARY",
-    path: "/library",
+    name: "VACANCY",
+    path: "/vacancies",
+  },
+  {
+    name: "HOME TUITION",
+    path: "/hometuition",
   },
   {
     name: "SCHOOL",
@@ -35,18 +39,6 @@ export const navLinks = [
   {
     name: "PARENTS",
     path: "/parents",
-  },
-  {
-    name: "VACANCY",
-    path: "/vacancies",
-  },
-  {
-    name: "HOME TUITION",
-    path: "/hometuition",
-  },
-  {
-    name: "ABOUT US",
-    path: "/contact",
   },
 ];
 

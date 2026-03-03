@@ -85,6 +85,7 @@ export default function RegisterConsultant() {
         website_url: '',
         address_line1: '',
         address_line2: '',
+        country: 'India',
         city: '',
         state: '',
         pincode: '',
@@ -178,6 +179,9 @@ export default function RegisterConsultant() {
                                 <div className="md:col-span-2">
                                     <FormField label="Short BIO / Firm Description" name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Tell us about the recruitment services your firm provides..." />
                                 </div>
+                                <div className="md:col-span-2">
+                                    <FormField label="Consultation Fee (Optional)" name="consultation_fee" value={form.consultation_fee} onChange={handleChange} placeholder="e.g., ₹500 per session / Free Initial Consultation" />
+                                </div>
 
                                 <div className="md:col-span-2">
                                     <ConsultantAvatarSelect
@@ -202,6 +206,17 @@ export default function RegisterConsultant() {
                                 <div className="md:col-span-2">
                                     <FormField label="Address Line 2" name="address_line2" value={form.address_line2} onChange={handleChange} icon={MapPin} />
                                 </div>
+                                <FormField
+                                    label="Country"
+                                    name="country"
+                                    value={form.country}
+                                    onChange={handleChange}
+                                    required
+                                    icon={Globe}
+                                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                                    placeholder="Select Country"
+                                />
+
                                 <FormField
                                     label="State"
                                     name="state"

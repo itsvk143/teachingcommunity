@@ -7,6 +7,9 @@ import { sendVacancyNotificationEmail } from '@/lib/email';
 import Teacher from '@/model/Teacher';
 import NonTeacher from '@/model/NonTeacher';
 import User from '@/model/User';
+import Coaching from '@/model/Coaching';
+import School from '@/model/School';
+import Consultant from '@/model/Consultant';
 
 /* =====================
    GET: All vacancies
@@ -54,11 +57,29 @@ export async function POST(req: Request) {
     let posterRole = null;
 
     if (session?.user) {
-      const user = session.user as { role: string; id: string };
+      const user = session.user as { role: string; id: string; email: string };
 
       const allowedRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
+      let isAuthorized = allowedRoles.includes(user.role);
+      let actualSenderRole = user.role;
 
-      if (!allowedRoles.includes(user.role)) {
+      // Check database profiles for multi-role users
+      if (!isAuthorized && user.email) {
+        await dbConnect();
+        const [hasCoaching, hasSchool, hasConsultant] = await Promise.all([
+          Coaching.exists({ email: user.email }),
+          School.exists({ email: user.email }),
+          Consultant.exists({ email: user.email })
+        ]);
+
+        if (hasCoaching) actualSenderRole = 'coaching';
+        else if (hasSchool) actualSenderRole = 'school';
+        else if (hasConsultant) actualSenderRole = 'consultant';
+
+        isAuthorized = !!(hasCoaching || hasSchool || hasConsultant);
+      }
+
+      if (!isAuthorized) {
         return NextResponse.json(
           { error: 'Unauthorized: Only Coaching Owners, School Owners, and Consultants can post jobs.' },
           { status: 403 }
@@ -66,12 +87,16 @@ export async function POST(req: Request) {
       }
 
       postedBy = user.id;
-      posterRole = user.role;
+      posterRole = actualSenderRole;
     } else {
       return NextResponse.json(
         { error: 'Unauthorized: Please log in to post jobs.' },
         { status: 401 }
       );
+    }
+
+    if (body.city && body.state) {
+      body.location = `${body.city}, ${body.state}`;
     }
 
     const _vacancy = await Vacancy.create({

@@ -121,7 +121,7 @@ export default function EditNonTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', contactVisibility: 'everyone', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
+    name: '', email: '', phone: '', contactVisibility: 'everyone', country: 'India', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
     maritalStatus: '', nationality: '', religion: '', photoUrl: '',
 
     // Arrays & CSVs
@@ -152,6 +152,7 @@ export default function EditNonTeacher() {
           email: data.email || '',
           phone: data.phone || '',
           contactVisibility: data.contactVisibility || 'everyone',
+          country: data.country || 'India',
           city: data.city || '',
           state: data.state || '',
           dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',

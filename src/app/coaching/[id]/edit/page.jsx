@@ -116,7 +116,7 @@ export default function EditCoaching({ params }) {
     name: '', brand_name: '', contact_person_name: '', email: '', phone_primary: '', website_url: '',
     contact_visibility: 'everyone',
     logo_url: '/coachinglogo/logo.png',
-    address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
+    address_line1: '', country: 'India', city: '', state: '', pincode: '', google_maps_url: '',
     exam_types: '', courses_offered: '', streams: '',
     exam_types: '', courses_offered: '', streams: '',
     categories: [],
@@ -203,6 +203,7 @@ export default function EditCoaching({ params }) {
         contact_visibility: data.contact_visibility || 'everyone',
         website_url: data.website_url || '',
         address_line1: data.address_line1 || '',
+        country: data.country || 'India',
         city: data.city || '',
         state: data.state || '',
         pincode: data.pincode || '',
@@ -472,6 +473,16 @@ export default function EditCoaching({ params }) {
                   <div className="md:col-span-2">
                     <FormField label="Address Line 1" name="address_line1" value={form.address_line1} onChange={handleChange} icon={MapPin} />
                   </div>
+                  <FormField
+                    label="Country"
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                    required
+                    icon={Globe}
+                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                    placeholder="Select Country"
+                  />
                   <FormField
                     label="State"
                     name="state"

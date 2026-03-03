@@ -90,7 +90,7 @@ export default function ConsultantDirectory() {
                     {session?.user && (
                         <div className="flex gap-3">
                             <Link
-                                href="/jobs/new"
+                                href="/vacancies"
                                 className="px-5 py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition shadow-sm text-sm whitespace-nowrap"
                             >
                                 Post a Job

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, IndianRupee, School, Layers
+  Upload, Calendar, MapPin, IndianRupee, School, Layers, Globe
 } from 'lucide-react';
 import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
 import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
@@ -202,7 +202,7 @@ export default function NewTeacher() {
 
     categories: [], subject: [], experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
     currentEmployeeCode: '', previousEmployeeCodes: '', // Optional
-    ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
+    ctc: '', preferedState: '', country: 'India', state: '', nativeState: '', city: '', exams: [],
     examAchievements: [],
     resumeLink: '', teachingVideoLink: '', about: 'I am a dedicated, student-centered educator focused on creating an engaging, inclusive, and fun classroom environment. As a patient mentor, I blend passion with modern, creative, and active learning strategies to help students reach their full potential.',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
@@ -627,6 +627,16 @@ export default function NewTeacher() {
                   <FormField label="Experience (Yrs)" name="experience" type="number" value={formData.experience} onChange={handleChange} required placeholder="e.g. 5" icon={Briefcase} />
                   <FormField label="Preferred State" name="preferedState" value={formData.preferedState} onChange={handleChange} required options={PREFERED_STATE_OPTIONS} icon={MapPin} />
 
+                  <FormField
+                    label="Country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                    icon={Globe}
+                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                    placeholder="Select Country"
+                  />
                   <FormField
                     label="Current State"
                     name="state"

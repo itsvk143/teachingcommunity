@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, Users, UserCog, Home as HomeIcon } from "lucide-react";
+import { Briefcase, Users, UserCog, Home as HomeIcon, Info, ChevronRight } from "lucide-react";
 
 const CAROUSEL_ITEMS = [
     {
@@ -89,6 +89,14 @@ export default function HeroSection() {
                         variants={staggerContainer}
                         className="text-left"
                     >
+                        <div className="mb-4">
+                            <Link href="/library">
+                                <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-full font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer">
+                                    📚 LIBRARY
+                                </motion.div>
+                            </Link>
+                        </div>
+
                         <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold mb-6">
                             <span className="flex h-2 w-2 relative">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -105,6 +113,21 @@ export default function HeroSection() {
                         <motion.p variants={fadeInUp} className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
                             Connecting 5000+ ambitious educators and staff with the best schools and coaching institutes across the nation.
                         </motion.p>
+
+                        {/* About Our Mission Banner */}
+                        <motion.div variants={fadeInUp} className="max-w-md mb-4">
+                            <Link href="/contact" className="block w-full">
+                                <div className="flex items-center justify-between py-2 px-4 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm">
+                                            <Info className="w-4 h-4" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 text-sm">About Our Mission</h3>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-gray-500" />
+                                </div>
+                            </Link>
+                        </motion.div>
 
                         {/* Quick Access Bento */}
                         <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 max-w-md">

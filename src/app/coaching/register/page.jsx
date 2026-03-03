@@ -84,7 +84,7 @@ export default function RegisterCoaching() {
 
   const [form, setForm] = useState({
     name: '', brand_name: '', contact_person_name: '', email: '', phone: '', phone_primary: '', website_url: '',
-    address_line1: '', city: '', state: '', pincode: '', google_maps_url: '',
+    address_line1: '', country: 'India', city: '', state: '', pincode: '', google_maps_url: '',
     contact_visibility: 'everyone', // Default to everyone
     mode: [],
 
@@ -318,6 +318,16 @@ export default function RegisterCoaching() {
                   <div className="md:col-span-2">
                     <FormField label="Address Line 1" name="address_line1" value={form.address_line1} onChange={handleChange} icon={MapPin} />
                   </div>
+                  <FormField
+                    label="Country"
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                    required
+                    icon={Globe}
+                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                    placeholder="Select Country"
+                  />
                   <FormField
                     label="State"
                     name="state"

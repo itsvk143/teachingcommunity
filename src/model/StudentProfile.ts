@@ -54,6 +54,7 @@ const StudentProfileSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    country: { type: String, default: 'India', trim: true },
     languages: {
       type: String,
       trim: true,

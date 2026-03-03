@@ -20,6 +20,7 @@ export default function EditTuitionNeed({ params }) {
     name: '',
     contact: '',
     location: '',
+    country: 'India',
     state: '',
     city: '',
     subject: '',
@@ -146,6 +147,18 @@ export default function EditTuitionNeed({ params }) {
                 <MapPin className="w-4 h-4 text-gray-400" /> Location Details
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">Country</label>
+                  <select
+                    name="country"
+                    onChange={handleChange}
+                    value={form.country}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:bg-white outline-none transition cursor-pointer"
+                  >
+                    <option value="India">India</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">State</label>
                   <select

@@ -125,7 +125,7 @@ export default function RegisterSchool() {
 
     // 2. Contact & Location
     phone_primary: '', phone_secondary: '', whatsapp: '', email: '', website_url: '',
-    address_line1: '', city: '', district: '', state: '', pincode: '',
+    address_line1: '', country: 'India', city: '', district: '', state: '', pincode: '',
     landmark: '', area_type: 'Urban', google_maps_url: '',
 
     // Socials (Nested in payload, flat here for form)
@@ -336,6 +336,16 @@ export default function RegisterSchool() {
                   <div className="md:col-span-2">
                     <FormField label="Full Address" name="address_line1" value={form.address_line1} onChange={handleChange} icon={MapPin} />
                   </div>
+                  <FormField
+                    label="Country"
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                    required
+                    icon={Globe}
+                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                    placeholder="Select Country"
+                  />
                   <FormField label="State" name="state" value={form.state} onChange={(e) => setForm(p => ({ ...p, state: e.target.value, city: '' }))} required options={Object.keys(indianCities)} placeholder="Select State" />
                   <FormField label="City" name="city" value={form.city} onChange={handleChange} required options={form.state ? indianCities[form.state] : []} placeholder="Select City" />
                   <FormField label="District" name="district" value={form.district} onChange={handleChange} />

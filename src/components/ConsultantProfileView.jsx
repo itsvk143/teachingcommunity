@@ -1,4 +1,4 @@
-import { Building, MapPin, Phone, Mail, Globe, Link as LinkIcon, Edit } from 'lucide-react';
+import { Building, MapPin, Phone, Mail, Globe, Link as LinkIcon, Edit, IndianRupee, CheckCircle2, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ConsultantProfileView({ consultant, canEdit = false }) {
@@ -17,16 +17,25 @@ export default function ConsultantProfileView({ consultant, canEdit = false }) {
                             <Building className="w-8 h-8 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                         )}
                     </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors">
-                            {consultant.brand_name}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-wide">
-                                Consultant
+                    <div className="flex flex-col flex-grow">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 group-hover:text-amber-700 transition-[color,transform] duration-300">
+                                {consultant.brand_name}
+                            </h2>
+                            <span className="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 uppercase tracking-widest shadow-sm">
+                                Verified Consultant
                             </span>
-                            <p className="text-sm text-gray-600 font-medium">
-                                {consultant.name} (Owner/Contact)
+                        </div>
+
+                        <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-600 font-medium">
+                            <p className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100">
+                                <User className="w-3.5 h-3.5 text-gray-400" />
+                                {consultant.name}
+                            </p>
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
+                            <p className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 break-all hidden sm:flex">
+                                <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                {consultant.email}
                             </p>
                         </div>
                     </div>
@@ -87,6 +96,26 @@ export default function ConsultantProfileView({ consultant, canEdit = false }) {
                         {consultant.state} {consultant.pincode}
                     </p>
                 </div>
+
+                {/* Consultation Fee Info Block */}
+                {consultant.consultation_fee && (
+                    <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100 shadow-sm flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0 border border-blue-100">
+                                <IndianRupee className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-blue-900 tracking-wide mb-1">Consultation Fee</h3>
+                                <p className="text-lg font-bold text-gray-900 leading-tight">
+                                    {consultant.consultation_fee}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-blue-100 shadow-sm text-sm font-medium text-blue-700">
+                            <CheckCircle2 className="w-4 h-4" /> Transparent Pricing
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Description */}

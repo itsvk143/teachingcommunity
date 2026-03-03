@@ -205,7 +205,7 @@ export default function EditTeacher() {
     },
     categories: [], subject: [], experience: '', currentlyWorkingIn: '', otherWorkPlace: '', currentInstitute: '', previousInstitutes: '',
     currentEmployeeCode: '', previousEmployeeCodes: '', examAchievements: [],
-    ctc: '', preferedState: '', state: '', nativeState: '', city: '', exams: [],
+    ctc: '', preferedState: '', country: 'India', state: '', nativeState: '', city: '', exams: [],
     resumeLink: '', teachingVideoLink: '', about: 'I am a dedicated, student-centered educator focused on creating an engaging, inclusive, and fun classroom environment. As a patient mentor, I blend passion with modern, creative, and active learning strategies to help students reach their full potential.',
     socialLinks: { facebook: '', twitter: '', linkedin: '', instagram: '' }
   });
@@ -246,6 +246,7 @@ export default function EditTeacher() {
           examAchievements: data.examAchievements || [],
           education: data.education || '',
           experience: data.experience || '',
+          country: data.country || 'India',
           state: data.state || '',
           nativeState: data.nativeState || '',
           preferedState: Array.isArray(data.preferedState) ? data.preferedState[0] : (data.preferedState || ''),
@@ -895,6 +896,16 @@ export default function EditTeacher() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  <FormField
+                    label="Country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                    icon={Globe}
+                    options={[{ value: 'India', label: 'India' }, { value: 'Other', label: 'Other' }]}
+                    placeholder="Select Country"
+                  />
                   <FormField
                     label="Current State"
                     name="state"

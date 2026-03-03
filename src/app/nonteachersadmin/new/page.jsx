@@ -119,7 +119,7 @@ export default function NewNonTeacher() {
   const [showCustomUrl, setShowCustomUrl] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', contactVisibility: 'everyone', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
+    name: '', email: '', phone: '', contactVisibility: 'everyone', country: 'India', city: '', state: '', dob: '', dobVisibility: 'everyone', gender: '', designation: 'LECTURER',
     maritalStatus: '', nationality: 'Indian', religion: '', photoUrl: '/logo.png',
 
     // Arrays & CSVs

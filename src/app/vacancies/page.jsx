@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { indianCities } from '@/lib/indianCities';
@@ -98,14 +99,35 @@ const VacancyCard = ({ job }) => (
 );
 
 export default function VacanciesPage() {
+  const router = useRouter();
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewCategory, setViewCategory] = useState('Teaching'); // 'Teaching' | 'Non-Teaching'
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const allowedToPost = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+
+  if (status === 'unauthenticated' || (status === 'authenticated' && !isRegisteredUser)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-6">
+            You must be a registered member (Teacher, Staff, Institute, or Consultant) to view and apply for job vacancies.
+          </p>
+          <Link href="/login" className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block">
+            Log In to Access
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [form, setForm] = useState({
     jobTitle: '',
@@ -125,7 +147,13 @@ export default function VacanciesPage() {
     contactEmail: '',
     contactPhone: '',
     numberOfOpenings: 1,
-    requirements: [{ subject: '', count: 1 }]
+    requirements: [{ subject: '', count: 1 }],
+    selectionProcess: {
+      writtenTest: '',
+      teacherDemo: '',
+      studentDemo: '',
+      interview: '',
+    }
   });
 
   const STREAMS = Object.keys(TEACHING_CATEGORIES);
@@ -176,6 +204,17 @@ export default function VacanciesPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+  };
+
+  const handleSelectionChange = (e) => {
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      selectionProcess: {
+        ...form.selectionProcess,
+        [name]: value
+      }
+    });
   };
 
   // Dedicated handlers for MultiSelect since it doesn't return a standard event object
@@ -250,6 +289,7 @@ export default function VacanciesPage() {
         subject: '',
         companyName: '',
         location: '',
+        country: 'India',
         city: '',
         state: '',
         jobType: 'Full Time',
@@ -262,6 +302,13 @@ export default function VacanciesPage() {
         contactEmail: '',
         contactPhone: '',
         numberOfOpenings: 1,
+        requirements: [{ subject: '', count: 1 }],
+        selectionProcess: {
+          writtenTest: '',
+          teacherDemo: '',
+          studentDemo: '',
+          interview: '',
+        }
       });
       setShowForm(false);
       fetchVacancies(); // Refresh list
@@ -359,7 +406,10 @@ export default function VacanciesPage() {
 
 
   // Generate format options
-  const salaryOptions = Array.from({ length: 200 }, (_, i) => `${i + 1} LPA`);
+  const lpaSalaryOptions = Array.from({ length: 200 }, (_, i) => `${i + 1} LPA`);
+  const perClassSalaryOptions = Array.from({ length: 200 }, (_, i) => `${(i + 1) * 100}`);
+  const filterSalaryOptions = [...lpaSalaryOptions, ...perClassSalaryOptions];
+  const formSalaryOptions = form.jobType === 'Per Class' ? perClassSalaryOptions : lpaSalaryOptions;
   const experienceOptions = ['Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
 
 
@@ -456,7 +506,7 @@ export default function VacanciesPage() {
 
               <select name="salary" value={filters.salary} onChange={handleFilterChange} className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                 <option value="">Any Salary</option>
-                {salaryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                {filterSalaryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
 
@@ -664,6 +714,13 @@ export default function VacanciesPage() {
                 <input name="companyName" required onChange={handleChange} value={form.companyName} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Country</label>
+                <select name="country" required onChange={handleChange} value={form.country} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                  <option value="India">India</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">State</label>
                 <select name="state" onChange={handleStateChange} value={form.state} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
                   <option value="">Select State</option>
@@ -688,7 +745,7 @@ export default function VacanciesPage() {
                   <option>Full Time</option>
                   <option>Part Time</option>
                   <option>Contract</option>
-                  <option>Internship</option>
+                  <option>Per Class</option>
                 </select>
               </div>
 
@@ -713,7 +770,7 @@ export default function VacanciesPage() {
                       <option value="">Select Min Salary</option>
                       <option value="Not Disclosed">Not Disclosed</option>
                       <option value="No bar for deserving candidate">No bar for deserving candidate</option>
-                      {salaryOptions.map(opt => (
+                      {formSalaryOptions.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
@@ -725,7 +782,7 @@ export default function VacanciesPage() {
                       <option value="">Select Max Salary</option>
                       <option value="Not Disclosed">Not Disclosed</option>
                       <option value="No bar for deserving candidate">No bar for deserving candidate</option>
-                      {salaryOptions.map(opt => (
+                      {formSalaryOptions.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
@@ -740,6 +797,54 @@ export default function VacanciesPage() {
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">Contact Phone</label>
                 <input name="contactPhone" onChange={handleChange} value={form.contactPhone} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+              </div>
+
+              {/* Selection Process Section */}
+              <div className="col-span-1 md:col-span-2 bg-blue-50/50 p-6 rounded-xl border border-blue-100">
+                <label className="text-base font-bold text-gray-800 mb-4 block">Selection Process Overview</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Written Test</label>
+                    <select name="writtenTest" value={form.selectionProcess.writtenTest} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Option</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Not Required">Not Required</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Teacher Demo</label>
+                    <select name="teacherDemo" value={form.selectionProcess.teacherDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Option</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Not Required">Not Required</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Student Demo</label>
+                    <select name="studentDemo" value={form.selectionProcess.studentDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Option</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Not Required">Not Required</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Final Interview</label>
+                    <select name="interview" value={form.selectionProcess.interview} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="">Select Option</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Not Required">Not Required</option>
+                    </select>
+                  </div>
+
+                </div>
               </div>
 
               <div className="col-span-1 md:col-span-2 space-y-1">

@@ -21,8 +21,10 @@ export default function ParentRegistration() {
     name: '',
     contact: '',
     address: '',
+    currentCountry: 'India',
     currentCity: '',
     currentState: '',
+    nativeCountry: 'India',
     nativeCity: '',
     nativeState: '',
     employmentType: 'Salaried',
@@ -163,6 +165,18 @@ export default function ParentRegistration() {
               <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Current Residence</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">Country</label>
+                  <select
+                    name="currentCountry"
+                    value={form.currentCountry}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition bg-white"
+                  >
+                    <option value="India">India</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">State</label>
                   <select
                     name="currentState"
@@ -208,6 +222,18 @@ export default function ParentRegistration() {
                 <Home className="w-4 h-4" /> Native / Permanent Residence
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-gray-700">Native Country</label>
+                  <select
+                    name="nativeCountry"
+                    value={form.nativeCountry}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition bg-white"
+                  >
+                    <option value="India">India</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">Native State</label>
                   <select

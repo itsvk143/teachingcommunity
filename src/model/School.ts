@@ -74,6 +74,7 @@ const SchoolSchema = new mongoose.Schema(
     address_line1: { type: String, trim: true }, // Full Address
     city: { type: String, trim: true },
     district: { type: String, trim: true },
+    country: { type: String, default: 'India', trim: true },
     state: { type: String, trim: true },
     pincode: { type: String, trim: true },
     landmark: { type: String, trim: true },

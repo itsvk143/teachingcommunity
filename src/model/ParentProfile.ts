@@ -43,8 +43,10 @@ const ParentProfileSchema = new mongoose.Schema(
       enum: ['Salaried', 'Self Employed', 'Entrepreneur', 'Homemaker', 'Unemployed', 'Student', 'Other'],
     },
     currentCity: { type: String, trim: true },
+    currentCountry: { type: String, default: 'India', trim: true },
     currentState: { type: String, trim: true },
     nativeCity: { type: String, trim: true },
+    nativeCountry: { type: String, default: 'India', trim: true },
     nativeState: { type: String, trim: true },
   },
   {

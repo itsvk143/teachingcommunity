@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, Briefcase, MapPin, Building2, Clock, IndianRupee, Mail, Phone, Calendar, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Briefcase, MapPin, Building2, Clock, IndianRupee, Mail, Phone, Calendar, CheckCircle, X, ClipboardList } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function VacancyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const [vacancy, setVacancy] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,27 @@ export default function VacancyDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+
+  if (status === 'unauthenticated' || (status === 'authenticated' && !isRegisteredUser)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-6">
+            You must be a registered member (Teacher, Staff, Institute, or Consultant) to view detailed job descriptions and apply.
+          </p>
+          <Link href="/login" className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block">
+            Log In to Access
+          </Link>
+        </div>
       </div>
     );
   }
@@ -201,6 +222,42 @@ export default function VacancyDetailPage() {
                 {vacancy.description}
               </div>
             </div>
+
+            {/* Selection Process Overview */}
+            {vacancy.selectionProcess && Object.values(vacancy.selectionProcess).some(val => val) && (
+              <div className="mb-10">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-blue-600" />
+                  Selection Process
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {vacancy.selectionProcess.writtenTest && (
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Written Test</p>
+                      <p className="text-sm font-semibold text-blue-700">{vacancy.selectionProcess.writtenTest}</p>
+                    </div>
+                  )}
+                  {vacancy.selectionProcess.teacherDemo && (
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Teacher Demo</p>
+                      <p className="text-sm font-semibold text-blue-700">{vacancy.selectionProcess.teacherDemo}</p>
+                    </div>
+                  )}
+                  {vacancy.selectionProcess.studentDemo && (
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Student Demo</p>
+                      <p className="text-sm font-semibold text-blue-700">{vacancy.selectionProcess.studentDemo}</p>
+                    </div>
+                  )}
+                  {vacancy.selectionProcess.interview && (
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Interview</p>
+                      <p className="text-sm font-semibold text-blue-700">{vacancy.selectionProcess.interview}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Contact / Apply */}
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">

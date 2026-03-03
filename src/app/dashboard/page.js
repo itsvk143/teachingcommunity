@@ -421,7 +421,7 @@ export default function Dashboard() {
                     <h3 className="font-bold text-gray-800">My Job Posts</h3>
                   </div>
                   <button
-                    onClick={() => router.push('/jobs/new')}
+                    onClick={() => router.push('/vacancies')}
                     className="p-2 rounded-full transition shadow-sm bg-indigo-600 text-white hover:bg-indigo-700"
                     title="Post New Job"
                   >
@@ -434,7 +434,7 @@ export default function Dashboard() {
                     <div className="text-center py-8 px-4 rounded-xl bg-gray-50 border border-dashed border-gray-200">
                       <p className="text-gray-500 text-sm">No active job posts.</p>
                       <button
-                        onClick={() => router.push('/jobs/new')}
+                        onClick={() => router.push('/vacancies')}
                         className="font-semibold text-sm mt-2 text-indigo-600 hover:text-indigo-800"
                       >
                         Post a Vacancy

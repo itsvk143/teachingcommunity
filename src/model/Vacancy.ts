@@ -22,7 +22,7 @@ const VacancySchema = new mongoose.Schema(
 
     jobType: {
       type: String,
-      enum: ['Full Time', 'Part Time', 'Contract', 'Internship'],
+      enum: ['Full Time', 'Part Time', 'Contract', 'Per Class'],
       required: true,
     },
 
@@ -35,6 +35,13 @@ const VacancySchema = new mongoose.Schema(
       subject: { type: String, required: true },
       count: { type: Number, default: 1 }
     }],
+
+    selectionProcess: {
+      writtenTest: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      teacherDemo: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      studentDemo: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      interview: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+    },
 
     experience: {
       type: String,
@@ -95,6 +102,11 @@ const VacancySchema = new mongoose.Schema(
       default: false,
     },
 
+    country: {
+      type: String,
+      default: 'India',
+      trim: true,
+    },
     state: {
       type: String,
       trim: true,
@@ -128,11 +140,13 @@ const VacancySchema = new mongoose.Schema(
 );
 
 // ⚠️ Accessing the existing model to checks for paths might be needed for hot-reload support
-if (mongoose.models.Vacancy && !mongoose.models.Vacancy.schema.paths['googleFormLink']) {
+if (mongoose.models.Vacancy && !mongoose.models.Vacancy.schema.paths['selectionProcess']) {
   mongoose.models.Vacancy.schema.add({
-    googleFormLink: {
-      type: String,
-      trim: true,
+    selectionProcess: {
+      writtenTest: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      teacherDemo: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      studentDemo: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
+      interview: { type: String, enum: ['Online', 'Offline', 'Not Required', ''], default: '' },
     }
   });
 }
