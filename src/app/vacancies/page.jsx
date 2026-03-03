@@ -817,52 +817,54 @@ export default function VacanciesPage() {
               </div>
 
               {/* Selection Process Section */}
-              <div className="col-span-1 md:col-span-2 bg-blue-50/50 p-6 rounded-xl border border-blue-100">
-                <label className="text-base font-bold text-gray-800 mb-4 block">Selection Process Overview</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {form.vacancyCategory !== 'Non-Teaching' && (
+                <div className="col-span-1 md:col-span-2 bg-blue-50/50 p-6 rounded-xl border border-blue-100">
+                  <label className="text-base font-bold text-gray-800 mb-4 block">Selection Process Overview</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Written Test</label>
-                    <select name="writtenTest" value={form.selectionProcess.writtenTest} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option value="">Select Option</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Not Required">Not Required</option>
-                    </select>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Written Test</label>
+                      <select name="writtenTest" value={form.selectionProcess.writtenTest} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">Select Option</option>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Not Required">Not Required</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Teacher Demo</label>
+                      <select name="teacherDemo" value={form.selectionProcess.teacherDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">Select Option</option>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Not Required">Not Required</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Student Demo</label>
+                      <select name="studentDemo" value={form.selectionProcess.studentDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">Select Option</option>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Not Required">Not Required</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">Final Interview</label>
+                      <select name="interview" value={form.selectionProcess.interview} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">Select Option</option>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Not Required">Not Required</option>
+                      </select>
+                    </div>
+
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Teacher Demo</label>
-                    <select name="teacherDemo" value={form.selectionProcess.teacherDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option value="">Select Option</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Not Required">Not Required</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Student Demo</label>
-                    <select name="studentDemo" value={form.selectionProcess.studentDemo} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option value="">Select Option</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Not Required">Not Required</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">Final Interview</label>
-                    <select name="interview" value={form.selectionProcess.interview} onChange={handleSelectionChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option value="">Select Option</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Not Required">Not Required</option>
-                    </select>
-                  </div>
-
                 </div>
-              </div>
+              )}
 
               <div className="col-span-1 md:col-span-2 space-y-1">
                 <label className="text-sm font-medium text-gray-700">Job Description</label>
