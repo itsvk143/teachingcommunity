@@ -110,6 +110,62 @@ export default function VacanciesPage() {
   const allowedToPost = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
   const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
 
+  const [form, setForm] = useState({
+    jobTitle: '',
+    vacancyCategory: 'Teaching',
+    subject: '',
+    companyName: '',
+    location: '',
+    country: 'India',
+    city: '',
+    state: '',
+    jobType: 'Full Time',
+    experience: 'Fresher',
+    stream: [],
+    exam: [],
+    salaryMin: '',
+    salaryMax: '',
+    description: '',
+    contactEmail: '',
+    contactPhone: '',
+    numberOfOpenings: 1,
+    requirements: [{ subject: '', count: 1 }],
+    selectionProcess: {
+      writtenTest: 'Offline',
+      teacherDemo: 'Offline',
+      studentDemo: 'Not Required',
+      interview: 'Not Required',
+    }
+  });
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    state: '',
+    city: '',
+    company: '',
+    experience: '',
+    salary: '',
+    subject: '',
+    exam: ''
+  });
+
+  const fetchVacancies = async () => {
+    try {
+      const res = await fetch('/api/vacancies');
+      const data = await res.json();
+      setVacancies(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch vacancies', error);
+      setVacancies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVacancies();
+  }, []);
+
   if (status === 'unauthenticated' || (status === 'authenticated' && !isRegisteredUser)) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -129,32 +185,7 @@ export default function VacanciesPage() {
     );
   }
 
-  const [form, setForm] = useState({
-    jobTitle: '',
-    vacancyCategory: 'Teaching',
-    subject: '',
-    companyName: '',
-    location: '',
-    city: '',
-    state: '',
-    jobType: 'Full Time',
-    experience: 'Fresher',
-    stream: [],
-    exam: [],
-    salaryMin: '',
-    salaryMax: '',
-    description: '',
-    contactEmail: '',
-    contactPhone: '',
-    numberOfOpenings: 1,
-    requirements: [{ subject: '', count: 1 }],
-    selectionProcess: {
-      writtenTest: '',
-      teacherDemo: '',
-      studentDemo: '',
-      interview: '',
-    }
-  });
+
 
   const STREAMS = Object.keys(TEACHING_CATEGORIES);
 
@@ -183,23 +214,7 @@ export default function VacanciesPage() {
     return [...new Set(subjects)].sort();
   })();
 
-  const fetchVacancies = async () => {
-    try {
-      const res = await fetch('/api/vacancies');
-      const data = await res.json();
-      // Ensure data is array
-      setVacancies(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch vacancies', error);
-      setVacancies([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchVacancies();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -304,10 +319,10 @@ export default function VacanciesPage() {
         numberOfOpenings: 1,
         requirements: [{ subject: '', count: 1 }],
         selectionProcess: {
-          writtenTest: '',
-          teacherDemo: '',
-          studentDemo: '',
-          interview: '',
+          writtenTest: 'Offline',
+          teacherDemo: 'Offline',
+          studentDemo: 'Not Required',
+          interview: 'Not Required',
         }
       });
       setShowForm(false);
@@ -317,18 +332,7 @@ export default function VacanciesPage() {
     }
   };
 
-  // Filters State
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    state: '',
-    city: '',
-    company: '',
 
-    experience: '',
-    salary: '',
-    subject: '',
-    exam: ''
-  });
 
   const POPULAR_EXAMS = [
     { label: 'JEE Mains', key: 'JEE Mains' },
@@ -722,14 +726,27 @@ export default function VacanciesPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">State</label>
-                <select name="state" onChange={handleStateChange} value={form.state} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white">
+                <select
+                  name="state"
+                  required={form.country === 'India'}
+                  onChange={handleStateChange}
+                  value={form.state}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                >
                   <option value="">Select State</option>
                   {Object.keys(indianCities).map(state => <option key={state} value={state}>{state}</option>)}
                 </select>
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">City</label>
-                <select name="city" required onChange={handleChange} value={form.city} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white" disabled={!form.state}>
+                <select
+                  name="city"
+                  required={form.country === 'India'}
+                  onChange={handleChange}
+                  value={form.city}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                  disabled={form.country === 'India' && !form.state}
+                >
                   <option value="">Select City</option>
                   {form.state && indianCities[form.state]?.map(city => <option key={city} value={city}>{city}</option>)}
                 </select>

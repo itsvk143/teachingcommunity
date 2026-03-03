@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import School from '@/model/School';
+import User from '@/model/User';
 import slugify from 'slugify';
 import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -70,10 +71,13 @@ export async function POST(req: Request) {
       body.slug = slugify(body.name, { lower: true, strict: true }) + '-' + Date.now(); // Ensure unique slug
     }
 
-    // Link to user
-    body.owner_user_id = (session.user as { id: string }).id;
-    // Ensure email matches session if strictly enforcing, or allow admin to set it? 
-    // For now, let's allow the form to send email, but maybe enforce owner_user_id.
+    // Link to user and update role
+    const userId = (session.user as { id: string }).id;
+    body.owner_user_id = userId;
+
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { role: 'school' });
+    }
 
     const newSchool = await School.create(body);
     return NextResponse.json(newSchool, { status: 201 });

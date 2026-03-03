@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getServerSession, type AuthOptions } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/model/Teacher';
+import User from '@/model/User';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -56,6 +59,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     await dbConnect();
+    const session = await getServerSession(authOptions as AuthOptions);
 
     // Normalize email
     const email = body.email.toLowerCase();
@@ -82,6 +86,12 @@ export async function POST(req: Request) {
       lastTeacher && typeof lastTeacher.sequence === 'number'
         ? lastTeacher.sequence + 1
         : 1;
+
+    // 🔹 Update user role to teacher if session exists
+    const userId = (session?.user as any)?.id;
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { role: 'teacher' });
+    }
 
     // 🔹 Create teacher with sequence
     const newTeacher = await Teacher.create({

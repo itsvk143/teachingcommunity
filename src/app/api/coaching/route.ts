@@ -3,6 +3,7 @@ import { getServerSession, AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import Coaching from '@/model/Coaching';
+import User from '@/model/User';
 import slugify from 'slugify';
 
 export async function GET(req: Request) {
@@ -42,11 +43,13 @@ export async function POST(req: Request) {
       body.slug = slugify(body.name, { lower: true, strict: true });
     }
 
-    // Attach User ID if available
+    // Attach User ID if available and update role
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((session?.user as any)?.id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body.owner_user_id = (session?.user as any)?.id;
+    const userId = (session?.user as any)?.id;
+    if (userId) {
+      body.owner_user_id = userId;
+      // Upgrade user role to coaching
+      await User.findByIdAndUpdate(userId, { role: 'coaching' });
     }
 
     const newCoaching = await Coaching.create(body);

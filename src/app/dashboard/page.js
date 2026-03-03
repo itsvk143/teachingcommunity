@@ -103,6 +103,25 @@ export default function Dashboard() {
           if (Array.isArray(vacData)) setUserVacancies(vacData);
           if (Array.isArray(appData)) setUserApplications(appData);
 
+          // 🔹 Role Synchronization Check
+          const hasSpecializedProfile = teacherData?.teachers?.length > 0 ||
+            nonTeacherData?.staff?.length > 0 ||
+            coachingData?.length > 0 ||
+            schoolData?.schools?.length > 0 ||
+            consultantData?.length > 0;
+
+          if (session?.user?.role === 'user' && hasSpecializedProfile) {
+            console.log("Detecting specialized profile for 'user' role. Syncing...");
+            const syncRes = await fetch('/api/user/sync-role', { method: 'POST' });
+            const syncData = await syncRes.json();
+            if (syncData.synced) {
+              console.log("Role synchronized successfully:", syncData.role);
+              // We won't force a reload here to avoid infinite loops, 
+              // but we'll notify that they might need to re-login for full access.
+              alert(`Your account has been upgraded to ${syncData.role}! Please sign out and sign back in to access restricted features like Vacancies.`);
+            }
+          }
+
         } catch (err) {
           console.error("Failed to fetch profiles", err);
         } finally {

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getServerSession, type AuthOptions } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import NonTeacher from '@/model/NonTeacher';
+import User from '@/model/User';
 import slugify from 'slugify';
 
 export async function GET(req: Request) {
@@ -41,6 +44,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     await dbConnect();
+    const session = await getServerSession(authOptions as AuthOptions);
 
     // Generate slug
     let slug = slugify(body.name, { lower: true, strict: true });
@@ -52,6 +56,12 @@ export async function POST(req: Request) {
       slug = `${slugify(body.name, { lower: true, strict: true })}-${counter}`;
       slugExists = await NonTeacher.findOne({ slug });
       counter++;
+    }
+
+    // Update user role to non-teacher if session exists
+    const userId = (session?.user as any)?.id;
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { role: 'non-teacher' });
     }
 
     const newStaff = await NonTeacher.create({ ...body, slug });
