@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   User, BookOpen, Briefcase, FileText,
   ChevronRight, ChevronLeft, CheckCircle,
-  Upload, Calendar, MapPin, IndianRupee, Loader2, AlertCircle, School, Layers
+  Upload, Calendar, MapPin, IndianRupee, Loader2, AlertCircle, School, Layers, Globe
 } from 'lucide-react';
 import { TEACHING_CATEGORIES, ALL_EXAMS } from '@/utils/teachingCategories';
 import { STATE_OPTIONS, CITIES_BY_STATE } from '@/utils/indianCities';
@@ -250,7 +250,7 @@ export default function EditTeacher() {
           state: data.state || '',
           nativeState: data.nativeState || '',
           preferedState: Array.isArray(data.preferedState) ? data.preferedState[0] : (data.preferedState || ''),
-          dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
+          dob: (data.dob && !isNaN(new Date(data.dob).getTime())) ? new Date(data.dob).toISOString().split('T')[0] : '',
           dobVisibility: data.dobVisibility || 'everyone',
           age: data.age || '',
           photoUrl: data.photoUrl || '',
