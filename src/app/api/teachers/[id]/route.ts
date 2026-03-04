@@ -108,16 +108,18 @@ export async function PUT(
     );
 
     return NextResponse.json(updatedTeacher);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating teacher:", error);
 
-    if (error.name === 'ValidationError') {
+    const err = error as { name?: string, errors?: Record<string, { message: string }> };
+    if (err?.name === 'ValidationError' && err?.errors) {
+      const errs = err.errors;
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: Object.keys(error.errors).map(field => ({
+          details: Object.keys(errs).map(field => ({
             field,
-            message: error.errors[field].message
+            message: errs[field].message
           }))
         },
         { status: 400 }
