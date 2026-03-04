@@ -184,7 +184,7 @@ export default function AdminVacanciesPage() {
                       <Users className="w-3 h-3" /> Applications
                     </Link>
                     <Link
-                      href={`/jobs/${job._id}/edit`}
+                      href={`/vacancies/${job._id}/edit`}
                       className="text-gray-600 hover:text-gray-800 font-medium bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded transition flex items-center gap-1 border border-gray-200"
                     >
                       <Edit className="w-3 h-3" /> Edit

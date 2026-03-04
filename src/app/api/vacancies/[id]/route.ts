@@ -53,6 +53,24 @@ export async function PUT(
 
     await dbConnect();
 
+    // Validation for India
+    if (body.country === 'India' && (!body.city || !body.state)) {
+      return NextResponse.json(
+        { error: 'City and State are required for vacancies in India' },
+        { status: 400 }
+      );
+    }
+
+    // Automatically set location if city/state provided, but PRESERVE existing location detail
+    if (body.city && body.state) {
+      const area = body.location || '';
+      if (area && !area.toLowerCase().includes(body.city.toLowerCase())) {
+        body.location = `${area}, ${body.city}, ${body.state}`;
+      } else if (!area) {
+        body.location = `${body.city}, ${body.state}`;
+      }
+    }
+
     const updatedVacancy = await Vacancy.findByIdAndUpdate(
       id,
       { $set: body },

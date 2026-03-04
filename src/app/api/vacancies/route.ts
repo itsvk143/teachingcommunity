@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     if (session?.user) {
       const user = session.user as { role: string; id: string; email: string };
 
-      const allowedRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
+      const allowedRoles = ['coaching', 'school', 'consultant'];
       let isAuthorized = allowedRoles.includes(user.role);
       let actualSenderRole = user.role;
 
@@ -95,8 +95,22 @@ export async function POST(req: Request) {
       );
     }
 
+    // Validation for India
+    if (body.country === 'India' && (!body.city || !body.state)) {
+      return NextResponse.json(
+        { error: 'City and State are required for vacancies in India' },
+        { status: 400 }
+      );
+    }
+
+    // Automatically set location if city/state provided, but PRESERVE existing location detail
     if (body.city && body.state) {
-      body.location = `${body.city}, ${body.state}`;
+      const area = body.location || '';
+      if (area && !area.toLowerCase().includes(body.city.toLowerCase())) {
+        body.location = `${area}, ${body.city}, ${body.state}`;
+      } else if (!area) {
+        body.location = `${body.city}, ${body.state}`;
+      }
     }
 
     const _vacancy = await Vacancy.create({
@@ -132,7 +146,8 @@ export async function POST(req: Request) {
       { message: isApproved ? 'Vacancy posted successfully!' : 'Vacancy submitted for approval' },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    console.error("VACANCY_POST_ERROR:", error);
     return NextResponse.json(
       { error: 'Failed to post vacancy' },
       { status: 500 }

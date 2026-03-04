@@ -108,19 +108,16 @@ export async function PUT(
     );
 
     return NextResponse.json(updatedTeacher);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating teacher:", error);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).name === 'ValidationError') {
+    if (error.name === 'ValidationError') {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          details: Object.keys((error as any).errors).map(field => ({
+          details: Object.keys(error.errors).map(field => ({
             field,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            message: (error as any).errors[field].message
+            message: error.errors[field].message
           }))
         },
         { status: 400 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter } from 'lucide-react';
+import { Briefcase, MapPin, Building2, Clock, Plus, X, Search, Filter, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { indianCities } from '@/lib/indianCities';
 import { TEACHING_CATEGORIES } from '@/utils/teachingCategories';
@@ -107,8 +107,8 @@ export default function VacanciesPage() {
   const [viewCategory, setViewCategory] = useState('Teaching'); // 'Teaching' | 'Non-Teaching'
   const { data: session, status } = useSession();
 
-  const allowedToPost = session?.user && ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
-  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role);
+  const allowedToPost = session?.user && ['school', 'coaching', 'consultant'].includes(session.user.role);
+  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'school', 'coaching', 'consultant'].includes(session.user.role);
 
   const [form, setForm] = useState({
     jobTitle: '',
@@ -175,7 +175,7 @@ export default function VacanciesPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-6">
-            You must be a registered member (Teacher, Staff, Institute, or Consultant) to view and apply for job vacancies.
+            You must be a registered member (Teacher, Non-Teacher, School, Coaching, or Consultant) to view and apply for job vacancies.
           </p>
           <Link href="/login" className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block">
             Log In to Access
@@ -288,16 +288,26 @@ export default function VacanciesPage() {
     setFilters({ ...filters, state: newState, city: '' });
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      await fetch('/api/vacancies', {
+      const res = await fetch('/api/vacancies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
 
-      alert('Vacancy submitted for approval');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit vacancy');
+      }
+
+      const resData = await res.json();
+      alert(resData.message || 'Vacancy submitted successfully');
+
       setForm({
         jobTitle: '',
         vacancyCategory: 'Teaching',
@@ -328,7 +338,9 @@ export default function VacanciesPage() {
       setShowForm(false);
       fetchVacancies(); // Refresh list
     } catch (error) {
-      alert('Failed to submit vacancy');
+      alert(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -879,8 +891,18 @@ export default function VacanciesPage() {
               </div>
 
               <div className="col-span-1 md:col-span-2 pt-4">
-                <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transform transition hover:-translate-y-0.5">
-                  Submit Vacancy 🚀
+                <button
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 disabled:from-blue-400 disabled:to-indigo-400 text-white font-bold py-3 rounded-lg hover:shadow-lg transform transition hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>Submit Vacancy 🚀</>
+                  )}
                 </button>
               </div>
             </form>
