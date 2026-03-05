@@ -107,8 +107,8 @@ export default function VacanciesPage() {
   const [viewCategory, setViewCategory] = useState('Teaching'); // 'Teaching' | 'Non-Teaching'
   const { data: session, status } = useSession();
 
-  const allowedToPost = session?.user && ['school', 'coaching', 'consultant'].includes(session.user.role);
-  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'school', 'coaching', 'consultant'].includes(session.user.role);
+  const allowedToPost = session?.user && ['school', 'coaching', 'consultant', 'admin', 'hr'].includes(session.user.role);
+  const isRegisteredUser = session?.user && ['teacher', 'non-teacher', 'school', 'coaching', 'consultant', 'admin', 'hr'].includes(session.user.role);
 
   const [form, setForm] = useState({
     jobTitle: '',

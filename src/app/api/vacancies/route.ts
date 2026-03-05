@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     if (session?.user) {
       const user = session.user as { role: string; id: string; email: string };
 
-      const allowedRoles = ['coaching', 'school', 'consultant'];
+      const allowedRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
       let isAuthorized = allowedRoles.includes(user.role);
       let actualSenderRole = user.role;
 
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 
       if (!isAuthorized) {
         return NextResponse.json(
-          { error: 'Unauthorized: Only Coaching Owners, School Owners, and Consultants can post jobs.' },
+          { error: 'Unauthorized: Only Coaching Owners, School Owners, Consultants, and internal staff can post jobs.' },
           { status: 403 }
         );
       }

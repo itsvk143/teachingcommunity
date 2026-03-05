@@ -511,7 +511,7 @@ export default function Dashboard() {
                             </button>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => router.push(`/jobs/${job._id}/edit`)}
+                                onClick={() => router.push(`/vacancies/${job._id}/edit`)}
                                 className="p-2 rounded-lg text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
                                 title="Edit Job"
                               >
