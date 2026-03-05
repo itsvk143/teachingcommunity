@@ -190,51 +190,6 @@ export default function VacanciesPage() {
     }
   }, [status, session]);
 
-  if (status === 'unauthenticated' || (status === 'authenticated' && !isRegisteredUser)) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
-          {needsRelogin ? (
-            <>
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Upgraded!</h2>
-              <p className="text-gray-600 mb-6">
-                We detected that your account has been upgraded to a specialized role. Please sign out and sign back in to access job vacancies.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X className="w-8 h-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-              <p className="text-gray-600 mb-6">
-                You must be a registered member (Teacher, Non-Teacher, School, Coaching, or Consultant) to view and apply for job vacancies.
-              </p>
-            </>
-          )}
-
-          {status === 'authenticated' ? (
-            <button
-              onClick={() => {
-                const { signOut } = require('next-auth/react');
-                signOut({ callbackUrl: "/login" });
-              }}
-              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block"
-            >
-              Sign Out & Relogin
-            </button>
-          ) : (
-            <Link href="/login" className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block">
-              Log In to Access
-            </Link>
-          )}
-        </div>
-      </div>
-    );
-  }
 
 
 
@@ -480,6 +435,52 @@ export default function VacanciesPage() {
   const experienceOptions = ['Fresher', ...Array.from({ length: 50 }, (_, i) => `${i + 1} Year${i + 1 > 1 ? 's' : ''}`)];
 
 
+
+  if (status === 'unauthenticated' || (status === 'authenticated' && !isRegisteredUser)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
+          {needsRelogin ? (
+            <>
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Upgraded!</h2>
+              <p className="text-gray-600 mb-6">
+                We detected that your account has been upgraded to a specialized role. Please sign out and sign back in to access job vacancies.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <X className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+              <p className="text-gray-600 mb-6">
+                You must be a registered member (Teacher, Non-Teacher, School, Coaching, or Consultant) to view and apply for job vacancies.
+              </p>
+            </>
+          )}
+
+          {status === 'authenticated' ? (
+            <button
+              onClick={() => {
+                const { signOut } = require('next-auth/react');
+                signOut({ callbackUrl: "/login" });
+              }}
+              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block"
+            >
+              Sign Out & Relogin
+            </button>
+          ) : (
+            <Link href="/login" className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition w-full block">
+              Log In to Access
+            </Link>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
