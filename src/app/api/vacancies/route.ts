@@ -124,18 +124,84 @@ export async function POST(req: Request) {
       // Fire and forget email notifications
       (async () => {
         try {
-          const [teachers, nonTeachers] = await Promise.all([
-            Teacher.find({ email: { $exists: true, $ne: null } }, 'email').lean(),
-            NonTeacher.find({ email: { $exists: true, $ne: null } }, 'email').lean()
-          ]);
+          const teacherEmails: string[] = [];
+          const nonTeacherEmails: string[] = [];
 
-          const emails = [
-            ...teachers.map(t => (t as { email?: string }).email),
-            ...nonTeachers.map(nt => (nt as { email?: string }).email)
-          ].filter(Boolean) as string[];
+          const locQuery = {
+            $or: [] as Record<string, unknown>[]
+          };
 
-          const uniqueEmails = Array.from(new Set(emails));
-          await sendVacancyNotificationEmail(_vacancy, uniqueEmails);
+          // Build Location Matching logic
+          const cleanCity = body.city?.trim();
+          const cleanState = body.state?.trim();
+
+          if (cleanCity) {
+            locQuery.$or.push({ city: { $regex: new RegExp(`^${cleanCity}$`, 'i') } });
+          }
+          if (cleanState) {
+            locQuery.$or.push({ state: { $regex: new RegExp(`^${cleanState}$`, 'i') } });
+            locQuery.$or.push({ nativeState: { $regex: new RegExp(`^${cleanState}$`, 'i') } });
+            locQuery.$or.push({ preferedState: { $elemMatch: { $regex: new RegExp(`^${cleanState}$`, 'i') } } });
+          }
+          // Pan India preference matches everything
+          locQuery.$or.push({ preferedState: { $elemMatch: { $regex: /Pan India/i } } });
+
+          // Fallback if no specific city/state provided
+          if (locQuery.$or.length === 1) { // Only contains Pan India
+            locQuery.$or.push({ _id: { $exists: true } }); // Matches everything
+          }
+
+          if (body.vacancyCategory !== 'Non-Teaching') {
+            // Build Teacher Query
+            const tQuery: Record<string, unknown> = { email: { $exists: true, $ne: null } };
+
+            // Location
+            tQuery.$or = locQuery.$or;
+
+            // Subjects
+            const vacancySubjects: string[] = [];
+            if (body.subject) vacancySubjects.push(body.subject);
+            if (Array.isArray(body.requirements)) {
+              body.requirements.forEach((req: { subject?: string }) => {
+                if (req.subject) vacancySubjects.push(req.subject);
+              });
+            }
+            if (vacancySubjects.length > 0) {
+              const subjectRegexes = vacancySubjects.map(s => new RegExp(`^${s.trim()}$`, 'i'));
+              tQuery.subject = { $in: subjectRegexes };
+            }
+
+            // Exams
+            if (Array.isArray(body.exam) && body.exam.length > 0) {
+              const examRegexes = body.exam.map((e: string) => new RegExp(`^${e.trim()}$`, 'i'));
+              tQuery.exams = { $in: examRegexes };
+            }
+
+            const teachers = await Teacher.find(tQuery, 'email').lean() as { email?: string }[];
+            teachers.forEach(t => { if (t.email) teacherEmails.push(t.email); });
+          }
+
+          if (body.vacancyCategory !== 'Teaching') {
+            // Build Non-Teacher Query
+            const ntQuery: Record<string, unknown> = { email: { $exists: true, $ne: null } };
+
+            // Location
+            ntQuery.$or = locQuery.$or;
+
+            // Optional: Job Title fuzzy matching
+            if (body.jobTitle) {
+              ntQuery.jobRole = { $elemMatch: { $regex: new RegExp(body.jobTitle.split(' ')[0], 'i') } };
+            }
+
+            const nonTeachers = await NonTeacher.find(ntQuery, 'email').lean() as { email?: string }[];
+            nonTeachers.forEach(nt => { if (nt.email) nonTeacherEmails.push(nt.email); });
+          }
+
+          const uniqueEmails = Array.from(new Set([...teacherEmails, ...nonTeacherEmails]));
+
+          if (uniqueEmails.length > 0) {
+            await sendVacancyNotificationEmail(_vacancy, uniqueEmails);
+          }
         } catch (error) {
           console.error("Failed to send vacancy notification emails:", error);
         }
