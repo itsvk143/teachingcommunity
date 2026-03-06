@@ -19,14 +19,19 @@ export async function GET(req: Request) {
 
         const discussions = await Discussion.find(query)
             .sort({ createdAt: -1 })
-            .select('-replies') // Don't fetch full replies for the list view to save bandwidth
+            // Fetch the document to accurately count replies
             .lean();
 
-        // Map to include a replyCount instead of the full array
-        const mapped = discussions.map(d => ({
-            ...d,
-            replyCount: Array.isArray((d as { replies?: unknown[] }).replies) ? (d as { replies?: unknown[] }).replies!.length : 0
-        }));
+        // Map to include a replyCount instead of sending the full array to the client
+        const mapped = discussions.map(d => {
+            const dRecord = d as Record<string, unknown>;
+            const replyCount = Array.isArray(dRecord.replies) ? dRecord.replies.length : 0;
+            const { replies, ...rest } = dRecord;
+            return {
+                ...rest,
+                replyCount
+            };
+        });
 
         return NextResponse.json(mapped);
     } catch (error) {
