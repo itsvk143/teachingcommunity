@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Message from '@/model/Message';
+import Message, { IMessage } from '@/model/Message';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Coaching from '@/model/Coaching';
@@ -22,11 +22,25 @@ export async function GET() {
         await dbConnect();
 
         // Fetch messages where the receiver is the currently logged-in user
+        // We use populate('senderId', 'email') as a fallback for legacy messages that don't have senderEmail natively
         const messages = await Message.find({ receiverEmail: session.user.email })
             .sort({ createdAt: -1 })
+            .populate('senderId', 'email')
             .lean();
 
-        return NextResponse.json(messages);
+        // Map the results to ensure senderEmail is attached even for legacy messages and remove senderId object for clean JSON
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedMessages = messages.map((msg: any) => {
+            const legacyEmail = msg.senderId?.email;
+
+            return {
+                ...msg,
+                senderId: msg.senderId?._id || msg.senderId, // Keep it as an ID string/ObjectId
+                senderEmail: msg.senderEmail || legacyEmail || 'unknown@example.com'
+            };
+        });
+
+        return NextResponse.json(formattedMessages);
     } catch (error) {
         console.error("Error fetching messages:", error);
         return NextResponse.json(
@@ -48,14 +62,36 @@ export async function POST(req: Request) {
 
         const { role, name, id, email } = session.user as { role: string; name: string; id: string; email: string };
 
-        // Only allowed roles can send messages
         const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr', 'parent', 'student'];
+
+        const { receiverEmail, subject, content, replyToMessageId } = await req.json();
+
+        if (!receiverEmail || !subject || !content) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        await dbConnect();
+
+        // -------------------------------------------------------------
+        // ROLE & AUTHORIZATION LOGIC
+        // -------------------------------------------------------------
+
         let isAuthorized = allowedSenderRoles.includes(role);
         let actualSenderRole = role;
 
-        // If their primary session role isn't authorized, check if they have registered an institute/consultant/tuition profile
+        // If not fundamentally authorized by role, check if they are replying to a message they received
+        if (!isAuthorized && replyToMessageId) {
+            const originalMessage = await Message.findById(replyToMessageId).lean() as unknown as IMessage;
+
+            if (originalMessage && originalMessage.receiverEmail === email) {
+                // They are the recipient of the original message, so they are allowed to reply
+                isAuthorized = true;
+                actualSenderRole = 'user'; // Standard teacher/user role answering back
+            }
+        }
+
+        // If STILL not authorized, check if it's a generic session role but they actually own a specialized profile
         if (!isAuthorized && email) {
-            await dbConnect();
             const [hasCoaching, hasSchool, hasConsultant, hasParent, hasStudent] = await Promise.all([
                 Coaching.exists({ email }),
                 School.exists({ email }),
@@ -75,26 +111,24 @@ export async function POST(req: Request) {
 
         if (!isAuthorized) {
             return NextResponse.json(
-                { error: 'Unauthorized: You must have an Institute, Consultant, Student, or Parent profile to send messages.' },
+                { error: 'Unauthorized: You must have a registered profile to send new messages, or be replying to an existing one.' },
                 { status: 403 }
             );
         }
 
-        const { receiverEmail, subject, content } = await req.json();
-
-        if (!receiverEmail || !subject || !content) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        await dbConnect();
+        // -------------------------------------------------------------
+        // MESSAGE CREATION
+        // -------------------------------------------------------------
 
         const newMessage = await Message.create({
             senderId: id,
             senderRole: actualSenderRole,
-            senderName: name || 'Institute/Consultant',
+            senderName: name || 'User',
+            senderEmail: email, // Store the sender's email so the receiver can reply
             receiverEmail,
             subject,
             content,
+            replyToMessageId: replyToMessageId || undefined
         });
 
         return NextResponse.json(

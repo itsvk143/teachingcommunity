@@ -4,10 +4,12 @@ export interface IMessage extends Document {
     senderId: mongoose.Types.ObjectId;
     senderRole: string; // 'coaching', 'school', 'consultant'
     senderName: string; // The brand or person sending it
+    senderEmail?: string; // Track who sent it for replies
     receiverEmail: string;
     subject: string;
     content: string;
     read: boolean;
+    replyToMessageId?: mongoose.Types.ObjectId; // Track if this is a reply
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,6 +30,9 @@ const MessageSchema: Schema = new Schema(
             type: String,
             required: true,
         },
+        senderEmail: {
+            type: String, // Useful for teachers to reply directly back
+        },
         receiverEmail: {
             type: String,
             required: true,
@@ -44,6 +49,10 @@ const MessageSchema: Schema = new Schema(
         read: {
             type: Boolean,
             default: false,
+        },
+        replyToMessageId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Message',
         },
     },
     {

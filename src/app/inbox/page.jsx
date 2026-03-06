@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Mail, MailOpen, Trash2, ArrowLeft, Send } from 'lucide-react';
+import { Mail, MailOpen, Trash2, ArrowLeft, Send, X, Reply } from 'lucide-react';
 import Link from 'next/link';
 
 export default function InboxPage() {
@@ -12,6 +12,12 @@ export default function InboxPage() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState(null);
+
+    // Reply states
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyContent, setReplyContent] = useState('');
+    const [sendingReply, setSendingReply] = useState(false);
+    const [replyStatus, setReplyStatus] = useState({ type: '', message: '' });
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -62,6 +68,43 @@ export default function InboxPage() {
             }
         } catch (error) {
             console.error("Failed to delete message:", error);
+        }
+    };
+
+    const handleSendReply = async (e) => {
+        e.preventDefault();
+        if (!replyContent.trim() || !selectedMessage) return;
+
+        setSendingReply(true);
+        setReplyStatus({ type: '', message: '' });
+
+        try {
+            const res = await fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    receiverEmail: selectedMessage.senderEmail || 'unknown@example.com', // From the updated populated field
+                    subject: selectedMessage.subject.startsWith('Re:') ? selectedMessage.subject : `Re: ${selectedMessage.subject}`,
+                    content: replyContent,
+                    replyToMessageId: selectedMessage._id
+                }),
+            });
+
+            if (res.ok) {
+                setReplyStatus({ type: 'success', message: 'Reply sent successfully!' });
+                setReplyContent('');
+                setTimeout(() => {
+                    setIsReplying(false);
+                    setReplyStatus({ type: '', message: '' });
+                }, 2000);
+            } else {
+                const data = await res.json();
+                setReplyStatus({ type: 'error', message: data.error || 'Failed to send reply.' });
+            }
+        } catch (error) {
+            setReplyStatus({ type: 'error', message: 'An unexpected error occurred.' });
+        } finally {
+            setSendingReply(false);
         }
     };
 
@@ -171,13 +214,28 @@ export default function InboxPage() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={(e) => handleDeleteMessage(selectedMessage._id, e)}
-                                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
-                                        title="Delete Message"
-                                    >
-                                        <Trash2 className="w-4 h-4" /> <span className="hidden sm:inline">Delete</span>
-                                    </button>
+                                    <div className="flex gap-2">
+                                        {/* Reply Button */}
+                                        <button
+                                            onClick={() => {
+                                                setIsReplying(true);
+                                                setReplyStatus({ type: '', message: '' });
+                                                setReplyContent('');
+                                            }}
+                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                                            title="Reply to Message"
+                                        >
+                                            <Reply className="w-4 h-4" /> <span className="hidden sm:inline">Reply</span>
+                                        </button>
+                                        {/* Delete Button */}
+                                        <button
+                                            onClick={(e) => handleDeleteMessage(selectedMessage._id, e)}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                                            title="Delete Message"
+                                        >
+                                            <Trash2 className="w-4 h-4" /> <span className="hidden sm:inline">Delete</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Body for View */}
@@ -200,6 +258,93 @@ export default function InboxPage() {
 
                 </div>
             </div>
+
+            {/* Reply Modal */}
+            {isReplying && selectedMessage && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setIsReplying(false)}
+                            className="absolute right-4 top-4 p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <Reply className="text-blue-600 w-6 h-6" />
+                            Reply to {selectedMessage.senderName}
+                        </h2>
+
+                        {replyStatus.message && (
+                            <div className={`p-4 rounded-lg mb-6 ${replyStatus.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                                {replyStatus.message}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSendReply}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Replying To</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 font-medium"
+                                        value={selectedMessage.senderEmail || 'Unknown Email'}
+                                        disabled
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 font-medium"
+                                        value={selectedMessage.subject.startsWith('Re:') ? selectedMessage.subject : `Re: ${selectedMessage.subject}`}
+                                        disabled
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
+                                    <textarea
+                                        required
+                                        rows={6}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all resize-y min-h-[150px]"
+                                        placeholder="Type your reply here..."
+                                        value={replyContent}
+                                        onChange={(e) => setReplyContent(e.target.value)}
+                                        disabled={sendingReply || replyStatus.type === 'success'}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-8 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsReplying(false)}
+                                    disabled={sendingReply}
+                                    className="px-6 py-2.5 rounded-lg border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={sendingReply || replyStatus.type === 'success' || !replyContent.trim()}
+                                    className="px-6 py-2.5 rounded-lg bg-blue-600 font-medium text-white hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                >
+                                    {sendingReply ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="w-4 h-4" /> Send Reply
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
