@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Document, Schema, Model, Types } from "mongoose";
 
-export interface IReply {
+export interface IReply extends Document {
+    _id: Types.ObjectId;
     content: string;
     authorId: string;
     authorName?: string;
@@ -19,7 +20,7 @@ export interface IDiscussion extends Document {
     authorEmail: string;
     authorName?: string;
     authorRole?: string;
-    replies: IReply[];
+    replies: Types.DocumentArray<IReply>;
     upvotes: string[];
     downvotes: string[];
     createdAt: Date;
