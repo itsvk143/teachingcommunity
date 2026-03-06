@@ -193,59 +193,62 @@ export default function DiscussionThread({ params }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-28 pb-12">
-            <div className="container mx-auto px-4 max-w-4xl">
+        <div className="min-h-screen bg-slate-50 relative pt-28 pb-12 overflow-hidden">
+            {/* Ambient Background Gradient */}
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-100/50 to-transparent pointer-events-none"></div>
+
+            <div className="container mx-auto px-4 max-w-4xl relative z-10">
 
                 <Link
                     href="/discussion"
-                    className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium mb-6 transition"
+                    className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-700 font-bold mb-8 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 hover:shadow-md"
                 >
                     <ArrowLeft size={18} /> Back to Forum
                 </Link>
 
                 {/* ORIGINAL POST */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6 relative">
-                    <div className="h-1.5 w-full bg-blue-600 absolute top-0 left-0"></div>
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-10 relative">
+                    <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600 absolute top-0 left-0"></div>
 
-                    <div className="p-6 md:p-8">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                            <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                    <div className="p-6 md:p-10">
+                        <div className="flex flex-wrap items-center gap-3 mb-6">
+                            <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-widest">
                                 {thread.category}
                             </span>
-                            <span className="text-sm text-gray-400 flex items-center gap-1.5">
-                                <Clock size={14} />
+                            <span className="text-xs text-gray-400 flex items-center gap-1.5 font-medium">
+                                <Clock size={14} className="text-gray-300" />
                                 {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(thread.createdAt))}
                             </span>
                         </div>
 
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 leading-snug">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
                             {thread.title}
                         </h1>
 
-                        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                                {thread.authorName?.charAt(0) || "U"}
+                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-100">
+                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md border-2 border-white">
+                                {thread.authorName?.charAt(0)?.toUpperCase() || "U"}
                             </div>
                             <div>
-                                <div className="font-semibold text-gray-900">{thread.authorName}</div>
-                                <div className="text-sm text-gray-500 capitalize flex items-center gap-1.5">
+                                <div className="font-bold text-gray-900 text-lg">{thread.authorName || 'Anonymous'}</div>
+                                <div className="text-xs text-gray-500 uppercase tracking-widest font-semibold flex items-center gap-2 mt-0.5">
                                     {thread.authorRole || 'User'}
                                     {session?.user?.email === thread.authorEmail && (
-                                        <span className="bg-green-100 text-green-700 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Author</span>
+                                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Author</span>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed mb-6">
+                        <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed mb-8 md:text-lg">
                             {thread.content}
                         </div>
 
                         {/* MAIN POST VOTING ACTIONS */}
-                        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-6 pt-6 border-t border-gray-100">
                             <button
                                 onClick={() => handleMainVote('upvote')}
-                                className={`flex items-center gap-1.5 font-medium transition-colors ${(thread.upvotes || []).includes(session?.user?.id) ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}
+                                className={`flex items-center gap-2 font-bold px-4 py-2 rounded-full transition-all ${(thread.upvotes || []).includes(session?.user?.id) ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-gray-200'}`}
                                 title="Agree / Thumbs Up"
                             >
                                 <ThumbsUp size={18} className={(thread.upvotes || []).includes(session?.user?.id) ? 'fill-green-600' : ''} />
@@ -253,7 +256,7 @@ export default function DiscussionThread({ params }) {
                             </button>
                             <button
                                 onClick={() => handleMainVote('downvote')}
-                                className={`flex items-center gap-1.5 font-medium transition-colors ${(thread.downvotes || []).includes(session?.user?.id) ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                                className={`flex items-center gap-2 font-bold px-4 py-2 rounded-full transition-all ${(thread.downvotes || []).includes(session?.user?.id) ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-gray-200'}`}
                                 title="Disagree / Thumbs Down"
                             >
                                 <ThumbsDown size={18} className={(thread.downvotes || []).includes(session?.user?.id) ? 'fill-red-600' : ''} />
@@ -264,45 +267,51 @@ export default function DiscussionThread({ params }) {
                 </div>
 
                 {/* REPLIES SECTION */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 px-2">
-                        <MessageSquare size={20} className="text-gray-400" />
+                <div className="mb-12">
+                    <h2 className="text-xl font-extrabold text-gray-800 mb-6 flex items-center gap-3 px-2">
+                        <div className="p-2 bg-white rounded-lg shadow-sm border border-gray-100">
+                            <MessageSquare size={20} className="text-blue-600" />
+                        </div>
                         {thread.replies?.length || 0} {(thread.replies?.length === 1) ? "Reply" : "Replies"}
                     </h2>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         {thread.replies?.map((reply, idx) => (
-                            <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 ml-0 md:ml-8 relative">
+                            <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 ml-0 md:ml-12 relative hover:border-gray-200 transition-colors">
                                 {/* Thread connecting line icon for visual hierarchy desktop */}
-                                <div className="hidden md:block absolute -left-8 top-8 w-6 h-px bg-gray-300"></div>
-                                <div className="hidden md:block absolute -left-8 -top-4 bottom-auto h-12 w-px bg-gray-300"></div>
+                                <div className="hidden md:block absolute -left-12 top-10 w-10 h-px bg-gray-200"></div>
+                                <div className="hidden md:block absolute -left-12 -top-6 bottom-auto h-16 w-px bg-gray-200"></div>
 
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-xs">
-                                            {reply.authorName?.charAt(0) || "U"}
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-600 font-bold text-sm shadow-sm border border-white">
+                                            {reply.authorName?.charAt(0)?.toUpperCase() || "U"}
                                         </div>
-                                        <span className="font-medium text-gray-900 text-sm">{reply.authorName}</span>
-                                        <span className="text-xs text-gray-400 capitalize bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-                                            {reply.authorRole || 'User'}
-                                        </span>
-                                        {reply.authorEmail === thread.authorEmail && (
-                                            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">OP</span>
-                                        )}
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-gray-900">{reply.authorName || 'Anonymous'}</span>
+                                                {reply.authorEmail === thread.authorEmail && (
+                                                    <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-widest">OP</span>
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+                                                {reply.authorRole || 'User'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                                    <span className="text-xs text-gray-400 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                                         {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(reply.createdAt))}
                                     </span>
                                 </div>
-                                <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed pl-10 mb-3">
+                                <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed md:text-base pl-0 md:pl-12 mb-5">
                                     {reply.content}
                                 </div>
 
                                 {/* VOTING ACTIONS */}
-                                <div className="pl-10 flex items-center gap-4">
+                                <div className="pl-0 md:pl-12 flex items-center gap-4">
                                     <button
                                         onClick={() => handleVote(reply._id, 'upvote')}
-                                        className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${(reply.upvotes || []).includes(session?.user?.id) ? 'text-green-600' : 'text-gray-400 hover:text-green-600'}`}
+                                        className={`flex items-center gap-1.5 text-xs font-bold transition-colors px-3 py-1.5 rounded-full ${(reply.upvotes || []).includes(session?.user?.id) ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-transparent'}`}
                                         title="Agree / Thumbs Up"
                                     >
                                         <ThumbsUp size={14} className={(reply.upvotes || []).includes(session?.user?.id) ? 'fill-green-600' : ''} />
@@ -310,7 +319,7 @@ export default function DiscussionThread({ params }) {
                                     </button>
                                     <button
                                         onClick={() => handleVote(reply._id, 'downvote')}
-                                        className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${(reply.downvotes || []).includes(session?.user?.id) ? 'text-red-600' : 'text-gray-400 hover:text-red-600'}`}
+                                        className={`flex items-center gap-1.5 text-xs font-bold transition-colors px-3 py-1.5 rounded-full ${(reply.downvotes || []).includes(session?.user?.id) ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-transparent'}`}
                                         title="Disagree / Thumbs Down"
                                     >
                                         <ThumbsDown size={14} className={(reply.downvotes || []).includes(session?.user?.id) ? 'fill-red-600' : ''} />
@@ -323,27 +332,31 @@ export default function DiscussionThread({ params }) {
                 </div>
 
                 {/* POST REPLY FORM */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-300 p-6 md:p-8 ml-0 md:ml-8">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10 ml-0 md:ml-12 relative overflow-hidden">
+                    {/* Top gradient bar */}
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-gray-200 to-gray-300"></div>
+
                     {session ? (
                         <form onSubmit={handleReplySubmit}>
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <h3 className="text-xl font-extrabold text-gray-900 mb-6 flex items-center gap-3">
                                 Leave a Reply
                             </h3>
 
                             {replyError && (
-                                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 border border-red-100">
+                                <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl mb-6 border border-red-100 font-medium">
                                     {replyError}
                                 </div>
                             )}
 
-                            <div className="mb-4">
+                            <div className="mb-6 relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl blur opacity-0 group-focus-within:opacity-30 transition duration-500"></div>
                                 <textarea
                                     required
                                     rows={4}
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
                                     placeholder="What are your thoughts on this?"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition resize-y text-gray-800"
+                                    className="relative w-full px-5 py-4 bg-gray-50 hover:bg-white border text-lg border-gray-200 rounded-xl focus:ring-0 focus:border-blue-500 focus:bg-white transition-colors duration-300 resize-y text-gray-800 shadow-inner"
                                 />
                             </div>
 
@@ -351,24 +364,27 @@ export default function DiscussionThread({ params }) {
                                 <button
                                     type="submit"
                                     disabled={replyLoading || !replyContent.trim()}
-                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-sm"
+                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-300 disabled:to-indigo-300 text-white px-8 py-3.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg disabled:shadow-none"
                                 >
                                     {replyLoading ? (
-                                        <Loader2 className="animate-spin w-4 h-4" />
+                                        <Loader2 className="animate-spin w-5 h-5" />
                                     ) : (
-                                        <Send className="w-4 h-4" />
+                                        <Send className="w-5 h-5" />
                                     )}
                                     Post Reply
                                 </button>
                             </div>
                         </form>
                     ) : (
-                        <div className="text-center py-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Join the Conversation</h3>
-                            <p className="text-gray-500 text-sm mb-4">You must be logged in to post a reply.</p>
+                        <div className="text-center py-10">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                                <MessageSquare className="h-8 w-8 text-gray-300" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3">Join the Conversation</h3>
+                            <p className="text-gray-500 font-medium mb-8">You must be logged in to post a reply.</p>
                             <Link
                                 href="/login"
-                                className="inline-flex py-2 px-6 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+                                className="inline-flex py-3 px-8 bg-gray-900 text-white font-bold rounded-full hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
                             >
                                 Log In to Reply
                             </Link>
