@@ -43,18 +43,6 @@ const MobileNav = () => {
 
         {/* Navigation Links */}
         <nav className="flex flex-col gap-4 mb-4">
-          <SheetClose asChild>
-            <Link
-              href="/discussion"
-              className={`${pathname === '/discussion'
-                ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600 pl-3"
-                : "text-gray-600 hover:text-blue-600 pl-4"
-                } text-lg font-medium py-2 transition-all flex items-center gap-3`}
-            >
-              <MessageSquare className="w-5 h-5" /> Community Forum
-            </Link>
-          </SheetClose>
-
           {navLinks.map((link, index) => {
             const isActive = link.path === pathname;
             return (

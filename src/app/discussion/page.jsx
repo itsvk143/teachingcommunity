@@ -5,13 +5,31 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { MessageSquare, Plus, Clock, Users, ThumbsUp, ThumbsDown } from "lucide-react";
 
-const CATEGORIES = ["All", "General", "Teacher", "Non-Teacher", "Coaching", "School", "Home Tuition", "Other"];
+const getAvailableCategories = (role) => {
+    if (role === 'admin') return ["All", "General", "Teacher", "Non-Teacher", "Coaching", "School", "Home Tuition", "Consultant", "Parents", "Student", "BOARD", "NEET", "JEE", "SSC", "PSC", "BANKING", "NEET/JEE", "FOUNDATION", "OTHER"];
+    const base = ["All", "General"];
+    switch (role) {
+        case 'teacher': return [...base, "Teacher", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"];
+        case 'non-teacher': return [...base, "Non-Teacher"];
+        case 'school': return [...base, "School"];
+        case 'coaching': return [...base, "Coaching", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"];
+        case 'parent': return [...base, "Parents"];
+        case 'student': return [...base, "Student", "BOARD", "NEET", "JEE", "SSC", "PSC", "BANKING", "OTHER"];
+        case 'consultant': return [...base, "Consultant"];
+        default: return base; // should not reach here due to block
+    }
+};
 
 export default function DiscussionFeed() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [discussions, setDiscussions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
+
+    const userRole = session?.user?.role;
+    const isReady = status !== "loading";
+    const isUnregistered = status === "unauthenticated" || (session && userRole === "user");
+    const allowedCategories = getAvailableCategories(userRole);
 
     useEffect(() => {
         fetchDiscussions();
@@ -36,6 +54,32 @@ export default function DiscussionFeed() {
             setLoading(false);
         }
     };
+
+    if (isReady && isUnregistered) {
+        return (
+            <div className="min-h-screen bg-slate-50 pt-32 pb-12 flex flex-col items-center px-4 relative">
+                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-100/50 to-transparent pointer-events-none"></div>
+                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-gray-100 text-center max-w-lg w-full relative z-10 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                    <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
+                        <MessageSquare className="h-10 w-10 text-blue-600" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 tracking-tight">Access Restricted</h2>
+                    <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+                        Complete your profile registration to participate in the community discussion.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full">
+                        <Link href="/login" className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold hover:shadow-lg transition-all text-center hover:-translate-y-0.5">
+                            Log In
+                        </Link>
+                        <Link href="/register" className="flex-1 px-6 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition-all text-center hover:shadow-sm">
+                            Register Now
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 relative pt-28 pb-12 overflow-hidden">
@@ -67,7 +111,7 @@ export default function DiscussionFeed() {
 
                 {/* Category Filters */}
                 <div className="flex overflow-x-auto pb-6 mb-4 gap-3 hide-scrollbar">
-                    {CATEGORIES.map((cat) => (
+                    {allowedCategories.map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}

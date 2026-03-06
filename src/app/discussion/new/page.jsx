@@ -6,7 +6,20 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, MessageSquarePlus } from "lucide-react";
 
-const CATEGORIES = ["General", "Teacher", "Non-Teacher", "Coaching", "School", "Home Tuition", "Other"];
+const getAvailableCategories = (role) => {
+    if (role === 'admin') return ["General", "Teacher", "Non-Teacher", "Coaching", "School", "Home Tuition", "Consultant", "Parents", "Student", "BOARD", "NEET", "JEE", "SSC", "PSC", "BANKING", "NEET/JEE", "FOUNDATION", "OTHER"];
+    const base = ["General"];
+    switch (role) {
+        case 'teacher': return [...base, "Teacher", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"];
+        case 'non-teacher': return [...base, "Non-Teacher"];
+        case 'school': return [...base, "School"];
+        case 'coaching': return [...base, "Coaching", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"];
+        case 'parent': return [...base, "Parents"];
+        case 'student': return [...base, "Student", "BOARD", "NEET", "JEE", "SSC", "PSC", "BANKING", "OTHER"];
+        case 'consultant': return [...base, "Consultant"];
+        default: return base; // should not reach here due to block
+    }
+};
 
 export default function NewDiscussion() {
     const { data: session, status } = useSession();
@@ -20,25 +33,41 @@ export default function NewDiscussion() {
         category: "General",
     });
 
+    const userRole = session?.user?.role;
+    const isUnregistered = status === "unauthenticated" || (session && userRole === "user");
+    const allowedCategories = getAvailableCategories(userRole);
+
     if (status === "loading") {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    // Strictly require authentication to post
-    if (status === "unauthenticated") {
+    // Strictly require authentication and valid profile to post
+    if (isUnregistered) {
         return (
-            <div className="min-h-screen bg-gray-50 pt-32 pb-12 flex flex-col items-center">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 text-center max-w-md w-full">
-                    <MessageSquarePlus className="mx-auto h-12 w-12 text-blue-500 mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
-                    <p className="text-gray-600 mb-6">You must be signed in to start a new discussion.</p>
+            <div className="min-h-screen bg-slate-50 pt-32 pb-12 flex flex-col items-center px-4 relative">
+                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-100/50 to-transparent pointer-events-none"></div>
+                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-gray-100 text-center max-w-lg w-full relative z-10 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                    <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
+                        <MessageSquarePlus className="h-10 w-10 text-blue-600" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 tracking-tight">Access Restricted</h2>
+                    <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+                        Complete your profile registration to start a new discussion.
+                    </p>
                     <div className="flex gap-4 w-full">
-                        <button onClick={() => router.back()} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        <button onClick={() => router.back()} className="flex-1 px-4 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition-all shadow-sm">
                             Go Back
                         </button>
-                        <Link href="/login" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                            Sign In
-                        </Link>
+                        {!session ? (
+                            <Link href="/login" className="flex-1 px-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold hover:shadow-lg transition-all text-center">
+                                Sign In
+                            </Link>
+                        ) : (
+                            <Link href="/register" className="flex-1 px-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold hover:shadow-lg transition-all text-center">
+                                Complete Profile
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
@@ -137,7 +166,7 @@ export default function NewDiscussion() {
                                         onChange={handleChange}
                                         className="relative w-full px-5 py-4 bg-gray-50 hover:bg-white border text-lg border-gray-200 rounded-xl focus:ring-0 focus:border-blue-500 focus:bg-white transition-colors duration-300 shadow-inner appearance-none cursor-pointer"
                                     >
-                                        {CATEGORIES.map(cat => (
+                                        {allowedCategories.map(cat => (
                                             <option key={cat} value={cat} className="text-gray-900">{cat}</option>
                                         ))}
                                     </select>

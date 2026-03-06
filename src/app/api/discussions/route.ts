@@ -7,14 +7,54 @@ import { authOptions } from '@/lib/auth';
 // GET all discussions
 export async function GET(req: Request) {
     try {
+        const session = await getServerSession(authOptions as AuthOptions);
+        const userRole = (session?.user as { role?: string })?.role;
+        const isUnregistered = !session || userRole === 'user';
+
+        if (isUnregistered) {
+            return NextResponse.json(
+                { error: 'Unauthorized: Complete registration to view discussions.' },
+                { status: 403 }
+            );
+        }
+
         await dbConnect();
 
         const { searchParams } = new URL(req.url);
-        const category = searchParams.get('category');
+        const requestedCategory = searchParams.get('category');
 
         const query: Record<string, unknown> = {};
-        if (category && category !== 'All') {
-            query.category = category;
+
+        if (userRole !== 'admin') {
+            // Determine allowed categories for this user
+            const allowed = ["General"];
+            switch (userRole) {
+                case 'teacher': allowed.push("Teacher", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"); break;
+                case 'non-teacher': allowed.push("Non-Teacher"); break;
+                case 'school': allowed.push("School"); break;
+                case 'coaching': allowed.push("Coaching", "NEET/JEE", "BOARD", "FOUNDATION", "PSC", "BANKING"); break;
+                case 'parent': allowed.push("Parents"); break;
+                case 'student': allowed.push("Student", "BOARD", "NEET", "JEE", "SSC", "PSC", "BANKING", "OTHER"); break;
+                case 'consultant': allowed.push("Consultant"); break;
+            }
+
+            // If a specific category was requested, ensure it's allowed
+            if (requestedCategory && requestedCategory !== 'All') {
+                if (allowed.includes(requestedCategory)) {
+                    query.category = requestedCategory;
+                } else {
+                    // Fallback to only their allowed categories if they requested something else
+                    query.category = { $in: allowed };
+                }
+            } else {
+                // Return all allowed categories
+                query.category = { $in: allowed };
+            }
+        } else {
+            // Admin can see all, apply standard filtering
+            if (requestedCategory && requestedCategory !== 'All') {
+                query.category = requestedCategory;
+            }
         }
 
         const discussions = await Discussion.find(query)
