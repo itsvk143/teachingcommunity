@@ -1,4 +1,3 @@
-import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import User from "../model/User";
@@ -7,12 +6,6 @@ import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
-    /* ================= GITHUB ================= */
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
-
     /* ================= GOOGLE ================= */
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -61,7 +54,7 @@ export const authOptions = {
   callbacks: {
     /* ================= SIGN IN (Auto-Register) ================= */
     async signIn({ user, account }) {
-      if (account.provider === 'google' || account.provider === 'github') {
+      if (account.provider === 'google') {
         try {
           console.log("SignIn Callback Started:", user.email);
           await dbConnect();

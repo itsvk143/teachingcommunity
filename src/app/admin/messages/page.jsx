@@ -7,7 +7,7 @@ import Link from "next/link";
 
 import {
     LayoutDashboard, Users, Briefcase, GraduationCap,
-    Crown, BookOpen, Search, Mail
+    Crown, BookOpen, Search, Mail, Trash2
 } from "lucide-react";
 
 export default function AdminMessagesPage() {
@@ -44,6 +44,26 @@ export default function AdminMessagesPage() {
             fetchAllMessages();
         }
     }, [session]);
+
+    const handleDelete = async (id) => {
+        if (!confirm("Are you sure you want to delete this message permanently?")) return;
+
+        try {
+            const res = await fetch(`/api/admin/messages/${id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to delete message");
+            }
+
+            // Optimistically remove it from the UI list
+            setMessages((prev) => prev.filter((msg) => msg._id !== id));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
 
     if (status === "loading" || loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading Messages...</div>;
@@ -137,6 +157,7 @@ export default function AdminMessagesPage() {
                                         <th className="px-6 py-4 font-semibold">Subject</th>
                                         <th className="px-6 py-4 font-semibold">Content Preview</th>
                                         <th className="px-6 py-4 font-semibold">Context</th>
+                                        <th className="px-6 py-4 font-semibold text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -158,12 +179,12 @@ export default function AdminMessagesPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`font-medium ${msg.replyToMessageId ? 'text-purple-600' : 'text-gray-900'}`}>
-                                                        {msg.replyToMessageId ? 'Re: ' : ''}{msg.subject}
+                                                        {msg.replyToMessageId ? 'Re: ' : ''}{msg.subject || "(No Subject)"}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="max-w-xs truncate text-gray-600" title={msg.content}>
-                                                        {msg.content}
+                                                    <div className="max-w-xs truncate text-gray-600" title={msg.content || "(No Content)"}>
+                                                        {msg.content || <span className="text-gray-400 italic">Empty body</span>}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -174,6 +195,15 @@ export default function AdminMessagesPage() {
                                                     ) : (
                                                         <span className="text-gray-400 text-xs">Direct Profile</span>
                                                     )}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => handleDelete(msg._id)}
+                                                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                                        title="Delete Message"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
