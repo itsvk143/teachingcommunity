@@ -6,6 +6,8 @@ export interface IReply {
     authorName?: string;
     authorRole?: string;
     authorEmail: string;
+    upvotes: string[];
+    downvotes: string[];
     createdAt: Date;
 }
 
@@ -29,6 +31,8 @@ const ReplySchema: Schema<IReply> = new Schema(
         authorEmail: { type: String, required: true },
         authorName: { type: String, default: "Anonymous" },
         authorRole: { type: String, default: "user" },
+        upvotes: { type: [String], default: [] },
+        downvotes: { type: [String], default: [] },
     },
     { timestamps: true }
 );

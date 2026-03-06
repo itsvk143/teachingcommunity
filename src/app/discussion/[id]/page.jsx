@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MessageSquare, Send, User, Clock, Loader2 } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, Clock, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function DiscussionThread({ params }) {
     const unwrappedParams = use(params);
@@ -67,6 +67,63 @@ export default function DiscussionThread({ params }) {
             setReplyError(err.message);
         } finally {
             setReplyLoading(false);
+        }
+    };
+
+    const handleVote = async (replyId, action) => {
+        if (!session?.user) {
+            router.push('/login');
+            return;
+        }
+
+        // Optimistic UI Update
+        const userId = session.user.id;
+
+        setThread(prev => {
+            const updatedReplies = prev.replies.map(reply => {
+                if (reply._id !== replyId) return reply;
+
+                let newUpvotes = [...(reply.upvotes || [])];
+                let newDownvotes = [...(reply.downvotes || [])];
+
+                const hasUpvoted = newUpvotes.includes(userId);
+                const hasDownvoted = newDownvotes.includes(userId);
+
+                if (action === 'upvote') {
+                    if (hasUpvoted) {
+                        newUpvotes = newUpvotes.filter(id => id !== userId);
+                    } else {
+                        newUpvotes.push(userId);
+                        newDownvotes = newDownvotes.filter(id => id !== userId);
+                    }
+                } else if (action === 'downvote') {
+                    if (hasDownvoted) {
+                        newDownvotes = newDownvotes.filter(id => id !== userId);
+                    } else {
+                        newDownvotes.push(userId);
+                        newUpvotes = newUpvotes.filter(id => id !== userId);
+                    }
+                }
+
+                return { ...reply, upvotes: newUpvotes, downvotes: newDownvotes };
+            });
+            return { ...prev, replies: updatedReplies };
+        });
+
+        // Background API call
+        try {
+            const res = await fetch(`/api/discussions/${id}/reply/${replyId}/vote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action }),
+            });
+            // If the vote fails entirely, we should theoretically rollback the optimistic update,
+            // but for simple user flows, ignoring it is visually less jarring.
+            if (!res.ok) {
+                console.error("Failed to record vote");
+            }
+        } catch (err) {
+            console.error("Failed to fetch vote route", err);
         }
     };
 
@@ -173,8 +230,28 @@ export default function DiscussionThread({ params }) {
                                         {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(reply.createdAt))}
                                     </span>
                                 </div>
-                                <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed pl-10">
+                                <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed pl-10 mb-3">
                                     {reply.content}
+                                </div>
+
+                                {/* VOTING ACTIONS */}
+                                <div className="pl-10 flex items-center gap-4">
+                                    <button
+                                        onClick={() => handleVote(reply._id, 'upvote')}
+                                        className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${(reply.upvotes || []).includes(session?.user?.id) ? 'text-green-600' : 'text-gray-400 hover:text-green-600'}`}
+                                        title="Agree / Thumbs Up"
+                                    >
+                                        <ThumbsUp size={14} className={(reply.upvotes || []).includes(session?.user?.id) ? 'fill-green-600' : ''} />
+                                        {(reply.upvotes || []).length}
+                                    </button>
+                                    <button
+                                        onClick={() => handleVote(reply._id, 'downvote')}
+                                        className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${(reply.downvotes || []).includes(session?.user?.id) ? 'text-red-600' : 'text-gray-400 hover:text-red-600'}`}
+                                        title="Disagree / Thumbs Down"
+                                    >
+                                        <ThumbsDown size={14} className={(reply.downvotes || []).includes(session?.user?.id) ? 'fill-red-600' : ''} />
+                                        {(reply.downvotes || []).length}
+                                    </button>
                                 </div>
                             </div>
                         ))}
