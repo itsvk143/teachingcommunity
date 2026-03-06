@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/com
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, LogOut, LayoutDashboard, Shield, Mail } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, Shield, Mail, MessageSquare } from "lucide-react";
 import { navLinks } from "./Nav";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
@@ -42,7 +42,19 @@ const MobileNav = () => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex flex-col gap-4 mb-8">
+        <nav className="flex flex-col gap-4 mb-4">
+          <SheetClose asChild>
+            <Link
+              href="/discussion"
+              className={`${pathname === '/discussion'
+                ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600 pl-3"
+                : "text-gray-600 hover:text-blue-600 pl-4"
+                } text-lg font-medium py-2 transition-all flex items-center gap-3`}
+            >
+              <MessageSquare className="w-5 h-5" /> Community Forum
+            </Link>
+          </SheetClose>
+
           {navLinks.map((link, index) => {
             const isActive = link.path === pathname;
             return (
