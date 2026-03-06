@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Briefcase, GraduationCap, LayoutDashboard, Settings, Crown, BookOpen } from 'lucide-react';
+import { Users, Briefcase, GraduationCap, LayoutDashboard, Settings, Crown, BookOpen, Mail } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -75,8 +75,9 @@ export default function AdminDashboard() {
             Admin
           </h2>
         </div>
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
           <NavLink href="/admin" active icon={<LayoutDashboard size={20} />}>Dashboard</NavLink>
+          <NavLink href="/admin/messages" icon={<Mail size={20} />}>Global Inbox</NavLink>
           <NavLink href="/teachersadmin" icon={<GraduationCap size={20} />}>Manage Teachers</NavLink>
           <NavLink href="/nonteachersadmin" icon={<Users size={20} />}>Manage Non Teachers</NavLink>
           <NavLink href="/admin/vacancies" icon={<Briefcase size={20} />}>Manage Vacancies</NavLink>
@@ -128,6 +129,12 @@ export default function AdminDashboard() {
               description="Check and sort job listings."
               href="/admin/vacancies"
               buttonText="Manage Jobs"
+            />
+            <ActionCard
+              title="Global Inbox Viewer"
+              description="Read all direct messages."
+              href="/admin/messages"
+              buttonText="View Inbox Logs"
             />
             <ActionCard
               title="View Home Tuition"
