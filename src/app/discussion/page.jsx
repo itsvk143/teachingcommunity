@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { MessageSquare, Plus, Clock, Users } from "lucide-react";
+import { MessageSquare, Plus, Clock, Users, ThumbsUp, ThumbsDown } from "lucide-react";
 
 const CATEGORIES = ["All", "General", "Teacher", "Non-Teacher", "Coaching", "School", "Home Tuition", "Other"];
 
@@ -67,8 +67,8 @@ export default function DiscussionFeed() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border ${activeCategory === cat
-                                    ? "bg-blue-100 border-blue-200 text-blue-700"
-                                    : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                                ? "bg-blue-100 border-blue-200 text-blue-700"
+                                : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
                                 }`}
                         >
                             {cat}
@@ -119,7 +119,17 @@ export default function DiscussionFeed() {
                                             </div>
                                         </div>
 
-                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pt-4 sm:pt-0 sm:pl-4 sm:border-l sm:border-gray-100 border-t sm:border-t-0 border-gray-100">
+                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 pt-4 sm:pt-0 sm:pl-4 sm:border-l sm:border-gray-100 border-t sm:border-t-0 border-gray-100">
+                                            <div className="flex gap-4 sm:w-full sm:justify-center text-gray-500">
+                                                <div className="flex items-center gap-1.5" title="Upvotes">
+                                                    <ThumbsUp size={16} className={(doc.upvotes || []).includes(session?.user?.id) ? 'fill-green-600 text-green-600' : ''} />
+                                                    <span className="text-sm font-medium">{(doc.upvotes || []).length}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5" title="Downvotes">
+                                                    <ThumbsDown size={16} className={(doc.downvotes || []).includes(session?.user?.id) ? 'fill-red-600 text-red-600' : ''} />
+                                                    <span className="text-sm font-medium">{(doc.downvotes || []).length}</span>
+                                                </div>
+                                            </div>
                                             <div className="flex flex-col items-center bg-gray-50 px-4 py-2 rounded-lg border border-gray-100 min-w-[80px]">
                                                 <span className="text-lg font-bold text-gray-700">{doc.replyCount || 0}</span>
                                                 <span className="text-xs text-gray-500 uppercase tracking-wide">Replies</span>
