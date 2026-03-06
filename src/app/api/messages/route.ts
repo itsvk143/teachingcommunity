@@ -6,6 +6,8 @@ import { authOptions } from '@/lib/auth';
 import Coaching from '@/model/Coaching';
 import School from '@/model/School';
 import Consultant from '@/model/Consultant';
+import ParentProfile from '@/model/ParentProfile';
+import StudentProfile from '@/model/StudentProfile';
 
 /* =======================================
    GET: Fetch all messages for the recipient
@@ -46,30 +48,34 @@ export async function POST(req: Request) {
 
         const { role, name, id, email } = session.user as { role: string; name: string; id: string; email: string };
 
-        // Only non-individuals can send messages
-        const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr'];
+        // Only allowed roles can send messages
+        const allowedSenderRoles = ['coaching', 'school', 'consultant', 'admin', 'hr', 'parent', 'student'];
         let isAuthorized = allowedSenderRoles.includes(role);
         let actualSenderRole = role;
 
-        // If their primary session role isn't authorized, check if they have registered an institute/consultant profile
+        // If their primary session role isn't authorized, check if they have registered an institute/consultant/tuition profile
         if (!isAuthorized && email) {
             await dbConnect();
-            const [hasCoaching, hasSchool, hasConsultant] = await Promise.all([
+            const [hasCoaching, hasSchool, hasConsultant, hasParent, hasStudent] = await Promise.all([
                 Coaching.exists({ email }),
                 School.exists({ email }),
-                Consultant.exists({ email })
+                Consultant.exists({ email }),
+                ParentProfile.exists({ email }),
+                StudentProfile.exists({ email })
             ]);
 
             if (hasCoaching) actualSenderRole = 'coaching';
             else if (hasSchool) actualSenderRole = 'school';
             else if (hasConsultant) actualSenderRole = 'consultant';
+            else if (hasParent) actualSenderRole = 'parent';
+            else if (hasStudent) actualSenderRole = 'student';
 
-            isAuthorized = !!(hasCoaching || hasSchool || hasConsultant);
+            isAuthorized = !!(hasCoaching || hasSchool || hasConsultant || hasParent || hasStudent);
         }
 
         if (!isAuthorized) {
             return NextResponse.json(
-                { error: 'Unauthorized: Only Institutes and Consultants can send messages.' },
+                { error: 'Unauthorized: You must have an Institute, Consultant, Student, or Parent profile to send messages.' },
                 { status: 403 }
             );
         }

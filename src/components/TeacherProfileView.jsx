@@ -46,7 +46,7 @@ const TeacherProfileView = ({ teacher, canViewSalary, canMessage }) => {
 
   const isInstituteOrConsultant = canMessage !== undefined ? canMessage : (
     canMessageOverride !== null ? canMessageOverride : (session?.user &&
-      ['coaching', 'school', 'consultant', 'admin', 'hr'].includes(session.user.role) &&
+      ['coaching', 'school', 'consultant', 'admin', 'hr', 'parent', 'student'].includes(session.user.role) &&
       session.user.email !== teacher?.email)
   );
 

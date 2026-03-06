@@ -6,6 +6,8 @@ import Teacher from '@/model/Teacher';
 import Coaching from '@/model/Coaching';
 import School from '@/model/School';
 import Consultant from '@/model/Consultant';
+import ParentProfile from '@/model/ParentProfile';
+import StudentProfile from '@/model/StudentProfile';
 
 async function getTeacher(id) {
   await dbConnect();
@@ -70,15 +72,17 @@ export default async function TeacherProfilePage(props) {
 
   let canMessage = false;
   if (userEmail && !isOwner) {
-    if (['coaching', 'school', 'consultant', 'admin', 'hr'].includes(userRole)) {
+    if (['coaching', 'school', 'consultant', 'admin', 'hr', 'parent', 'student'].includes(userRole)) {
       canMessage = true;
     } else {
-      const [hasCoaching, hasSchool, hasConsultant] = await Promise.all([
+      const [hasCoaching, hasSchool, hasConsultant, hasParent, hasStudent] = await Promise.all([
         Coaching.exists({ email: userEmail }),
         School.exists({ email: userEmail }),
-        Consultant.exists({ email: userEmail })
+        Consultant.exists({ email: userEmail }),
+        ParentProfile.exists({ email: userEmail }),
+        StudentProfile.exists({ email: userEmail })
       ]);
-      canMessage = !!(hasCoaching || hasSchool || hasConsultant);
+      canMessage = !!(hasCoaching || hasSchool || hasConsultant || hasParent || hasStudent);
     }
   }
 
