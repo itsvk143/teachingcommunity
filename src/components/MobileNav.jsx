@@ -1,9 +1,10 @@
 "use client";
 
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, LogOut, LayoutDashboard, Shield } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, Shield, Mail } from "lucide-react";
 import { navLinks } from "./Nav";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
@@ -11,6 +12,17 @@ import { Button } from "./ui/button";
 const MobileNav = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch unread messages
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/messages/unread')
+        .then(res => res.json())
+        .then(data => setUnreadCount(data.unread || 0))
+        .catch(err => console.error(err));
+    }
+  }, [session]);
 
   return (
     <Sheet>
@@ -64,6 +76,17 @@ const MobileNav = () => {
 
               {/* User Actions */}
               <div className="space-y-2">
+                <SheetClose asChild>
+                  <Link href="/inbox">
+                    <Button variant="outline" className="w-full justify-start gap-2 relative border-gray-200 hover:bg-gray-50">
+                      <Mail className="w-4 h-4 text-gray-500" /> Inbox
+                      {unreadCount > 0 && (
+                        <span className="absolute right-4 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                      )}
+                    </Button>
+                  </Link>
+                </SheetClose>
+
                 {(session.user?.role === 'admin') && (
                   <SheetClose asChild>
                     <Link href="/admin">

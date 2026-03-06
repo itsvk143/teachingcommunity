@@ -6,12 +6,23 @@ import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import MobileNav from "./MobileNav";
-import { LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
+import { LogOut, LayoutDashboard, Shield, ChevronDown, Mail } from "lucide-react";
 
 const Header = () => {
   const { data: session } = useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch unread messages
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/messages/unread')
+        .then(res => res.json())
+        .then(data => setUnreadCount(data.unread || 0))
+        .catch(err => console.error(err));
+    }
+  }, [session]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -46,50 +57,59 @@ const Header = () => {
           {/* USER ACTIONS (Desktop) */}
           <div className="hidden sm:flex items-center gap-4">
             {session ? (
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition focus:outline-none"
-                >
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                    {session.user?.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate hidden md:inline">
-                    {session.user?.name}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
+              <>
+                <Link href="/inbox" className="relative p-2 text-gray-500 hover:text-blue-600 transition hover:bg-gray-50 rounded-full" title="Inbox">
+                  <Mail className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                  )}
+                </Link>
 
-                {/* DROPDOWN MENU */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition focus:outline-none"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
+                      {session.user?.name?.[0]?.toUpperCase() || "U"}
                     </div>
+                    <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate hidden md:inline">
+                      {session.user?.name}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
 
-                    <div className="py-1">
-                      {(session.user as { role?: string })?.role === 'admin' && (
-                        <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
-                          <Shield className="w-4 h-4" /> Admin Panel
+                  {/* DROPDOWN MENU */}
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                      </div>
+
+                      <div className="py-1">
+                        {(session.user as { role?: string })?.role === 'admin' && (
+                          <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                            <Shield className="w-4 h-4" /> Admin Panel
+                          </Link>
+                        )}
+                        <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                          <LayoutDashboard className="w-4 h-4" /> Dashboard
                         </Link>
-                      )}
-                      <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                      </Link>
-                    </div>
+                      </div>
 
-                    <div className="border-t border-gray-100 py-1">
-                      <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
-                      >
-                        <LogOut className="w-4 h-4" /> Sign Out
-                      </button>
+                      <div className="border-t border-gray-100 py-1">
+                        <button
+                          onClick={() => signOut({ callbackUrl: '/' })}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
+                        >
+                          <LogOut className="w-4 h-4" /> Sign Out
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
                 <Link href="/login">
