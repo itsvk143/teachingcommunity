@@ -20,6 +20,8 @@ export interface IDiscussion extends Document {
     authorName?: string;
     authorRole?: string;
     replies: IReply[];
+    upvotes: string[];
+    downvotes: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -51,6 +53,8 @@ const DiscussionSchema: Schema<IDiscussion> = new Schema(
         authorEmail: { type: String, required: true },
         authorName: { type: String, default: "Anonymous" },
         authorRole: { type: String, default: "user" },
+        upvotes: { type: [String], default: [] },
+        downvotes: { type: [String], default: [] },
         replies: { type: [ReplySchema], default: [] },
     },
     { timestamps: true }

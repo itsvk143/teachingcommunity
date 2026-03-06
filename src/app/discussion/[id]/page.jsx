@@ -117,13 +117,57 @@ export default function DiscussionThread({ params }) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action }),
             });
-            // If the vote fails entirely, we should theoretically rollback the optimistic update,
-            // but for simple user flows, ignoring it is visually less jarring.
-            if (!res.ok) {
-                console.error("Failed to record vote");
-            }
+            if (!res.ok) console.error("Failed to record vote");
         } catch (err) {
             console.error("Failed to fetch vote route", err);
+        }
+    };
+
+    const handleMainVote = async (action) => {
+        if (!session?.user) {
+            router.push('/login');
+            return;
+        }
+
+        const userId = session.user.id;
+
+        // Optimistic UI Update
+        setThread(prev => {
+            let newUpvotes = [...(prev.upvotes || [])];
+            let newDownvotes = [...(prev.downvotes || [])];
+
+            const hasUpvoted = newUpvotes.includes(userId);
+            const hasDownvoted = newDownvotes.includes(userId);
+
+            if (action === 'upvote') {
+                if (hasUpvoted) {
+                    newUpvotes = newUpvotes.filter(id => id !== userId);
+                } else {
+                    newUpvotes.push(userId);
+                    newDownvotes = newDownvotes.filter(id => id !== userId);
+                }
+            } else if (action === 'downvote') {
+                if (hasDownvoted) {
+                    newDownvotes = newDownvotes.filter(id => id !== userId);
+                } else {
+                    newDownvotes.push(userId);
+                    newUpvotes = newUpvotes.filter(id => id !== userId);
+                }
+            }
+
+            return { ...prev, upvotes: newUpvotes, downvotes: newDownvotes };
+        });
+
+        // Background API call
+        try {
+            const res = await fetch(`/api/discussions/${id}/vote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action }),
+            });
+            if (!res.ok) console.error("Failed to record main post vote");
+        } catch (err) {
+            console.error("Failed to fetch main post vote route", err);
         }
     };
 
@@ -193,8 +237,28 @@ export default function DiscussionThread({ params }) {
                             </div>
                         </div>
 
-                        <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed">
+                        <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed mb-6">
                             {thread.content}
+                        </div>
+
+                        {/* MAIN POST VOTING ACTIONS */}
+                        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                            <button
+                                onClick={() => handleMainVote('upvote')}
+                                className={`flex items-center gap-1.5 font-medium transition-colors ${(thread.upvotes || []).includes(session?.user?.id) ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}
+                                title="Agree / Thumbs Up"
+                            >
+                                <ThumbsUp size={18} className={(thread.upvotes || []).includes(session?.user?.id) ? 'fill-green-600' : ''} />
+                                {(thread.upvotes || []).length}
+                            </button>
+                            <button
+                                onClick={() => handleMainVote('downvote')}
+                                className={`flex items-center gap-1.5 font-medium transition-colors ${(thread.downvotes || []).includes(session?.user?.id) ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+                                title="Disagree / Thumbs Down"
+                            >
+                                <ThumbsDown size={18} className={(thread.downvotes || []).includes(session?.user?.id) ? 'fill-red-600' : ''} />
+                                {(thread.downvotes || []).length}
+                            </button>
                         </div>
                     </div>
                 </div>
