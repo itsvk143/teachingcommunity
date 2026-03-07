@@ -290,7 +290,7 @@ export default function TeachersPublicClient({ initialTeachers }) {
           </div>
         )}
 
-        {/* TABLE SECTION */}
+        {/* LIST SECTION */}
         {!isLoading && !error && (() => {
           const totalPages = Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE);
           const paginatedTeachers = filteredTeachers.slice(
@@ -299,89 +299,71 @@ export default function TeachersPublicClient({ initialTeachers }) {
           );
 
           return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="space-y-6">
               {filteredTeachers.length > 0 ? (
-                <div className="flex flex-col h-full">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-200">
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Teacher</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Mail</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Expertise</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Experience</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                          <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Action</th>
-                        </tr>
-                      </thead>
+                <div className="flex flex-col h-full gap-6">
+                  {/* Grid of Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {paginatedTeachers.map((teacher) => {
+                      const validPhotoUrl = getDirectImageUrl(teacher.photoUrl);
+                      return (
+                        <div key={teacher._id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 hover:border-blue-300 hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
 
-                      <tbody className="divide-y divide-gray-100">
-                        {paginatedTeachers.map((teacher) => {
-                          const validPhotoUrl = getDirectImageUrl(teacher.photoUrl);
-                          return (
-                            <tr key={teacher._id} className="hover:bg-gray-50/80 transition-colors group">
+                          {/* Name & Avatar */}
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="h-14 w-14 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                              <img
+                                src={validPhotoUrl || "/logo.png"}
+                                alt={teacher.name || "Teacher Photo"}
+                                className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-1'}`}
+                                onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-1"; }}
+                              />
+                            </div>
+                            <div className="overflow-hidden">
+                              <h3 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{teacher.name}</h3>
+                              <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                                <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{teacher.city ? `${teacher.city}, ` : ''}{teacher.state || 'Location N/A'}</span>
+                              </div>
+                            </div>
+                          </div>
 
-                              {/* Name & Avatar */}
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-                                    <img
-                                      src={validPhotoUrl || "/logo.png"}
-                                      alt={teacher.name || "Teacher Photo"}
-                                      className={`w-full h-full ${validPhotoUrl ? 'object-cover' : 'object-contain p-1'}`}
-                                      onError={(e) => { e.target.onerror = null; e.target.src = "/logo.png"; e.target.className = "w-full h-full object-contain p-1"; }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <div className="font-semibold text-gray-900">{teacher.name}</div>
-                                    <div className="text-xs text-gray-500">ID: {teacher._id.slice(-6)}</div>
-                                  </div>
-                                </div>
-                              </td>
+                          {/* Info Rows */}
+                          <div className="space-y-2.5 mb-5 flex-1">
+                            <div className="flex items-start gap-2 text-sm text-gray-600">
+                              <BookOpen className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                              <span className="line-clamp-2">
+                                {Array.isArray(teacher.subject) ? teacher.subject.join(', ') : (teacher.subject || 'Expertise not specified')}
+                              </span>
+                            </div>
 
-                              {/* Contact */}
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                  <Mail className="w-3.5 h-3.5" />
-                                  {teacher.email}
-                                </div>
-                              </td>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Briefcase className="w-4 h-4 text-blue-500 shrink-0" />
+                              <span className="truncate">{teacher.experience ? `${teacher.experience} Years Experience` : 'Experience N/A'}</span>
+                            </div>
 
-                              {/* Subject (Badge Style) */}
-                              <td className="px-6 py-4">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                  {Array.isArray(teacher.subject) ? teacher.subject.join(', ') : teacher.subject}
-                                </span>
-                              </td>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 truncate">
+                              <Mail className="w-4 h-4 text-blue-500 shrink-0" />
+                              <span className="truncate">{teacher.email || 'No email provided'}</span>
+                            </div>
+                          </div>
 
-                              {/* Experience */}
-                              <td className="px-6 py-4 text-sm text-gray-600">
-                                {teacher.experience ? `${teacher.experience} Years` : <span className="text-gray-400">-</span>}
-                              </td>
-
-                              {/* State */}
-                              <td className="px-6 py-4 text-sm text-gray-600">
-                                {teacher.state || <span className="text-gray-400">-</span>}
-                              </td>
-
-                              {/* Action */}
-                              <td className="px-6 py-4 text-right">
-                                <Link
-                                  href={`/teacherspublic/${teacher._id}`}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                                >
-                                  View
-                                </Link>
-                              </td>
-
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                          {/* Action Button */}
+                          <div className="pt-4 border-t border-gray-100 mt-auto">
+                            <Link
+                              href={`/teacherspublic/${teacher._id}`}
+                              className="block w-full text-center bg-blue-50 border border-blue-100 text-blue-700 py-2.5 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-colors duration-300"
+                            >
+                              View Profile
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+
+                  {/* Pagination Control */}
                   {totalPages > 1 && (
-                    <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 bg-gray-50/50">
+                    <div className="px-6 py-4 flex items-center justify-between border border-gray-200 bg-white rounded-xl shadow-sm">
                       <div className="text-sm text-gray-500">
                         Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-medium">{Math.min(currentPage * ITEMS_PER_PAGE, filteredTeachers.length)}</span> of <span className="font-medium">{filteredTeachers.length}</span> results
                       </div>
@@ -389,14 +371,14 @@ export default function TeachersPublicClient({ initialTeachers }) {
                         <button
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                           disabled={currentPage === 1}
-                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           Previous
                         </button>
                         <button
                           onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                           disabled={currentPage === totalPages}
-                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           Next
                         </button>
