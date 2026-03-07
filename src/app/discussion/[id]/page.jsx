@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MessageSquare, Send, Clock, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, Clock, Loader2, ThumbsUp, ThumbsDown, Trash2, Ban, AlertTriangle, X } from "lucide-react";
 
 export default function DiscussionThread({ params }) {
     const unwrappedParams = use(params);
@@ -19,6 +19,11 @@ export default function DiscussionThread({ params }) {
     const [replyContent, setReplyContent] = useState("");
     const [replyLoading, setReplyLoading] = useState(false);
     const [replyError, setReplyError] = useState(null);
+
+    // Admin Moderation State
+    const [showSuspendModal, setShowSuspendModal] = useState(false);
+    const [suspendTarget, setSuspendTarget] = useState({ id: null, name: null });
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         fetchThread();
@@ -171,6 +176,63 @@ export default function DiscussionThread({ params }) {
         }
     };
 
+    // --- ADMIN ACTIONS ---
+    const handleDeleteThread = async () => {
+        if (!confirm("Are you sure you want to completely delete this discussion thread and all replies?")) return;
+        setActionLoading(true);
+        try {
+            const res = await fetch(`/api/discussions/${id}`, { method: "DELETE" });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+            router.push('/discussion');
+        } catch (err) {
+            alert(err.message);
+            setActionLoading(false);
+        }
+    };
+
+    const handleDeleteReply = async (replyId) => {
+        if (!confirm("Are you sure you want to delete this reply?")) return;
+        try {
+            const res = await fetch(`/api/discussions/${id}/reply/${replyId}`, { method: "DELETE" });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+            setThread(prev => ({
+                ...prev,
+                replies: prev.replies.filter(r => r._id !== replyId)
+            }));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleSuspendUser = async (duration) => {
+        if (!suspendTarget.id) return;
+        setActionLoading(true);
+        try {
+            const res = await fetch(`/api/admin/users/${suspendTarget.id}/suspend`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ duration })
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+            alert(`User suspended (${duration}) successfully.`);
+            setShowSuspendModal(false);
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+    // ---------------------
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center pt-20">
@@ -225,12 +287,23 @@ export default function DiscussionThread({ params }) {
                             {thread.title}
                         </h1>
 
-                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-100">
+                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-100 relative">
                             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md border-2 border-white">
                                 {thread.authorName?.charAt(0)?.toUpperCase() || "U"}
                             </div>
                             <div>
-                                <div className="font-bold text-gray-900 text-lg">{thread.authorName || 'Anonymous'}</div>
+                                <div className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                    {thread.authorName || 'Anonymous'}
+                                    {session?.user?.role === 'admin' && session?.user?.id !== thread.authorId && (
+                                        <button
+                                            onClick={() => { setSuspendTarget({ id: thread.authorId, name: thread.authorName }); setShowSuspendModal(true); }}
+                                            className="text-[10px] bg-red-100 hover:bg-red-200 text-red-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold transition-colors flex items-center gap-1"
+                                            title="Restrict User"
+                                        >
+                                            <Ban size={10} /> Restrict
+                                        </button>
+                                    )}
+                                </div>
                                 <div className="text-xs text-gray-500 uppercase tracking-widest font-semibold flex items-center gap-2 mt-0.5">
                                     {thread.authorRole || 'User'}
                                     {session?.user?.email === thread.authorEmail && (
@@ -238,6 +311,18 @@ export default function DiscussionThread({ params }) {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Admin Delete Thread */}
+                            {session?.user?.role === 'admin' && (
+                                <button
+                                    onClick={handleDeleteThread}
+                                    disabled={actionLoading}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors"
+                                    title="Delete Entire Thread"
+                                >
+                                    <Trash2 size={20} />
+                                </button>
+                            )}
                         </div>
 
                         <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed mb-8 md:text-lg">
@@ -289,7 +374,18 @@ export default function DiscussionThread({ params }) {
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-bold text-gray-900">{reply.authorName || 'Anonymous'}</span>
+                                                <span className="font-bold text-gray-900 flex items-center gap-2">
+                                                    {reply.authorName || 'Anonymous'}
+                                                    {session?.user?.role === 'admin' && session?.user?.id !== reply.authorId && (
+                                                        <button
+                                                            onClick={() => { setSuspendTarget({ id: reply.authorId, name: reply.authorName }); setShowSuspendModal(true); }}
+                                                            className="text-[9px] bg-red-100 hover:bg-red-200 text-red-700 px-1.5 py-0.5 rounded-sm uppercase tracking-wider font-bold transition-colors flex items-center gap-1"
+                                                            title="Restrict User"
+                                                        >
+                                                            <Ban size={9} /> Restrict
+                                                        </button>
+                                                    )}
+                                                </span>
                                                 {reply.authorEmail === thread.authorEmail && (
                                                     <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-widest">OP</span>
                                                 )}
@@ -303,6 +399,17 @@ export default function DiscussionThread({ params }) {
                                         {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(reply.createdAt))}
                                     </span>
                                 </div>
+
+                                {session?.user?.role === 'admin' && (
+                                    <button
+                                        onClick={() => handleDeleteReply(reply._id)}
+                                        className="absolute top-6 right-6 p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
+                                        title="Delete Reply"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
+
                                 <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed md:text-base pl-0 md:pl-12 mb-5">
                                     {reply.content}
                                 </div>
@@ -393,6 +500,66 @@ export default function DiscussionThread({ params }) {
                 </div>
 
             </div>
+
+            {/* Admin Suspend Modal */}
+            {showSuspendModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-red-50/50">
+                            <h3 className="text-xl font-bold flex items-center gap-2 text-red-700">
+                                <AlertTriangle className="w-5 h-5" />
+                                Restrict User
+                            </h3>
+                            <button onClick={() => setShowSuspendModal(false)} className="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 p-1 rounded-full">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-600 mb-6 font-medium">
+                                You are about to restrict <span className="font-bold text-gray-900">{suspendTarget.name}</span>. This will prevent them from posting threads, replying, or voting on the platform.
+                            </p>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => handleSuspendUser('1week')}
+                                    disabled={actionLoading}
+                                    className="w-full text-left p-4 rounded-xl border border-orange-200 bg-orange-50 hover:bg-orange-100 transition-colors flex items-center gap-3 disabled:opacity-50"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center text-orange-700">
+                                        <Clock size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-orange-900">Suspend for 1 Week</div>
+                                        <div className="text-xs text-orange-700 mb-0">Temporary cooling off period.</div>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => handleSuspendUser('permanent')}
+                                    disabled={actionLoading}
+                                    className="w-full text-left p-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 transition-colors flex items-center gap-3 disabled:opacity-50"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-red-200 flex items-center justify-center text-red-700">
+                                        <Ban size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-red-900">Suspend Permanently</div>
+                                        <div className="text-xs text-red-700 mb-0">Indefinite ban from platform features.</div>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => handleSuspendUser('lift')}
+                                    disabled={actionLoading}
+                                    className="w-full text-center py-3 mt-4 text-sm font-bold text-gray-500 hover:text-gray-900 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                >
+                                    Lift Existing Ban
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

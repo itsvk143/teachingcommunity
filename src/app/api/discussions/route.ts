@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Discussion from '@/model/Discussion';
+import User from '@/model/User';
 import { getServerSession, type AuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -106,6 +107,22 @@ export async function POST(req: Request) {
         }
 
         const { role, id, email, name } = session.user as { role: string; id: string; email: string; name: string };
+
+        // Check for suspension
+        const dbUser = await User.findById(id).lean() as Record<string, any>;
+        if (dbUser?.isSuspended) {
+            if (!dbUser.suspensionEndDate) {
+                return NextResponse.json(
+                    { error: 'Your account has been permanently suspended from participating in discussions.' },
+                    { status: 403 }
+                );
+            } else if (new Date() < new Date(dbUser.suspensionEndDate)) {
+                return NextResponse.json(
+                    { error: `Your account is suspended from discussions until ${new Date(dbUser.suspensionEndDate).toLocaleDateString()}.` },
+                    { status: 403 }
+                );
+            }
+        }
 
         const newDiscussion = await Discussion.create({
             title: body.title,

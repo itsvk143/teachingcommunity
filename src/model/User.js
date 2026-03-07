@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'hr', 'coaching', 'consultant', 'teacher', 'non-teacher', 'school'],
     default: 'user'
   },
+  isSuspended: { type: Boolean, default: false },
+  suspensionEndDate: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
