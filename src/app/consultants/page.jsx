@@ -216,9 +216,14 @@ export default function ConsultantDirectory() {
                                                     </div>
                                                 </div>
 
-                                                <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-1">
+                                                <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-1">
                                                     {description || 'Professional Recruitment Services'}
                                                 </p>
+
+                                                <div className="flex items-center justify-between bg-blue-50 p-2.5 rounded-lg border border-blue-100 mb-4">
+                                                    <span className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Consultation Fee</span>
+                                                    <span className="text-sm font-bold text-blue-900">{consultant.consultation_fee || 'Not specified'}</span>
+                                                </div>
 
                                                 <div className="pt-4 border-t border-gray-100 mt-auto space-y-3">
                                                     <div className="text-xs text-gray-500 flex items-center justify-between">
