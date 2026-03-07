@@ -67,7 +67,7 @@ export async function GET(req: Request) {
         const mapped = discussions.map(d => {
             const dRecord = d as Record<string, unknown>;
             const replyCount = Array.isArray(dRecord.replies) ? dRecord.replies.length : 0;
-            const { replies, ...rest } = dRecord;
+            const { replies: _replies, ...rest } = dRecord;
             return {
                 ...rest,
                 replyCount
@@ -109,16 +109,16 @@ export async function POST(req: Request) {
         const { role, id, email, name } = session.user as { role: string; id: string; email: string; name: string };
 
         // Check for suspension
-        const dbUser = await User.findById(id).lean() as Record<string, any>;
+        const dbUser = await User.findById(id).lean() as Record<string, unknown>;
         if (dbUser?.isSuspended) {
             if (!dbUser.suspensionEndDate) {
                 return NextResponse.json(
                     { error: 'Your account has been permanently suspended from participating in discussions.' },
                     { status: 403 }
                 );
-            } else if (new Date() < new Date(dbUser.suspensionEndDate)) {
+            } else if (new Date() < new Date(dbUser.suspensionEndDate as string | number | Date)) {
                 return NextResponse.json(
-                    { error: `Your account is suspended from discussions until ${new Date(dbUser.suspensionEndDate).toLocaleDateString()}.` },
+                    { error: `Your account is suspended from discussions until ${new Date(dbUser.suspensionEndDate as string | number | Date).toLocaleDateString()}.` },
                     { status: 403 }
                 );
             }

@@ -31,7 +31,7 @@ export async function POST(
 
         await dbConnect();
 
-        let updateData: any = {};
+        let updateData: Record<string, unknown> = {};
 
         if (duration === '1week') {
             const endDate = new Date();

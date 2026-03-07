@@ -34,16 +34,16 @@ export async function POST(
         const { role, id: userId, email, name } = session.user as { role: string; id: string; email: string; name: string };
 
         // Check for suspension
-        const dbUser = await User.findById(userId).lean() as Record<string, any>;
+        const dbUser = await User.findById(userId).lean() as Record<string, unknown>;
         if (dbUser?.isSuspended) {
             if (!dbUser.suspensionEndDate) {
                 return NextResponse.json(
                     { error: 'Your account has been permanently suspended from participating in discussions.' },
                     { status: 403 }
                 );
-            } else if (new Date() < new Date(dbUser.suspensionEndDate)) {
+            } else if (new Date() < new Date(dbUser.suspensionEndDate as string | number | Date)) {
                 return NextResponse.json(
-                    { error: `Your account is suspended from discussions until ${new Date(dbUser.suspensionEndDate).toLocaleDateString()}.` },
+                    { error: `Your account is suspended from discussions until ${new Date(dbUser.suspensionEndDate as string | number | Date).toLocaleDateString()}.` },
                     { status: 403 }
                 );
             }
