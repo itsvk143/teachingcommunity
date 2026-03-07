@@ -345,6 +345,14 @@ export default function TeachersPublicClient({ initialTeachers }) {
                               <Mail className="w-4 h-4 text-blue-500 shrink-0" />
                               <span className="truncate">{teacher.email || 'No email provided'}</span>
                             </div>
+
+                            {teacher.currentInstitute && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600 truncate mt-2">
+                                <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-semibold truncate border border-blue-100">
+                                  🏢 {teacher.currentInstitute}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Action Button */}
